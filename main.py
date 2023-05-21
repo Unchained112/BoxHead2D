@@ -1,5 +1,5 @@
-# Example file showing a basic pygame "game loop"
 import pygame
+from player import Player
 
 # Color palette
 GROUND_WHITE = (221, 230, 237)
@@ -13,37 +13,6 @@ LIGHT_BLACK = (34, 34, 34)
 # Screen size
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
-
-
-class Player():
- 
-    def __init__(self):
-        self.is_walking = False
-        self.body_move_up = False
-        self.body_move_frames = 20
-    
-        # init position
-        self.pos_x = SCREEN_WIDTH / 2 - 14
-        self.pos_y = SCREEN_HEIGHT / 2 - 14
-
-        # body Rect
-        self.body = pygame.Rect(self.pos_x, self.pos_y, 28, 24)
-
-    def update(self):
-        # body animation
-        if self.body_move_up:
-            if self.body_move_frames < 4:
-                self.body.y += 1
-            self.body_move_frames -= 1
-        else:
-            if self.body_move_frames < 4:
-                self.body.y -= 1
-            self.body_move_frames -= 1
-        
-        if self.body_move_frames == 0:
-            self.body_move_frames = 20
-            self.body_move_up = not self.body_move_up
-
 
 player = Player()
 
@@ -60,6 +29,26 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_a:
+                player.changeDir(-1, 0)
+            if event.key == pygame.K_d:
+                player.changeDir(1, 0)
+            if event.key == pygame.K_w:
+                player.changeDir(0, -1)
+            if event.key == pygame.K_s:
+                player.changeDir(0, 1)
+
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_a:
+                player.changeDir(1, 0)
+            if event.key == pygame.K_d:
+                player.changeDir(-1, 0)
+            if event.key == pygame.K_w:
+                player.changeDir(0, 1)
+            if event.key == pygame.K_s:
+                player.changeDir(0, -1)
+
     # fill the screen with a color to wipe away anything from last frame
     screen.fill(GROUND_WHITE)
 
@@ -67,10 +56,14 @@ while running:
     player.update()
 
     # RENDER YOUR GAME HERE
+    # render player
     pygame.draw.rect(screen, BLACK, player.body, 0)
+    pygame.draw.rect(screen, BLACK, player.foot_r, 0)
+    pygame.draw.rect(screen, BLACK, player.foot_l, 0)
 
     # flip() the display to put your work on screen
-    pygame.display.flip()
+    # pygame.display.flip()
+    pygame.display.update()
 
     clock.tick(60)  # limits FPS to 60
 
