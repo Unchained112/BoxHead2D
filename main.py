@@ -4,7 +4,7 @@ from pyglet.math import Vec2
 
 ''' GLOBAL VARIABLE '''
 # Color palette
-GROUND_WHITE = (221, 230, 237)
+GROUND_WHITE = (240, 237, 212)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 DARK_RED = (183, 4, 4)
@@ -72,28 +72,31 @@ class Player(GameObject):
     ''' Player game object. '''
     def __init__(self, x = 0, y = 0):
         # Perporties
-        self.is_walking = False
+        self.is_walking = True
         self.speed = 3
         # init position
-    #     self.pos = pygame.Vector2(x, y)
+        self.pos = Vec2(x, y)
+        print(self.pos)
 
-    #     # Animation init
-    #     self.walking_in = True  # feet move inside
-    #     self.walking_frames_max = 6
-    #     self.walking_frames = self.walking_frames_max
-    #     self.foot_flag = True # change walking foot
-    #     self.foot_flag_frames = 2 * self.walking_frames_max
-    #     self.body_move_up = False
-    #     self.body_move_frames_max = 20
-    #     self.body_move_frames = self.body_move_frames_max
-    #     self.velocity = pygame.Vector2(0, 0)
+        # Animation init
+        self.walking_frames_max = 20
+        self.walking_frames = self.walking_frames_max
+        self.body_move_up = False
+        self.body_move_frames_max = 20
+        self.body_move_frames = self.body_move_frames_max
+        self.velocity = Vec2(0, 0)
 
-    #     # Visuals
-    #     # body Rect
-    #     self.body = pygame.Rect(self.pos.x, self.pos.y, 28, 24)
-    #     # feet Rect
-    #     self.foot_l = pygame.Rect(self.pos.x, self.pos.y + 26, 6, 4)
-    #     self.foot_r = pygame.Rect(self.pos.x + 22, self.pos.y + 26, 6, 4)
+        # Visuals
+        # body Rect: [x, y, w, h]
+        self.body = [self.pos.x, self.pos.y, 24, 24]
+        # feet Rect: [x, y, w, h]
+        self.foot_l = [self.pos.x - 8, self.pos.y - 18, 4, 4]
+        self.foot_r = [self.pos.x + 8, self.pos.y - 18, 4, 4]
+        # feet walk animation
+        self.l_walk_x = [-1,-1,0, 1, 1,0, 1,  1,0,-1,-1,0,0,0,0,0,0,0,0,0,0]
+        self.l_walk_y = [ 1, 1,0,-1,-1,0, 1,  1,0,-1,-1,0,0,0,0,0,0,0,0,0,0]
+        self.r_walk_x = [ 1, 1,0,-1,-1,0,-1, -1,0, 1, 1,0,0,0,0,0,0,0,0,0,0]
+        self.r_walk_y = [ 1, 1,0,-1,-1,0, 1,  1,0,-1,-1,0,0,0,0,0,0,0,0,0,0]
 
     # def changeDir(self, x, y):
     #     self.velocity.x += x * self.speed
@@ -113,64 +116,48 @@ class Player(GameObject):
     #     self.foot_l.topleft += self.velocity
     #     self.foot_r.topleft += self.velocity
 
-    # def update(self):
-    #     # player move
-    #     self.move()
+    def update(self):
+        # player move
+        # self.move()
 
-    #     # body animation
-    #     if self.body_move_up:
-    #         if self.body_move_frames < 4:
-    #             self.body.y += 1
-    #         self.body_move_frames -= 1
-    #     else:
-    #         if self.body_move_frames < 4:
-    #             self.body.y -= 1
-    #         self.body_move_frames -= 1
+        # body animation
+        if self.body_move_frames == 0: # reset frames
+            self.body_move_frames = self.body_move_frames_max
+            self.body_move_up = not self.body_move_up
 
-    #     if self.body_move_frames == 0:
-    #         self.body_move_frames = self.body_move_frames_max
-    #         self.body_move_up = not self.body_move_up
+        self.body_move_frames -= 1
+        
+        if self.body_move_up:
+            if self.body_move_frames < 3:
+                self.body[1] += 1
+        else:
+            if self.body_move_frames < 3:
+                self.body[1] -= 1
 
-    #     # feet animation
-    #     if self.is_walking:
-    #         if self.walking_in:
-    #             if self.walking_frames < 3:
-    #                 if self.foot_flag:
-    #                     self.foot_l.x += 2
-    #                     self.foot_l.y -= 1
-    #                 else:
-    #                     self.foot_r.x -= 2
-    #                     self.foot_r.y -= 1
-    #         else:
-    #             if self.walking_frames < 3:
-    #                 if self.foot_flag:
-    #                     self.foot_l.x -= 2
-    #                     self.foot_l.y += 1
-    #                 else:
-    #                     self.foot_r.x += 2
-    #                     self.foot_r.y += 1
-    #         self.walking_frames -= 1
-    #         self.foot_flag_frames -= 1
-    #     else:
-    #         # reset the walking animation
-    #         self.foot_l.topleft = (self.pos.x, self.pos.y + 26)
-    #         self.foot_r.topleft = (self.pos.x + 22, self.pos.y + 26)
-    #         self.walking_frames = self.walking_frames_max
-    #         self.walking_in = True
-    #         self.foot_flag_frames = 2 * self.walking_frames_max
-    #         self.foot_flag = not self.foot_flag
+        # feet animation
+        if self.walking_frames == 0: # reset frames
+            self.walking_frames = self.walking_frames_max
+        
+        self.walking_frames -= 1
+        
+        if self.is_walking:
+            self.foot_l[0] += self.l_walk_x[self.walking_frames]
+            self.foot_l[1] += self.l_walk_y[self.walking_frames]
+            self.foot_r[0] += self.r_walk_x[self.walking_frames]
+            self.foot_r[1] += self.r_walk_y[self.walking_frames]
+        else:
+            # reset the walking animation
+            self.foot_l = [self.pos.x - 8, self.pos.y - 18, 4, 4]
+            self.foot_r = [self.pos.x + 8, self.pos.y - 18, 4, 4]
+            self.walking_frames = self.walking_frames_max
 
-    #     if self.walking_frames == 0:
-    #         self.walking_frames = self.walking_frames_max
-    #         self.walking_in = not self.walking_in
-    #     if self.foot_flag_frames == 0:
-    #         self.foot_flag_frames = 2 * self.walking_frames_max
-    #         self.foot_flag = not self.foot_flag
-
-    # def draw(self, screen):
-    #     pygame.draw.rect(screen, BLACK, player.body, 0)
-    #     pygame.draw.rect(screen, BLACK, player.foot_r, 0)
-    #     pygame.draw.rect(screen, BLACK, player.foot_l, 0)
+    def draw(self):
+        arcade.draw_rectangle_filled(self.body[0], self.body[1],
+                                     self.body[2], self.body[3], BLACK)
+        arcade.draw_rectangle_filled(self.foot_l[0], self.foot_l[1],
+                                     self.foot_l[2], self.foot_l[3], BLACK)
+        arcade.draw_rectangle_filled(self.foot_r[0], self.foot_r[1],
+                                     self.foot_r[2], self.foot_r[3], BLACK)
 
 
 
@@ -209,6 +196,7 @@ class BoxHead(arcade.Window):
         self.player_list = arcade.SpriteList()
         self.wall_list = arcade.SpriteList()
         self.test_room = Room()
+        self.player = Player(SCREEN_WIDTH / 2, SCREEN_WIDTH / 2)
 
         # Set up the player
         # self.player_sprite = arcade.Sprite(":resources:images/animated_characters/female_person/femalePerson_idle.png",
@@ -245,11 +233,12 @@ class BoxHead(arcade.Window):
         # Draw all the sprites.
         self.player_list.draw()
         self.test_room.draw()
+        self.player.draw()
         # self.wall_list.draw() TODO: test whether collision detection will still be valid
 
 
         # Select the (unscrolled) camera for our GUI
-        self.camera_gui.use()
+        # self.camera_gui.use()
 
         # Render the GUI
         # arcade.draw_rectangle_filled(self.width // 2,
@@ -262,7 +251,7 @@ class BoxHead(arcade.Window):
         # arcade.draw_text(text, 10, 10, arcade.color.BLACK_BEAN, 20)
 
     def on_update(self, delta_time):
-        pass
+        self.player.update()
 
 def main():
     """ Main function """
