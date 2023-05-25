@@ -72,7 +72,9 @@ class Room:
         self.walls = [FixedWall(50, 50),
                       FixedWall(50, 100),
                       FixedWall(100, 100)]
-
+        for i in range(0, 50):
+            self.walls.append(FixedWall(15 + i * 30, 15))
+        
     def draw(self):
         # Room background
         arcade.draw_rectangle_filled(self.pos.x, self.pos.y,
@@ -375,9 +377,11 @@ class BoxHead(arcade.Window):
         """
         position = Vec2(self.camera_sprites.position.x, self.camera_sprites.position.y)
         # limit the camera position within the room
-        if self.player.pos.x > SCREEN_WIDTH / 2 and self.game_room.width - self.player.pos.x > SCREEN_WIDTH / 2:
+        if self.player.pos.x > SCREEN_WIDTH / 2 - 15 \
+            and self.game_room.width - self.player.pos.x > SCREEN_WIDTH / 2:
             position.x = self.player.pos.x - SCREEN_WIDTH / 2
-        if self.player.pos.y > SCREEN_HEIGHT / 2 and self.game_room.height - self.player.pos.y > SCREEN_HEIGHT / 2:
+        if self.player.pos.y > SCREEN_HEIGHT / 2 - 15 \
+            and self.game_room.height - self.player.pos.y > SCREEN_HEIGHT / 2:
             position.y = self.player.pos.y - SCREEN_HEIGHT / 2
 
         self.camera_sprites.move_to(position, CAMERA_SPEED)
