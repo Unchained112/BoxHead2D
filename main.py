@@ -13,11 +13,22 @@ DARK_GRAY = (67, 66, 66)
 LIGHT_BLACK = (34, 34, 34)
 
 # Screen size
-SCREEN_WIDTH = 1280
-SCREEN_HEIGHT = 720
+SCREEN_WIDTH = int(1280)
+SCREEN_HEIGHT = int(720)
 
 # How fast the camera pans to the player. 1.0 is instant.
 CAMERA_SPEED = 0.6
+
+# Animations
+BODY_ANIM = [-1,-1,-1,-1,-1,-1,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              1, 1, 1, 1, 1, 1,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+BODY_WALK = [ 1, 1, 1,-1,-1,-1, 1, 1, 1,-1,-1,-1]
+L_WALK_X  = [-1,-1,-1, 1, 1, 1, 1, 1, 1,-1,-1,-1]
+L_WALK_Y  = [ 1, 1, 1,-1,-1,-1, 1, 1, 1,-1,-1,-1]
+R_WALK_X  = [ 1, 1, 1,-1,-1,-1,-1,-1,-1, 1, 1, 1]
+R_WALK_Y  = [ 1, 1, 1,-1,-1,-1, 1, 1, 1,-1,-1,-1]
 
 class GameObject:
     ''' GameObject Base Class. '''
@@ -34,31 +45,30 @@ class GameObject:
         pass
 
 class FixedWall(GameObject):
-    ''' Fixed wall for background in the room scene. '''
+    ''' Fixed wall for background in the room. '''
 
     def __init__(self, x = 0, y = 0):
         self.pos = Vec2(x, y)
         self.grid_idx = (0, 0)
         self.len = 30
 
-        # Wall collider
-        self.sprite = arcade.Sprite(filename = ":resources:images/tiles/boxCrate_double.png",
+        # Wall
+        self.sprite = arcade.Sprite(filename = "./graphics/FixedWall1.png",
                                     center_x = self.pos.x,
                                     center_y = self.pos.y,
                                     image_width = 30,
                                     image_height = 30)
 
     def draw(self):
-        arcade.draw_rectangle_filled(self.pos.x, self.pos.y,
-                                     self.len, self.len, DARK_GRAY)
+        self.sprite.draw()
 
 class Room:
     ''' Room as a background in the game scene. '''
 
     def __init__(self, width = 1500, height = 900):
-        self.pos = Vec2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
         self.width = width
         self.height = height
+        self.pos = Vec2(self.width / 2, self.height / 2)
         self.walls = [FixedWall(50, 50),
                       FixedWall(50, 100),
                       FixedWall(100, 100)]
@@ -71,70 +81,75 @@ class Room:
         for wall in self.walls:
             wall.draw()
 
-class Player(GameObject):
-    ''' Player game object. '''
+class Character(GameObject):
+    ''' Character base class. '''
+
     def __init__(self, x = 0, y = 0):
         # Perporties
         self.is_walking = False
         self.speed = 3
 
-        # init position
+        # Init position
         self.pos = Vec2(x, y)
+
+        # Relative positions for visuals
+        self.body_pos = Vec2(0, 0) # controls the actual movement
+        self.foot_l_pos = Vec2(-8, -16)
+        self.foot_r_pos = Vec2(8, -16)
+        self.collider_pos = Vec2(0, -3)
+
+        # Track the player movement input
+        self.move_left = False
+        self.move_right = False
+        self.move_up = False
+        self.move_down = False
 
         # Animation init
         self.body_move_up = False
-        self.body_move_frames_max = 20
+        self.body_move_frames_max = len(BODY_ANIM)
         self.body_move_frames = self.body_move_frames_max
-        self.walking_frames_max = 12
+        self.walking_frames_max = len(L_WALK_X)
         self.walking_frames = self.walking_frames_max
         self.velocity = Vec2(0, 0)
 
         # Visuals
-        # Body Rect: [x, y, w, h]
-        self.body = [self.pos.x, self.pos.y, 20, 24]
-        # Feet Rect: [x, y, w, h]
-        self.foot_l = [self.pos.x - 8, self.pos.y - 18, 4, 4]
-        self.foot_r = [self.pos.x + 8, self.pos.y - 18, 4, 4]
-        # Feet walk animation
-        self.l_walk_x = [-1,-1,-1, 1, 1, 1, 1, 1, 1,-1,-1,-1]
-        self.l_walk_y = [-1,-1,-1, 1, 1, 1,-1,-1,-1, 1, 1, 1]
-        self.r_walk_x = [ 1, 1, 1,-1,-1,-1,-1,-1,-1, 1, 1, 1]
-        self.r_walk_y = [-1,-1,-1, 1, 1, 1,-1,-1,-1, 1, 1, 1]
+        # Body sprite
+        self.body = arcade.Sprite()
+        # Feet sprite
+        self.foot_l = arcade.Sprite(filename = "./graphics/Foot.png",
+                                    center_x = self.foot_l_pos.x + self.pos.x,
+                                    center_y = self.foot_l_pos.y + self.pos.x,
+                                    image_width = 4,
+                                    image_height = 4,
+                                    scale = 1)
+        self.foot_r = arcade.Sprite(filename = "./graphics/Foot.png",
+                                    center_x = self.foot_r_pos.x + self.pos.x,
+                                    center_y = self.foot_r_pos.y + self.pos.x,
+                                    image_width = 4,
+                                    image_height = 4,
+                                    scale = 1)
+        # Collider sprite for physics
+        self.box_collider = arcade.SpriteSolidColor(20, 30, DARK_GRAY)
+        self.box_collider.center_x = self.pos.x + self.collider_pos.x
+        self.box_collider.center_y = self.pos.y + self.collider_pos.y
 
-        # Body Collider
-        self.sprite = arcade.Sprite(filename = ":resources:images/tiles/boxCrate_double.png",
-                                    center_x = self.pos.x,
-                                    center_y = self.pos.y,
-                                    image_width = 20,
-                                    image_height = 26)
+    def move(self):
 
-    def changeDir(self, x, y):
-        self.velocity.x += x * self.speed
-        self.velocity.y += y * self.speed
-        if self.velocity.x != 0 or self.velocity.y != 0:
+        if self.box_collider.change_x != 0 or self.box_collider.change_y != 0:
             self.is_walking = True
-            self.velocity.normalize()
         else:
             self.is_walking = False
 
-    def move(self):
-        self.sprite.center_x += self.velocity.x
-        self.sprite.center_y += self.velocity.y
-        
-        # update collider
-        self.pos.x = self.sprite.center_x
-        self.pos.y = self.sprite.center_y
+        self.pos.x = self.box_collider.center_x - self.collider_pos.x
+        self.pos.y = self.box_collider.center_y - self.collider_pos.y
 
-        # self.sprite.center_x = self.pos.x
-        # self.sprite.center_y = self.pos.y
+        self.body.center_x = self.pos.x + self.body_pos.x
+        self.body.center_y = self.pos.y + self.body_pos.y
 
-        # update visual
-        self.body[0] = self.sprite.center_x
-        self.body[1] = self.sprite.center_y
-        self.foot_l[0] += self.velocity.x
-        self.foot_l[1] += self.velocity.y
-        self.foot_r[0] += self.velocity.x
-        self.foot_r[1] += self.velocity.y
+        self.foot_l.center_x = self.pos.x + self.foot_l_pos.x
+        self.foot_l.center_y = self.pos.y + self.foot_l_pos.y
+        self.foot_r.center_x = self.pos.x + self.foot_r_pos.x
+        self.foot_r.center_y = self.pos.y + self.foot_r_pos.y
 
     def update(self):
         self.move()
@@ -143,45 +158,91 @@ class Player(GameObject):
         if self.body_move_frames == 0: # reset frames
             self.body_move_frames = self.body_move_frames_max
             self.body_move_up = not self.body_move_up
-            self.body[0] = self.sprite.center_x
-            self.body[1] = self.sprite.center_y
 
         self.body_move_frames -= 1
+        self.body.center_y += BODY_ANIM[self.body_move_frames]
 
-        if self.body_move_up:
-            if self.body_move_frames < 3:
-                self.body[1] += 0.5
-        else:
-            if self.body_move_frames < 3:
-                self.body[1] -= 0.5
-
-        # feet animation
+        # Feet animation
         if self.walking_frames == 0: # reset frames
             self.walking_frames = self.walking_frames_max
 
         self.walking_frames -= 1
 
         if self.is_walking:
-            self.foot_l[0] += self.l_walk_x[self.walking_frames]
-            self.foot_l[1] += self.l_walk_y[self.walking_frames]
-            self.foot_r[0] += self.r_walk_x[self.walking_frames]
-            self.foot_r[1] += self.r_walk_y[self.walking_frames]
+            self.foot_l.center_x += L_WALK_X[self.walking_frames]
+            self.foot_l.center_y += L_WALK_Y[self.walking_frames]
+            self.foot_r.center_x += R_WALK_X[self.walking_frames]
+            self.foot_r.center_y += R_WALK_Y[self.walking_frames]
         else:
             # reset the walking animation
-            self.foot_l[0] += self.velocity.x
-            self.foot_l[1] += self.velocity.y
-            self.foot_r[0] += self.velocity.x
-            self.foot_r[1] += self.velocity.y
+            self.foot_l.center_x = self.foot_l_pos.x + self.pos.x
+            self.foot_l.center_y = self.foot_l_pos.y + self.pos.y
+            self.foot_r.center_x = self.foot_r_pos.x + self.pos.x
+            self.foot_r.center_y = self.foot_r_pos.y + self.pos.y
             self.walking_frames = self.walking_frames_max
 
     def draw(self):
-        arcade.draw_rectangle_filled(self.body[0], self.body[1],
-                                     self.body[2], self.body[3], BLACK)
-        arcade.draw_rectangle_filled(self.foot_l[0], self.foot_l[1],
-                                     self.foot_l[2], self.foot_l[3], BLACK)
-        arcade.draw_rectangle_filled(self.foot_r[0], self.foot_r[1],
-                                     self.foot_r[2], self.foot_r[3], BLACK)
+        # self.box_collider.draw()
+        self.body.draw()
+        self.foot_l.draw()
+        self.foot_r.draw()
 
+class Player(Character):
+    ''' Player game object. '''
+
+    def __init__(self, x, y):
+        super().__init__(x, y)
+
+        # Player body sprite
+        self.body = arcade.Sprite(filename = "./graphics/Player.png",
+                                    center_x = self.body_pos.x + self.pos.x,
+                                    center_y = self.body_pos.y + self.pos.x,
+                                    image_width = 20,
+                                    image_height = 24,
+                                    scale = 1)
+
+    def move(self):
+        self.box_collider.change_x = 0
+        self.box_collider.change_y = 0
+
+        if self.move_up and not self.move_down:
+            self.box_collider.change_y = self.speed
+        elif self.move_down and not self.move_up:
+            self.box_collider.change_y = -self.speed
+        if self.move_left and not self.move_right:
+            self.box_collider.change_x = -self.speed
+        elif self.move_right and not self.move_left:
+            self.box_collider.change_x = self.speed
+
+        super().move()
+
+class EnemyWhite(Character):
+    ''' EnemyWhite class. '''
+
+    def __init__(self, x = 0, y = 0):
+        super().__init__(x, y)
+
+        # EnemyWhite body sprite
+        self.body = arcade.Sprite(filename = "./graphics/EnemyWhite.png",
+                                    center_x = self.body_pos.x + self.pos.x,
+                                    center_y = self.body_pos.y + self.pos.x,
+                                    image_width = 20,
+                                    image_height = 24,
+                                    scale = 1)
+
+class EnemyRed(Character):
+    ''' EnemyRed class. '''
+
+    def __init__(self, x = 0, y = 0):
+        super().__init__(x, y)
+
+        # EnemyRed body sprite
+        self.body = arcade.Sprite(filename = "./graphics/EnemyRed.png",
+                                    center_x = self.body_pos.x + self.pos.x,
+                                    center_y = self.body_pos.y + self.pos.x,
+                                    image_width = 20,
+                                    image_height = 26,
+                                    scale = 1)
 
 class BoxHead(arcade.Window):
     """ Main application class. """
@@ -191,16 +252,18 @@ class BoxHead(arcade.Window):
         super().__init__(width, height, title, resizable=True)
 
         # Sprite lists
-        self.player_list = None
         self.wall_list = None
 
-        # Set up the player
+        # set up the player
         self.player_sprite = None
+
+        # set up the enemy
+        self.enemy_list = None
 
         # Physics engine so we don't run into walls.
         self.physics_engine = None
 
-        # Track the current state of what key is pressed
+        # track the current state of what key is pressed
         self.left_pressed = False
         self.right_pressed = False
         self.up_pressed = False
@@ -215,38 +278,24 @@ class BoxHead(arcade.Window):
         """ Set up the game and initialize the variables. """
 
         # Sprite lists
-        self.player_list = arcade.SpriteList()
         self.wall_list = arcade.SpriteList()
+        self.room_list = []
 
         # setup room background and player
-        self.test_room = Room()
-        for wall in self.test_room.walls:
+        self.game_room = Room()
+        for wall in self.game_room.walls:
             self.wall_list.append(wall.sprite)
 
-        self.player = Player()
-        self.player_list.append(self.player.sprite)     
+        # set up the player
+        self.player = Player(float(SCREEN_WIDTH / 2), float(SCREEN_HEIGHT / 2))
 
-        # Set up the player
-        # self.player_sprite = arcade.Sprite(":resources:images/animated_characters/female_person/femalePerson_idle.png",
-        #                                    scale=0.4)
-        # self.player_sprite.center_x = 256
-        # self.player_sprite.center_y = 512
-        # self.player_list.append(self.player_sprite)
+        self.physics_engine = arcade.PhysicsEngineSimple(self.player.box_collider, self.wall_list)
 
-        # -- Set up several columns of walls
-        # for x in range(200, 1650, 210):
-        #     for y in range(0, 1600, 64):
-        #         # Randomly skip a box so the player can find a way through
-        #         if random.randrange(5) > 0:
-        #             wall = arcade.Sprite(":resources:images/tiles/grassCenter.png", SPRITE_SCALING)
-        #             wall.center_x = x
-        #             wall.center_y = y
-        #             self.wall_list.append(wall)
-
-        self.physics_engine = arcade.PhysicsEngineSimple(self.player.sprite, self.wall_list)
+        self.enemy_test_1 = EnemyRed(200, 300)
+        self.enemy_test_2 = EnemyWhite(200, 400)
 
         # set the most basic background color
-        arcade.set_background_color(LIGHT_BLACK)
+        arcade.set_background_color(BLACK)
 
     def on_draw(self):
         """ Render the screen. """
@@ -258,13 +307,13 @@ class BoxHead(arcade.Window):
         self.camera_sprites.use()
 
         # Draw all the sprites.
-        self.player_list.draw()
-        self.wall_list.draw() # TODO: test whether collision detection will still be valid
-        self.test_room.draw()
-        for wall in self.wall_list:
-            wall.draw_hit_box()
+        # self.wall_list.draw()
+        self.game_room.draw()
         self.player.draw()
-        self.player.sprite.draw_hit_box(DARK_RED)
+
+        self.enemy_test_1.draw()
+        self.enemy_test_2.draw()
+
 
         # Select the (unscrolled) camera for our GUI
         # self.camera_gui.use()
@@ -283,28 +332,30 @@ class BoxHead(arcade.Window):
         """Called whenever a key is pressed. """
 
         if key == arcade.key.W:
-            self.player.changeDir(0, 1)
+            self.player.move_up = True
         elif key == arcade.key.S:
-            self.player.changeDir(0, -1)
+            self.player.move_down = True
         elif key == arcade.key.A:
-            self.player.changeDir(-1, 0)
+            self.player.move_left = True
         elif key == arcade.key.D:
-            self.player.changeDir(1, 0)
+            self.player.move_right = True
 
     def on_key_release(self, key, modifiers):
         """Called when the user releases a key. """
 
         if key == arcade.key.W:
-            self.player.changeDir(0, -1)
+            self.player.move_up = False
         elif key == arcade.key.S:
-            self.player.changeDir(0, 1)
+            self.player.move_down = False
         elif key == arcade.key.A:
-            self.player.changeDir(1, 0)
+            self.player.move_left = False
         elif key == arcade.key.D:
-            self.player.changeDir(-1, 0)
+            self.player.move_right = False
 
     def on_update(self, delta_time):
         self.player.update()
+        self.enemy_test_1.update()
+        self.enemy_test_2.update()
 
         # Scroll the screen to the player
         self.scroll_to_player()
@@ -322,9 +373,12 @@ class BoxHead(arcade.Window):
         Anything between 0 and 1 will have the camera move to the location with a smoother
         pan.
         """
-
-        position = Vec2(self.player.pos.x - SCREEN_WIDTH / 2,
-                        self.player.pos.y - SCREEN_HEIGHT / 2)
+        position = Vec2(self.camera_sprites.position.x, self.camera_sprites.position.y)
+        # limit the camera position within the room
+        if self.player.pos.x > SCREEN_WIDTH / 2 and self.game_room.width - self.player.pos.x > SCREEN_WIDTH / 2:
+            position.x = self.player.pos.x - SCREEN_WIDTH / 2
+        if self.player.pos.y > SCREEN_HEIGHT / 2 and self.game_room.height - self.player.pos.y > SCREEN_HEIGHT / 2:
+            position.y = self.player.pos.y - SCREEN_HEIGHT / 2
 
         self.camera_sprites.move_to(position, CAMERA_SPEED)
 
