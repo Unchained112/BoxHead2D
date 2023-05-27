@@ -160,9 +160,12 @@ class Room:
                     half_wall + i * WALL_SIZE, half_wall))
                 continue
             elif i == tmp_idx:
+                self.spawn_pos.append(
+                    Vec2(half_wall + i * WALL_SIZE, half_wall))
                 continue
             self.walls.append(WallSideHorizontal(
                 half_wall + i * WALL_SIZE, half_wall))
+
         # set top walls
         tmp_idx = random.randrange(3, self.grid_w - 3)
         for i in range(1, self.grid_w - 1):
@@ -171,6 +174,8 @@ class Room:
                     half_wall + i * WALL_SIZE, self.height - half_wall))
                 continue
             elif i == tmp_idx:
+                self.spawn_pos.append(
+                    Vec2(half_wall + i * WALL_SIZE, self.height - half_wall))
                 continue
             self.walls.append(WallSideHorizontal(
                 half_wall + i * WALL_SIZE, self.height - half_wall))
@@ -183,6 +188,8 @@ class Room:
                     half_wall, half_wall + i * WALL_SIZE))
                 continue
             elif i == tmp_idx:
+                self.spawn_pos.append(
+                    Vec2(half_wall, half_wall + i * WALL_SIZE))
                 continue
             self.walls.append(WallSideVertical(
                 half_wall, half_wall + i * WALL_SIZE))
@@ -195,20 +202,30 @@ class Room:
                     self.width - half_wall, half_wall + i * WALL_SIZE))
                 continue
             elif i == tmp_idx:
+                self.spawn_pos.append(
+                    Vec2(self.width - half_wall, half_wall + i * WALL_SIZE))
                 continue
             self.walls.append(WallSideVertical(
                 self.width - half_wall, half_wall + i * WALL_SIZE))
-            
-        # set some walls in the room
-        self.walls.append(WallCorner(half_wall + 10 * WALL_SIZE, half_wall + 10 * WALL_SIZE))
-        self.walls.append(WallCorner(half_wall + 20 * WALL_SIZE, half_wall + 10 * WALL_SIZE))
-        self.walls.append(WallCorner(half_wall + 30 * WALL_SIZE, half_wall + 10 * WALL_SIZE))
-        self.walls.append(WallCorner(half_wall + 40 * WALL_SIZE, half_wall + 10 * WALL_SIZE))
 
-        self.walls.append(WallCorner(half_wall + 10 * WALL_SIZE, half_wall + 20 * WALL_SIZE))
-        self.walls.append(WallCorner(half_wall + 20 * WALL_SIZE, half_wall + 20 * WALL_SIZE))
-        self.walls.append(WallCorner(half_wall + 30 * WALL_SIZE, half_wall + 20 * WALL_SIZE))
-        self.walls.append(WallCorner(half_wall + 40 * WALL_SIZE, half_wall + 20 * WALL_SIZE))
+        # set some walls in the room
+        self.walls.append(WallCorner(
+            half_wall + 10 * WALL_SIZE, half_wall + 10 * WALL_SIZE))
+        self.walls.append(WallCorner(
+            half_wall + 20 * WALL_SIZE, half_wall + 10 * WALL_SIZE))
+        self.walls.append(WallCorner(
+            half_wall + 30 * WALL_SIZE, half_wall + 10 * WALL_SIZE))
+        self.walls.append(WallCorner(
+            half_wall + 40 * WALL_SIZE, half_wall + 10 * WALL_SIZE))
+
+        self.walls.append(WallCorner(
+            half_wall + 10 * WALL_SIZE, half_wall + 20 * WALL_SIZE))
+        self.walls.append(WallCorner(
+            half_wall + 20 * WALL_SIZE, half_wall + 20 * WALL_SIZE))
+        self.walls.append(WallCorner(
+            half_wall + 30 * WALL_SIZE, half_wall + 20 * WALL_SIZE))
+        self.walls.append(WallCorner(
+            half_wall + 40 * WALL_SIZE, half_wall + 20 * WALL_SIZE))
 
     def draw(self) -> None:
         # Room background
@@ -527,6 +544,7 @@ class BoxHead(arcade.Window):
         self.mouse_x = None
         self.mouse_y = None
         self.mouse_pos = Vec2(0, 0)
+        self.mouse_sprite = arcade.Sprite("./graphics/Cursor.png")
 
         # Sprite lists
         self.wall_list = None
@@ -586,22 +604,19 @@ class BoxHead(arcade.Window):
         self.camera_sprites.use()
 
         # draw all the sprites.
-        # self.wall_list.draw()
         self.game_room.draw()
         self.player.draw()
 
         self.enemy_test_1.draw()
         self.enemy_test_2.draw()
 
-        # Select the (unscrolled) camera for our GUI
+        # Select the (un-scrolled) camera for our GUI
         self.camera_gui.use()
 
         # Mouse cursor
         if self.mouse_x and self.mouse_y:
             # TODO: change mouse cursor image
-            arcade.draw_rectangle_filled(
-                self.mouse_x, self.mouse_y, 4, 4, arcade.color.RED
-            )
+            self.mouse_sprite.draw()
 
         # Render the GUI
         # arcade.draw_rectangle_filled(self.width // 2,
@@ -656,6 +671,8 @@ class BoxHead(arcade.Window):
         self.mouse_y = y
         self.mouse_pos.x = self.mouse_x + self.camera_sprites.position.x
         self.mouse_pos.y = self.mouse_y + self.camera_sprites.position.y
+        self.mouse_sprite.center_x = self.mouse_x
+        self.mouse_sprite.center_y = self.mouse_y
         self.player.aim(self.mouse_pos)
 
     def scroll_to_player(self):
