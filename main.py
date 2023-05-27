@@ -61,11 +61,15 @@ L_WALK_Y = [1, 1, 1, -1, -1, -1, 1, 1, 1, -1, -1, -1]
 R_WALK_X = [1, 1, 1, -1, -1, -1, -1, -1, -1, 1, 1, 1]
 R_WALK_Y = [1, 1, 1, -1, -1, -1, 1, 1, 1, -1, -1, -1]
 
+# Grid size, room width and height should be multiple of it
+WALL_SIZE = float(30)
+
 
 def get_sin(v: Vec2) -> float:
     """Get sine value of a given vector."""
 
     return v.y / v.distance(Vec2(0, 0))
+
 
 class GameObject:
     """GameObject Base Class."""
@@ -82,46 +86,129 @@ class GameObject:
         pass
 
 
-class FixedWall(GameObject):
-    """Fixed wall for background in the room."""
+class Wall(GameObject):
+    """Basic wall class."""
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         self.pos = Vec2(x, y)
-        self.grid_idx = (0, 0)
-        self.len = 30
+        self.grid_idx = (int((x + (WALL_SIZE/2)) / 30),
+                         int((y + (WALL_SIZE/2)) / 30))
 
         # Wall
         self.sprite = arcade.Sprite(
-            filename="./graphics/FixedWall1.png",
+            filename=None,
             center_x=self.pos.x,
             center_y=self.pos.y,
-            image_width=30,
-            image_height=30,
+            image_width=WALL_SIZE,
+            image_height=WALL_SIZE,
         )
 
     def draw(self) -> None:
         self.sprite.draw()
 
 
+class WallCorner(Wall):
+    """Wall at the corner."""
+
+    def __init__(self, x: float = 0, y: float = 0) -> None:
+        super().__init__(x, y)
+        self.sprite.texture = arcade.load_texture("./graphics/WallCorner.png")
+
+
+class WallSideHorizontal(Wall):
+    """Wall along the horizontal side."""
+
+    def __init__(self, x: float = 0, y: float = 0) -> None:
+        super().__init__(x, y)
+        self.sprite.texture = arcade.load_texture("./graphics/WallSide.png")
+
+
+class WallSideVertical(Wall):
+    """Wall along the vertical side."""
+
+    def __init__(self, x: float = 0, y: float = 0) -> None:
+        super().__init__(x, y)
+        self.sprite.texture = arcade.load_texture("./graphics/WallSide.png")
+        self.sprite.angle = -90
+
+
 class Room:
     """Room as a background in the game scene."""
 
     def __init__(self, width: float = 1500, height: float = 900) -> None:
-        """width and heigh should be mutiples of 30 (Wall size)."""
+        """width and heigh should be multiples of wall size."""
         self.width = width
         self.height = height
         self.pos = Vec2(self.width / 2, self.height / 2)
-        self.walls = [FixedWall(50, 50), FixedWall(50, 100), FixedWall(100, 100)]
-        self.grid_w = int(self.width / 30)
-        self.grid_h = int(self.height / 30)
+        self.spawn_pos = []
 
-        # Set boundary walls
-        for i in range(0, self.grid_w):
-            self.walls.append(FixedWall(15 + i * 30, 15))
-            self.walls.append(FixedWall(15 + i * 30, self.height - 15))
+        self.grid_w = int(self.width / WALL_SIZE)
+        self.grid_h = int(self.height / WALL_SIZE)
+
+        # Basic room layout
+        half_wall = WALL_SIZE / 2
+
+        # set boundary corner walls
+        self.walls = [WallCorner(half_wall, half_wall), WallCorner(half_wall, self.height - half_wall), WallCorner(
+            self.width - half_wall, half_wall), WallCorner(self.width - half_wall, self.height - half_wall)]
+
+        # set bottom walls
+        tmp_idx = random.randrange(3, self.grid_w - 3)
+        for i in range(1, self.grid_w - 1):
+            if i == tmp_idx - 1 or i == tmp_idx + 1:
+                self.walls.append(WallCorner(
+                    half_wall + i * WALL_SIZE, half_wall))
+                continue
+            elif i == tmp_idx:
+                continue
+            self.walls.append(WallSideHorizontal(
+                half_wall + i * WALL_SIZE, half_wall))
+        # set top walls
+        tmp_idx = random.randrange(3, self.grid_w - 3)
+        for i in range(1, self.grid_w - 1):
+            if i == tmp_idx - 1 or i == tmp_idx + 1:
+                self.walls.append(WallCorner(
+                    half_wall + i * WALL_SIZE, self.height - half_wall))
+                continue
+            elif i == tmp_idx:
+                continue
+            self.walls.append(WallSideHorizontal(
+                half_wall + i * WALL_SIZE, self.height - half_wall))
+
+        # set left walls
+        tmp_idx = random.randrange(3, self.grid_h - 3)
         for i in range(1, self.grid_h - 1):
-            self.walls.append(FixedWall(15, 15 + i * 30))
-            self.walls.append(FixedWall(self.width - 15, 15 + i * 30))
+            if i == tmp_idx - 1 or i == tmp_idx + 1:
+                self.walls.append(WallCorner(
+                    half_wall, half_wall + i * WALL_SIZE))
+                continue
+            elif i == tmp_idx:
+                continue
+            self.walls.append(WallSideVertical(
+                half_wall, half_wall + i * WALL_SIZE))
+
+        # set right walls
+        tmp_idx = random.randrange(3, self.grid_h - 3)
+        for i in range(1, self.grid_h - 1):
+            if i == tmp_idx - 1 or i == tmp_idx + 1:
+                self.walls.append(WallCorner(
+                    self.width - half_wall, half_wall + i * WALL_SIZE))
+                continue
+            elif i == tmp_idx:
+                continue
+            self.walls.append(WallSideVertical(
+                self.width - half_wall, half_wall + i * WALL_SIZE))
+            
+        # set some walls in the room
+        self.walls.append(WallCorner(half_wall + 10 * WALL_SIZE, half_wall + 10 * WALL_SIZE))
+        self.walls.append(WallCorner(half_wall + 20 * WALL_SIZE, half_wall + 10 * WALL_SIZE))
+        self.walls.append(WallCorner(half_wall + 30 * WALL_SIZE, half_wall + 10 * WALL_SIZE))
+        self.walls.append(WallCorner(half_wall + 40 * WALL_SIZE, half_wall + 10 * WALL_SIZE))
+
+        self.walls.append(WallCorner(half_wall + 10 * WALL_SIZE, half_wall + 20 * WALL_SIZE))
+        self.walls.append(WallCorner(half_wall + 20 * WALL_SIZE, half_wall + 20 * WALL_SIZE))
+        self.walls.append(WallCorner(half_wall + 30 * WALL_SIZE, half_wall + 20 * WALL_SIZE))
+        self.walls.append(WallCorner(half_wall + 40 * WALL_SIZE, half_wall + 20 * WALL_SIZE))
 
     def draw(self) -> None:
         # Room background
@@ -137,7 +224,7 @@ class Character(GameObject):
     """Character base class."""
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
-        # Perporties
+        # Properties
         self.is_walking = False
         self.speed = 3
 
@@ -190,11 +277,6 @@ class Character(GameObject):
         self.box_collider.center_y = self.pos.y + self.collider_pos.y
 
     def move(self) -> None:
-        if self.box_collider.change_x != 0 or self.box_collider.change_y != 0:
-            self.is_walking = True
-        else:
-            self.is_walking = False
-
         self.pos.x = self.box_collider.center_x - self.collider_pos.x
         self.pos.y = self.box_collider.center_y - self.collider_pos.y
 
@@ -278,6 +360,11 @@ class Player(Character):
         elif self.move_right and not self.move_left:
             self.box_collider.change_x = self.speed
 
+        if self.box_collider.change_x != 0 or self.box_collider.change_y != 0:
+            self.is_walking = True
+        else:
+            self.is_walking = False
+
         super().move()
 
         self.weapons[self.weapon_index].pos = self.pos + self.weapon_pos
@@ -314,7 +401,7 @@ class EnemyWhite(Character):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
-        self.speed = 2
+        self.speed = 1
 
         # EnemyWhite body sprite
         self.body = arcade.Sprite(
@@ -326,13 +413,30 @@ class EnemyWhite(Character):
             scale=1,
         )
 
+    def follow_sprite(self, player_sprite: arcade.Sprite) -> None:
+        if self.box_collider.center_y < player_sprite.center_y:
+            self.box_collider.center_y += min(
+                self.speed, player_sprite.center_y - self.box_collider.center_y)
+        elif self.box_collider.center_y > player_sprite.center_y:
+            self.box_collider.center_y -= min(
+                self.speed, self.box_collider.center_y - player_sprite.center_y)
+
+        if self.box_collider.center_x < player_sprite.center_x:
+            self.box_collider.center_x += min(
+                self.speed, player_sprite.center_x - self.box_collider.center_x)
+        elif self.box_collider.center_x > player_sprite.center_x:
+            self.box_collider.center_x -= min(
+                self.speed, self.box_collider.center_x - player_sprite.center_x)
+
+        self.is_walking = True
+
 
 class EnemyRed(Character):
     """EnemyRed class."""
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
-        self.speed = 2
+        self.speed = 1
 
         # EnemyRed body sprite
         self.body = arcade.Sprite(
@@ -343,6 +447,29 @@ class EnemyRed(Character):
             image_height=26,
             scale=1,
         )
+
+    def follow_sprite(self, player_sprite: arcade.Sprite) -> None:
+        current_pos = Vec2(self.box_collider.center_x,
+                           self.box_collider.center_y)
+        player_pos = Vec2(player_sprite.center_x, player_sprite.center_y)
+        if current_pos.distance(player_pos) < 100:
+            self.is_walking = False
+            return
+
+        self.is_walking = True
+        if current_pos.y < player_pos.y:
+            self.box_collider.center_y += min(
+                self.speed, player_sprite.center_y - self.box_collider.center_y)
+        elif current_pos.y > player_pos.y:
+            self.box_collider.center_y -= min(
+                self.speed, self.box_collider.center_y - player_sprite.center_y)
+
+        if current_pos.x < player_pos.x:
+            self.box_collider.center_x += min(
+                self.speed, player_sprite.center_x - self.box_collider.center_x)
+        elif current_pos.x > player_pos.x:
+            self.box_collider.center_x -= min(
+                self.speed, self.box_collider.center_x - player_sprite.center_x)
 
 
 class Gun(GameObject):
@@ -488,6 +615,8 @@ class BoxHead(arcade.Window):
 
     def on_update(self, delta_time):
         self.player.update()
+        self.enemy_test_1.follow_sprite(self.player.box_collider)
+        self.enemy_test_2.follow_sprite(self.player.box_collider)
         self.enemy_test_1.update()
         self.enemy_test_2.update()
 
@@ -538,18 +667,19 @@ class BoxHead(arcade.Window):
         Anything between 0 and 1 will have the camera move to the location with a smoother
         pan.
         """
-        position = Vec2(self.camera_sprites.position.x, self.camera_sprites.position.y)
+        position = Vec2(self.camera_sprites.position.x,
+                        self.camera_sprites.position.y)
         # limit the camera position within the room
         if (
-            self.player.pos.x > float(SCREEN_WIDTH / 2)
-            and self.game_room.width - self.player.pos.x > float(SCREEN_WIDTH / 2)
+            self.player.pos.x > float(SCREEN_WIDTH / 2) - 5
+            and self.game_room.width - self.player.pos.x > float(SCREEN_WIDTH / 2) - 5
         ):
-            position.x = self.player.pos.x - SCREEN_WIDTH / 2
+            position.x = self.player.pos.x - float(SCREEN_WIDTH / 2)
         if (
-            self.player.pos.y > float(SCREEN_HEIGHT / 2)
-            and self.game_room.height - self.player.pos.y > float(SCREEN_HEIGHT / 2)
+            self.player.pos.y > float(SCREEN_HEIGHT / 2) - 5
+            and self.game_room.height - self.player.pos.y > float(SCREEN_HEIGHT / 2) - 5
         ):
-            position.y = self.player.pos.y - SCREEN_HEIGHT / 2
+            position.y = self.player.pos.y - float(SCREEN_HEIGHT / 2)
 
         self.camera_sprites.move_to(position, CAMERA_SPEED)
 
@@ -557,7 +687,7 @@ class BoxHead(arcade.Window):
 def main():
     """Main function"""
 
-    window = BoxHead(SCREEN_WIDTH, SCREEN_HEIGHT, "BoxHead 2D")
+    window = BoxHead(SCREEN_WIDTH, SCREEN_HEIGHT, "BoxHead 2D: Invincible")
     window.setup()
     arcade.run()
 

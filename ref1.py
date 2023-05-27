@@ -1,148 +1,315 @@
 """
-Rotating Sprites Around Points
+Example of Pymunk Physics Engine
 
-Two minimal examples demonstrating how to rotate sprites around points
-and how you might apply them in a game.
-
-Artwork from https://kenney.nl
-
-If Python and Arcade are installed, this example can be run from the command line with:
-python -m arcade.examples.sprite_rotate_around_point
+Top-down
 """
+import math
+import random
 import arcade
+from typing import Optional
+from arcade.pymunk_physics_engine import PymunkPhysicsEngine
+
+SCREEN_TITLE = "PyMunk Top-Down"
+SPRITE_SCALING_PLAYER = 0.5
+MOVEMENT_SPEED = 5
+
+SPRITE_IMAGE_SIZE = 128
+SPRITE_SIZE = int(SPRITE_IMAGE_SIZE * SPRITE_SCALING_PLAYER)
+
+SCREEN_WIDTH = SPRITE_SIZE * 15
+SCREEN_HEIGHT = SPRITE_SIZE * 10
+
+# Physics force used to move the player. Higher number, faster accelerating.
+PLAYER_MOVE_FORCE = 4000
+BULLET_MOVE_FORCE = 2500
 
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
-QUARTER_WIDTH = SCREEN_WIDTH // 4
-HALF_HEIGHT = SCREEN_HEIGHT // 2
+class MyWindow(arcade.Window):
+    """ Main Window """
+    def __init__(self, width, height, title):
+        """ Init """
+        super().__init__(width, height, title)
 
+        arcade.set_background_color(arcade.color.AMAZON)
 
-SCREEN_TITLE = "Rotating Sprites Around Points"
+        self.player_list = None
+        self.wall_list = None
+        self.bullet_list = None
+        self.rock_list = None
+        self.gem_list = None
+        self.player_sprite = None
+        self.physics_engine: Optional[PymunkPhysicsEngine] = None
 
+        # Track the current state of what key is pressed
+        self.left_pressed = False
+        self.right_pressed = False
+        self.up_pressed = False
+        self.down_pressed = False
 
-class RotatingSprite(arcade.Sprite):
-    """
-    This sprite subclass implements a generic rotate_around_point method.
-    """
+    def setup(self):
+        """ Set up everything """
+        # Create the sprite lists
+        self.player_list = arcade.SpriteList()
+        self.wall_list = arcade.SpriteList()
+        self.bullet_list = arcade.SpriteList()
+        self.rock_list = arcade.SpriteList()
+        self.gem_list = arcade.SpriteList()
 
-    def rotate_around_point(self, point, degrees, change_angle=True):
+        # Set up the player
+        self.player_sprite = arcade.Sprite(":resources:images/animated_characters/female_person/"
+                                           "femalePerson_idle.png",
+                                           SPRITE_SCALING_PLAYER)
+        self.player_sprite.center_x = 250
+        self.player_sprite.center_y = 250
+        self.player_list.append(self.player_sprite)
 
-        """
+        # Set up the walls
+        for x in range(0, SCREEN_WIDTH + 1, SPRITE_SIZE):
+            wall = arcade.Sprite(":resources:images/tiles/grassCenter.png",
+                                 SPRITE_SCALING_PLAYER)
+            wall.center_x = x
+            wall.center_y = 0
+            self.wall_list.append(wall)
 
-        Rotate the sprite around a point by the set amount of degrees
+            wall = arcade.Sprite(":resources:images/tiles/grassCenter.png",
+                                 SPRITE_SCALING_PLAYER)
+            wall.center_x = x
+            wall.center_y = SCREEN_HEIGHT
+            self.wall_list.append(wall)
 
+        # Set up the walls
+        for y in range(SPRITE_SIZE, SCREEN_HEIGHT, SPRITE_SIZE):
+            wall = arcade.Sprite(":resources:images/tiles/grassCenter.png",
+                                 SPRITE_SCALING_PLAYER)
+            wall.center_x = 0
+            wall.center_y = y
+            self.wall_list.append(wall)
 
+            wall = arcade.Sprite(":resources:images/tiles/grassCenter.png",
+                                 SPRITE_SCALING_PLAYER)
+            wall.center_x = SCREEN_WIDTH
+            wall.center_y = y
+            self.wall_list.append(wall)
 
-        You could remove the change_angle keyword and/or angle change
+        # Add some movable rocks
+        for x in range(SPRITE_SIZE * 2, SPRITE_SIZE * 13, SPRITE_SIZE):
+            rock = random.randrange(4) + 1
+            item = arcade.Sprite(f":resources:images/space_shooter/meteorGrey_big{rock}.png",
+                                 SPRITE_SCALING_PLAYER)
+            item.center_x = x
+            item.center_y = 400
+            self.rock_list.append(item)
 
-        if you know that sprites will always or never change angle.
+        # Add some movable coins
+        for x in range(SPRITE_SIZE * 2, SPRITE_SIZE * 13, SPRITE_SIZE):
+            items = [":resources:images/items/gemBlue.png",
+                     ":resources:images/items/gemRed.png",
+                     ":resources:images/items/coinGold.png",
+                     ":resources:images/items/keyBlue.png"]
+            item_name = random.choice(items)
+            item = arcade.Sprite(item_name,
+                                 SPRITE_SCALING_PLAYER)
+            item.center_x = x
+            item.center_y = 300
+            self.gem_list.append(item)
 
+        # --- Pymunk Physics Engine Setup ---
 
+        # The default damping for every object controls the percent of velocity
+        # the object will keep each second. A value of 1.0 is no speed loss,
+        # 0.9 is 10% per second, 0.1 is 90% per second.
+        # For top-down games, this is basically the friction for moving objects.
+        # For platformers with gravity, this should probably be set to 1.0.
+        # Default value is 1.0 if not specified.
+        damping = 0.7
 
-        :param point: The point that the sprite will rotate about
+        # Set the gravity. (0, 0) is good for outer space and top-down.
+        gravity = (0, 0)
 
-        :param degrees: How many degrees to rotate the sprite
+        # Create the physics engine
+        self.physics_engine = PymunkPhysicsEngine(damping=damping,
+                                                  gravity=gravity)
 
-        :param change_angle: Whether the sprite's angle should also be adjusted.
+        def rock_hit_handler(sprite_a, sprite_b, arbiter, space, data):
+            """ Called for bullet/rock collision """
+            bullet_shape = arbiter.shapes[0]
+            bullet_sprite = self.physics_engine.get_sprite_for_shape(bullet_shape)
+            bullet_sprite.remove_from_sprite_lists()
+            print("Rock")
 
-        """
+        def wall_hit_handler(sprite_a, sprite_b, arbiter, space, data):
+            """ Called for bullet/rock collision """
+            bullet_shape = arbiter.shapes[0]
+            bullet_sprite = self.physics_engine.get_sprite_for_shape(bullet_shape)
+            bullet_sprite.remove_from_sprite_lists()
+            print("Wall")
 
+        self.physics_engine.add_collision_handler("bullet", "rock", post_handler=rock_hit_handler)
+        self.physics_engine.add_collision_handler("bullet", "wall", post_handler=wall_hit_handler)
 
+        # Add the player.
+        # For the player, we set the damping to a lower value, which increases
+        # the damping rate. This prevents the character from traveling too far
+        # after the player lets off the movement keys.
+        # Setting the moment to PymunkPhysicsEngine.MOMENT_INF prevents it from
+        # rotating.
+        # Friction normally goes between 0 (no friction) and 1.0 (high friction)
+        # Friction is between two objects in contact. It is important to remember
+        # in top-down games that friction moving along the 'floor' is controlled
+        # by damping.
+        self.physics_engine.add_sprite(self.player_sprite,
+                                       friction=0.6,
+                                       moment_of_inertia=PymunkPhysicsEngine.MOMENT_INF,
+                                       damping=0.01,
+                                       collision_type="player",
+                                       max_velocity=400)
 
-        # If changle_angle is true, change the sprite's angle
+        # Create the walls.
+        # By setting the body type to PymunkPhysicsEngine.STATIC the walls can't
+        # move.
+        # Movable objects that respond to forces are PymunkPhysicsEngine.DYNAMIC
+        # PymunkPhysicsEngine.KINEMATIC objects will move, but are assumed to be
+        # repositioned by code and don't respond to physics forces.
+        # Dynamic is default.
+        self.physics_engine.add_sprite_list(self.wall_list,
+                                            friction=0.6,
+                                            collision_type="wall",
+                                            body_type=PymunkPhysicsEngine.STATIC)
 
-        if change_angle:
+        # Create some boxes to push around.
+        # Mass controls, well, the mass of an object. Defaults to 1.
+        self.physics_engine.add_sprite_list(self.rock_list,
+                                            mass=2,
+                                            friction=0.8,
+                                            damping=0.1,
+                                            collision_type="rock")
+        # Create some boxes to push around.
+        # Mass controls, well, the mass of an object. Defaults to 1.
+        self.physics_engine.add_sprite_list(self.gem_list,
+                                            mass=0.5,
+                                            friction=0.8,
+                                            damping=0.4,
+                                            collision_type="rock")
 
-            self.angle += degrees
+    def on_mouse_press(self, x, y, button, modifiers):
+        """ Called whenever the mouse button is clicked. """
 
+        bullet = arcade.SpriteSolidColor(5, 5, arcade.color.RED)
+        self.bullet_list.append(bullet)
 
+        # Position the bullet at the player's current location
+        start_x = self.player_sprite.center_x
+        start_y = self.player_sprite.center_y
+        bullet.position = self.player_sprite.position
 
-        # Move the sprite along a circle centered on the point by degrees 
+        # Get from the mouse the destination location for the bullet
+        # IMPORTANT! If you have a scrolling screen, you will also need
+        # to add in self.view_bottom and self.view_left.
+        dest_x = x
+        dest_y = y
 
-        self.position = arcade.rotate_point(
+        # Do math to calculate how to get the bullet to the destination.
+        # Calculation the angle in radians between the start points
+        # and end points. This is the angle the bullet will travel.
+        x_diff = dest_x - start_x
+        y_diff = dest_y - start_y
+        angle = math.atan2(y_diff, x_diff)
 
-            self.center_x, self.center_y,
+        force = [math.cos(angle), math.sin(angle)]
+        size = max(self.player_sprite.width, self.player_sprite.height) / 2
 
-            point[0], point[1], degrees)
+        bullet.center_x += size * force[0]
+        bullet.center_y += size * force[1]
 
+        self.physics_engine.add_sprite(bullet,
+                                       mass=0.1,
+                                       damping=1.0,
+                                       friction=0.6,
+                                       collision_type="bullet",
+                                       elasticity=0.9)
 
+        # Taking into account the angle, calculate our force.
+        force[0] *= BULLET_MOVE_FORCE
+        force[1] *= BULLET_MOVE_FORCE
 
-class ExampleWindow(arcade.Window):
+        self.physics_engine.apply_force(bullet, force)
 
-    def __init__(self):
-        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    def on_key_press(self, key, modifiers):
+        """Called whenever a key is pressed. """
 
-        self.sprites = arcade.SpriteList()
+        if key == arcade.key.UP:
+            self.up_pressed = True
+        elif key == arcade.key.DOWN:
+            self.down_pressed = True
+        elif key == arcade.key.LEFT:
+            self.left_pressed = True
+        elif key == arcade.key.RIGHT:
+            self.right_pressed = True
+        elif key == arcade.key.SPACE:
+            bullet = arcade.SpriteSolidColor(9, 9, arcade.color.RED)
+            bullet.position = self.player_sprite.position
+            bullet.center_x += 30
+            self.bullet_list.append(bullet)
+            self.physics_engine.add_sprite(bullet,
+                                           mass=0.2,
+                                           damping=1.0,
+                                           friction=0.6,
+                                           collision_type="bullet")
+            force = (3000, 0)
+            self.physics_engine.apply_force(bullet, force)
 
-        # This example is based off spinning lines of fire from Mario games
-        # See https://www.mariowiki.com/Fire_Bar for more information
-        self.left_rotating_laser_sprite = RotatingSprite(
-            ":resources:images/space_shooter/laserBlue01.png",
-            center_x=QUARTER_WIDTH + 26, center_y=HALF_HEIGHT)
+    def on_key_release(self, key, modifiers):
+        """Called when the user releases a key. """
 
-        self.laser_base_sprite = arcade.Sprite(
-            ":resources:images/tiles/boxCrate.png", scale=0.25,
-            center_x=QUARTER_WIDTH, center_y=HALF_HEIGHT)
+        if key == arcade.key.UP:
+            self.up_pressed = False
+        elif key == arcade.key.DOWN:
+            self.down_pressed = False
+        elif key == arcade.key.LEFT:
+            self.left_pressed = False
+        elif key == arcade.key.RIGHT:
+            self.right_pressed = False
 
-        self.laser_text = arcade.Text(
-            "change_angle = True",
-            QUARTER_WIDTH, SCREEN_HEIGHT // 2 - 150,
-            anchor_x='center')
+    def on_update(self, delta_time):
+        """ Movement and game logic """
 
-        # This example demonstrates how to make platforms rotate around a point
-        self.right_rotating_platform_sprite = RotatingSprite(
-            ":resources:images/tiles/grassHalf.png", scale=0.25,
-            center_x=3 * QUARTER_WIDTH + 50, center_y=HALF_HEIGHT)
+        # Calculate speed based on the keys pressed
+        self.player_sprite.change_x = 0
+        self.player_sprite.change_y = 0
 
-        self.platform_base_sprite = arcade.Sprite(
-            ":resources:images/tiles/boxCrate.png", scale=0.25,
-            center_x=3 * QUARTER_WIDTH, center_y=HALF_HEIGHT)
+        if self.up_pressed and not self.down_pressed:
+            force = (0, PLAYER_MOVE_FORCE)
+            self.physics_engine.apply_force(self.player_sprite, force)
+        elif self.down_pressed and not self.up_pressed:
+            force = (0, -PLAYER_MOVE_FORCE)
+            self.physics_engine.apply_force(self.player_sprite, force)
+        if self.left_pressed and not self.right_pressed:
+            self.player_sprite.change_x = -MOVEMENT_SPEED
+            force = (-PLAYER_MOVE_FORCE, 0)
+            self.physics_engine.apply_force(self.player_sprite, force)
+        elif self.right_pressed and not self.left_pressed:
+            force = (PLAYER_MOVE_FORCE, 0)
+            self.physics_engine.apply_force(self.player_sprite, force)
 
-        self.platform_text = arcade.Text(
-            "change_angle = False",
-            3 * QUARTER_WIDTH, HALF_HEIGHT - 150,
-            anchor_x='center')
-
-        self.sprites.extend([
-            self.laser_base_sprite,
-            self.left_rotating_laser_sprite,
-            self.platform_base_sprite,
-
-            self.right_rotating_platform_sprite])
-
-
-
-    def on_update(self, delta_time: float):
-
-        # Rotate the laser sprite and change its angle
-
-        self.left_rotating_laser_sprite.rotate_around_point(
-
-            self.laser_base_sprite.position,
-
-            120 * delta_time)
-
-
-
-        # Rotate the platform sprite but don't change its angle
-        self.right_rotating_platform_sprite.rotate_around_point(
-            self.platform_base_sprite.position,
-            60 * delta_time, False)
+        # --- Move items in the physics engine
+        self.physics_engine.step()
 
     def on_draw(self):
-        # Draw the sprite list.
+        """ Draw everything """
         self.clear()
-        self.sprites.draw()
-
-        self.laser_text.draw()
-        self.platform_text.draw()
+        self.wall_list.draw()
+        self.bullet_list.draw()
+        self.rock_list.draw()
+        self.gem_list.draw()
+        self.player_list.draw()
 
 
 def main():
-    window = ExampleWindow()
-    window.run()
+    """ Main function """
+    window = MyWindow(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    window.setup()
+    arcade.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
