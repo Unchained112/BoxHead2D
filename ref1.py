@@ -160,7 +160,7 @@ class MyWindow(arcade.Window):
         self.physics_engine.add_sprite(self.player_sprite,
                                        friction=0.6,
                                        moment_of_inertia=PymunkPhysicsEngine.MOMENT_INF,
-                                       damping=0.01,
+                                       damping=0.001,
                                        collision_type="player",
                                        max_velocity=400)
 
@@ -274,8 +274,8 @@ class MyWindow(arcade.Window):
         """ Movement and game logic """
 
         # Calculate speed based on the keys pressed
-        self.player_sprite.change_x = 0
-        self.player_sprite.change_y = 0
+        # self.player_sprite.change_x = 0
+        # self.player_sprite.change_y = 0
 
         if self.up_pressed and not self.down_pressed:
             force = (0, PLAYER_MOVE_FORCE)
@@ -284,7 +284,7 @@ class MyWindow(arcade.Window):
             force = (0, -PLAYER_MOVE_FORCE)
             self.physics_engine.apply_force(self.player_sprite, force)
         if self.left_pressed and not self.right_pressed:
-            self.player_sprite.change_x = -MOVEMENT_SPEED
+            # self.player_sprite.change_x = -MOVEMENT_SPEED
             force = (-PLAYER_MOVE_FORCE, 0)
             self.physics_engine.apply_force(self.player_sprite, force)
         elif self.right_pressed and not self.left_pressed:

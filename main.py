@@ -1,7 +1,9 @@
 import random
 import math
 import arcade
+from typing import Optional
 from pyglet.math import Vec2
+from arcade.pymunk_physics_engine import PymunkPhysicsEngine
 
 """ GLOBAL VARIABLE """
 # Color palette
@@ -243,7 +245,7 @@ class Character(GameObject):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         # Properties
         self.is_walking = False
-        self.speed = 3
+        self.speed = 1000
 
         # Init position
         self.pos = Vec2(x, y)
@@ -289,11 +291,16 @@ class Character(GameObject):
             scale=1,
         )
         # Collider sprite for physics
-        self.box_collider = arcade.SpriteSolidColor(20, 30, DARK_GRAY)
-        self.box_collider.center_x = self.pos.x + self.collider_pos.x
-        self.box_collider.center_y = self.pos.y + self.collider_pos.y
+        self.box_collider = arcade.Sprite(
+            "./graphics/CharacterCollider.png",
+            center_x=self.pos.x + self.collider_pos.x,
+            center_y=self.pos.y + self.collider_pos.y,
+            image_width=20,
+            image_height=30,
+            scale=1,
+        )
 
-    def move(self) -> None:
+    def move(self, physic_engine: PymunkPhysicsEngine) -> None:
         self.pos.x = self.box_collider.center_x - self.collider_pos.x
         self.pos.y = self.box_collider.center_y - self.collider_pos.y
 
@@ -305,8 +312,8 @@ class Character(GameObject):
         self.foot_r.center_x = self.pos.x + self.foot_r_pos.x
         self.foot_r.center_y = self.pos.y + self.foot_r_pos.y
 
-    def update(self) -> None:
-        self.move()
+    def update(self, physic_engine: PymunkPhysicsEngine) -> None:
+        self.move(physic_engine)
 
         # Body animation
         if self.body_move_frames == 0:  # reset frames
@@ -347,6 +354,7 @@ class Player(Character):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
+        self.speed = 2800
 
         # Player body sprite
         self.body = arcade.Sprite(
@@ -364,25 +372,29 @@ class Player(Character):
         self.weapon_index = 0
         self.add_weapon()
 
-    def move(self) -> None:
-        self.box_collider.change_x = 0
-        self.box_collider.change_y = 0
+    def move(self, physic_engine: PymunkPhysicsEngine) -> None:
+        # self.box_collider.change_x = 0
+        # self.box_collider.change_y = 0
+        force = Vec2(0, 0)
 
         if self.move_up and not self.move_down:
-            self.box_collider.change_y = self.speed
+            force.y = 1
         elif self.move_down and not self.move_up:
-            self.box_collider.change_y = -self.speed
+            force.y = -1
         if self.move_left and not self.move_right:
-            self.box_collider.change_x = -self.speed
+            force.x = -1
         elif self.move_right and not self.move_left:
-            self.box_collider.change_x = self.speed
+            force.x = 1
 
-        if self.box_collider.change_x != 0 or self.box_collider.change_y != 0:
+        force = force.normalize().scale(self.speed)
+        physic_engine.apply_force(self.box_collider, (force.x, force.y))
+
+        if force.mag != 0:
             self.is_walking = True
         else:
             self.is_walking = False
 
-        super().move()
+        super().move(physic_engine)
 
         self.weapons[self.weapon_index].pos = self.pos + self.weapon_pos
 
@@ -393,9 +405,10 @@ class Player(Character):
         else:
             super().draw()
             self.weapons[self.weapon_index].draw()
+        # self.box_collider.draw() # for testing
 
-    def update(self) -> None:
-        super().update()
+    def update(self, physic_engine: PymunkPhysicsEngine) -> None:
+        super().update(physic_engine)
         if self.weapons[self.weapon_index].is_right:
             self.weapon_pos = Vec2(16, -2)
         else:
@@ -418,7 +431,8 @@ class EnemyWhite(Character):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
-        self.speed = 1
+        self.is_walking = True
+        self.last_force = Vec2(0, 0)
 
         # EnemyWhite body sprite
         self.body = arcade.Sprite(
@@ -430,22 +444,32 @@ class EnemyWhite(Character):
             scale=1,
         )
 
-    def follow_sprite(self, player_sprite: arcade.Sprite) -> None:
-        if self.box_collider.center_y < player_sprite.center_y:
-            self.box_collider.center_y += min(
-                self.speed, player_sprite.center_y - self.box_collider.center_y)
-        elif self.box_collider.center_y > player_sprite.center_y:
-            self.box_collider.center_y -= min(
-                self.speed, self.box_collider.center_y - player_sprite.center_y)
+    def follow_sprite(self, player_sprite: arcade.Sprite, physic_engine: PymunkPhysicsEngine) -> None:
+        current_pos = Vec2(self.box_collider.center_x,
+                           self.box_collider.center_y)
+        player_pos = Vec2(player_sprite.center_x, player_sprite.center_y)
+        force = player_pos - current_pos
 
-        if self.box_collider.center_x < player_sprite.center_x:
-            self.box_collider.center_x += min(
-                self.speed, player_sprite.center_x - self.box_collider.center_x)
-        elif self.box_collider.center_x > player_sprite.center_x:
-            self.box_collider.center_x -= min(
-                self.speed, self.box_collider.center_x - player_sprite.center_x)
+        if random.randrange(0, 100) < 20: # add some randomization
+            tmp = Vec2(random.gauss(0, 0.2), random.gauss(0, 0.2))
+            force = tmp.normalize().scale(self.speed)
+            return
 
-        self.is_walking = True
+        if self.last_force.distance(force) < 0.1:
+            tmp = Vec2(0, 0)
+            if abs(self.last_force.x - force.x) < 0.1:
+                tmp.x = 1
+            if abs(self.last_force.y - force.y) < 0.1:
+                tmp.y = 1
+            force = tmp.scale(4 * self.speed)  # get rid of the barrier
+        else:
+            self.last_force = force
+            force = force.normalize().scale(self.speed)
+
+        physic_engine.apply_force(self.box_collider, (force.x, force.y))
+
+    def draw(self) -> None:
+        super().draw()
 
 
 class EnemyRed(Character):
@@ -465,7 +489,7 @@ class EnemyRed(Character):
             scale=1,
         )
 
-    def follow_sprite(self, player_sprite: arcade.Sprite) -> None:
+    def follow_sprite(self, player_sprite: arcade.Sprite, physic_engine: PymunkPhysicsEngine) -> None:
         current_pos = Vec2(self.box_collider.center_x,
                            self.box_collider.center_y)
         player_pos = Vec2(player_sprite.center_x, player_sprite.center_y)
@@ -490,7 +514,7 @@ class EnemyRed(Character):
 
 
 class Gun(GameObject):
-    """Gun waepon class."""
+    """Gun weapon class."""
 
     def __init__(
         self, gun_name: str = "./graphics/Pistol.png", x: float = 0, y: float = 0
@@ -539,7 +563,7 @@ class BoxHead(arcade.Window):
 
     def __init__(self, width, height, title):
         """Initializer"""
-        super().__init__(width, height, title, resizable=True)
+        super().__init__(width, height, title, resizable=False)
         self.set_mouse_visible(False)
         self.mouse_x = None
         self.mouse_y = None
@@ -554,9 +578,10 @@ class BoxHead(arcade.Window):
 
         # set up the enemy
         self.enemy_list = None
+        self.enemy_collider_list = None
 
         # Physics engine so we don't run into walls.
-        self.physics_engine = None
+        self.physics_engine: Optional[PymunkPhysicsEngine] = None
 
         # track the current state of what key is pressed
         self.left_pressed = False
@@ -572,8 +597,10 @@ class BoxHead(arcade.Window):
     def setup(self):
         """Set up the game and initialize the variables."""
 
-        # Sprite lists
+        # GameObject lists
         self.wall_list = arcade.SpriteList()
+        self.enemy_list = []
+        self.enemy_collider_list = arcade.SpriteList()
         self.room_list = []
 
         # setup room background and player
@@ -584,15 +611,53 @@ class BoxHead(arcade.Window):
         # set up the player
         self.player = Player(float(SCREEN_WIDTH / 2), float(SCREEN_HEIGHT / 2))
 
-        self.physics_engine = arcade.PhysicsEngineSimple(
-            self.player.box_collider, self.wall_list
-        )
-
-        self.enemy_test_1 = EnemyRed(200, 300)
-        self.enemy_test_2 = EnemyWhite(200, 400)
+        # set up the enemy
+        self.spawn_enemy()
 
         # set the most basic background color
         arcade.set_background_color(BLACK)
+
+        # set up th physics engine
+        damping = 0.01
+
+        # set the gravity. (0, 0) is good for outer space and top-down.
+        gravity = (0, 0)
+
+        # create the physics engine
+        self.physics_engine = PymunkPhysicsEngine(damping=damping,
+                                                  gravity=gravity)
+
+        # add the player
+        self.physics_engine.add_sprite(self.player.box_collider,
+                                       friction=0,
+                                       moment_of_inertia=PymunkPhysicsEngine.MOMENT_INF,
+                                       damping=0.001,
+                                       collision_type="player",
+                                       elasticity=0.1,
+                                       max_velocity=400)
+
+        # create the walls
+        self.physics_engine.add_sprite_list(self.wall_list,
+                                            friction=0,
+                                            collision_type="wall",
+                                            body_type=PymunkPhysicsEngine.STATIC)
+
+        # create some boxes to push around
+        self.physics_engine.add_sprite_list(self.enemy_collider_list,
+                                            friction=0,
+                                            moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+                                            damping=0.001,
+                                            collision_type="enemy")
+
+    def spawn_enemy(self):
+        if len(self.enemy_list) == 0:
+            # enemy_test_1 = EnemyRed(200, 300)
+            for i in range(0, 4):
+                for j in range(0, 10):
+                    tmp_enemy = EnemyWhite(
+                        self.game_room.spawn_pos[i].x, self.game_room.spawn_pos[i].y)
+                    self.enemy_list.append(tmp_enemy)
+                    self.enemy_collider_list.append(tmp_enemy.box_collider)
 
     def on_draw(self):
         """Render the screen."""
@@ -607,15 +672,14 @@ class BoxHead(arcade.Window):
         self.game_room.draw()
         self.player.draw()
 
-        self.enemy_test_1.draw()
-        self.enemy_test_2.draw()
+        for enemy in self.enemy_list:
+            enemy.draw()
 
         # Select the (un-scrolled) camera for our GUI
         self.camera_gui.use()
 
         # Mouse cursor
         if self.mouse_x and self.mouse_y:
-            # TODO: change mouse cursor image
             self.mouse_sprite.draw()
 
         # Render the GUI
@@ -629,18 +693,18 @@ class BoxHead(arcade.Window):
         # arcade.draw_text(text, 10, 10, arcade.color.BLACK_BEAN, 20)
 
     def on_update(self, delta_time):
-        self.player.update()
-        self.enemy_test_1.follow_sprite(self.player.box_collider)
-        self.enemy_test_2.follow_sprite(self.player.box_collider)
-        self.enemy_test_1.update()
-        self.enemy_test_2.update()
+        # call update on all sprites
+        self.physics_engine.step()
 
-        # Scroll the screen to the player
+        self.player.update(self.physics_engine)
+        for enemy in self.enemy_list:
+            enemy.follow_sprite(self.player.box_collider, self.physics_engine)
+            enemy.update(self.physics_engine)
+
+        # scroll the screen to the player
         self.scroll_to_player()
 
-        # Call update on all sprites (The sprites don't do much in this
-        # example though.)
-        self.physics_engine.update()
+        
 
     def on_key_press(self, key, modifiers):
         """Called whenever a key is pressed."""
@@ -667,6 +731,8 @@ class BoxHead(arcade.Window):
             self.player.move_right = False
 
     def on_mouse_motion(self, x, y, dx, dy):
+        """Mouse movement."""
+
         self.mouse_x = x
         self.mouse_y = y
         self.mouse_pos.x = self.mouse_x + self.camera_sprites.position.x
