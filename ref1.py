@@ -21,11 +21,12 @@ SCREEN_HEIGHT = SPRITE_SIZE * 10
 
 # Physics force used to move the player. Higher number, faster accelerating.
 PLAYER_MOVE_FORCE = 4000
-BULLET_MOVE_FORCE = 2500
+BULLET_MOVE_FORCE = 20000
 
 
 class MyWindow(arcade.Window):
     """ Main Window """
+
     def __init__(self, width, height, title):
         """ Init """
         super().__init__(width, height, title)
@@ -48,6 +49,7 @@ class MyWindow(arcade.Window):
 
     def setup(self):
         """ Set up everything """
+        self.set_update_rate(1 / 60)
         # Create the sprite lists
         self.player_list = arcade.SpriteList()
         self.wall_list = arcade.SpriteList()
@@ -133,19 +135,23 @@ class MyWindow(arcade.Window):
         def rock_hit_handler(sprite_a, sprite_b, arbiter, space, data):
             """ Called for bullet/rock collision """
             bullet_shape = arbiter.shapes[0]
-            bullet_sprite = self.physics_engine.get_sprite_for_shape(bullet_shape)
+            bullet_sprite = self.physics_engine.get_sprite_for_shape(
+                bullet_shape)
             bullet_sprite.remove_from_sprite_lists()
             print("Rock")
 
         def wall_hit_handler(sprite_a, sprite_b, arbiter, space, data):
             """ Called for bullet/rock collision """
             bullet_shape = arbiter.shapes[0]
-            bullet_sprite = self.physics_engine.get_sprite_for_shape(bullet_shape)
+            bullet_sprite = self.physics_engine.get_sprite_for_shape(
+                bullet_shape)
             bullet_sprite.remove_from_sprite_lists()
             print("Wall")
 
-        self.physics_engine.add_collision_handler("bullet", "rock", post_handler=rock_hit_handler)
-        self.physics_engine.add_collision_handler("bullet", "wall", post_handler=wall_hit_handler)
+        self.physics_engine.add_collision_handler(
+            "bullet", "rock", post_handler=rock_hit_handler)
+        self.physics_engine.add_collision_handler(
+            "bullet", "wall", post_handler=wall_hit_handler)
 
         # Add the player.
         # For the player, we set the damping to a lower value, which increases
@@ -298,8 +304,17 @@ class MyWindow(arcade.Window):
         """ Draw everything """
         self.clear()
         self.wall_list.draw()
-        self.bullet_list.draw()
+        # self.bullet_list.draw()
+        for bullet in self.bullet_list:
+            arcade.draw_line(self.player_sprite.center_x,
+                             self.player_sprite.center_y,
+                             bullet.center_x,
+                             bullet.center_y,
+                             arcade.color.YELLOW)
+            pass
         self.rock_list.draw()
+        for rock in self.rock_list:
+            rock.draw_hit_box(arcade.color.RED)
         self.gem_list.draw()
         self.player_list.draw()
 

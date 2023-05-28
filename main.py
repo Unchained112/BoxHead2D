@@ -23,45 +23,19 @@ SCREEN_HEIGHT = int(720)
 CAMERA_SPEED = 0.6
 
 # Animations
-BODY_ANIM = [
-    -1,
-    -1,
-    -1,
-    -1,
-    -1,
-    -1,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-]
+BODY_ANIM = [-1, -1, -1, -1, -1, -1, 0,
+             0, 0, 0, 0, 0, 0, 0, 0, 0,
+             1, 1, 1, 1, 1, 1, 0, 0, 0,
+             0, 0, 0, 0, 0, 0, 0,]
 BODY_WALK = [1, 1, 1, -1, -1, -1, 1, 1, 1, -1, -1, -1]
-L_WALK_X = [-1, -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1]
-L_WALK_Y = [1, 1, 1, -1, -1, -1, 1, 1, 1, -1, -1, -1]
-R_WALK_X = [1, 1, 1, -1, -1, -1, -1, -1, -1, 1, 1, 1]
-R_WALK_Y = [1, 1, 1, -1, -1, -1, 1, 1, 1, -1, -1, -1]
+L_WALK_X = [-1, -1, -1, 0, 0, 0, 1, 1, 1, 0, 0,
+            0, 1, 1, 1, 0, 0, 0, -1, -1, -1, 0, 0, 0]
+L_WALK_Y = [1, 1, 1, 0, 0, 0, -1, -1, -1, 0, 0,
+            0, 1, 1, 1, 0, 0, 0, -1, -1, -1, 0, 0, 0]
+R_WALK_X = [1, 1, 1, 0, 0, 0, -1, -1, -1, 0, 0,
+            0, -1, -1, -1, 0, 0, 0, 1, 1, 1, 0, 0, 0]
+R_WALK_Y = [1, 1, 1, 0, 0, 0, -1, -1, -1, 0, 0,
+            0, 1, 1, 1, 0, 0, 0, -1, -1, -1, 0, 0, 0]
 
 # Grid size, room width and height should be multiple of it
 WALL_SIZE = float(30)
@@ -245,7 +219,7 @@ class Character(GameObject):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         # Properties
         self.is_walking = False
-        self.speed = 1000
+        self.speed = 800
 
         # Init position
         self.pos = Vec2(x, y)
@@ -354,7 +328,7 @@ class Player(Character):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
-        self.speed = 2800
+        self.speed = 2000
 
         # Player body sprite
         self.body = arcade.Sprite(
@@ -450,7 +424,7 @@ class EnemyWhite(Character):
         player_pos = Vec2(player_sprite.center_x, player_sprite.center_y)
         force = player_pos - current_pos
 
-        if random.randrange(0, 100) < 20: # add some randomization
+        if random.randrange(0, 100) < 20:  # add some randomization
             tmp = Vec2(random.gauss(0, 0.2), random.gauss(0, 0.2))
             force = tmp.normalize().scale(self.speed)
             return
@@ -703,8 +677,6 @@ class BoxHead(arcade.Window):
 
         # scroll the screen to the player
         self.scroll_to_player()
-
-        
 
     def on_key_press(self, key, modifiers):
         """Called whenever a key is pressed."""
