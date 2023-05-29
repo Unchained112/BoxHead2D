@@ -195,6 +195,76 @@ class Room:
             wall.draw()
 
 
+class Bullet(arcade.Sprite):
+    """Bullet base class"""
+
+    def __init__(self) -> None:
+        super().__init__(
+            filename="./graphics/Foot.png",
+            image_width=4,
+            image_height=4,
+            scale=1,
+        )
+        self.aim = Vec2(0, 0)
+        self.speed = float(1000)
+
+    def set_angle(self, rotate_angle: float) -> None:
+        self.angle = rotate_angle
+
+
+class Gun(arcade.Sprite):
+    """Gun weapon class."""
+
+    def __init__(
+        self, gun_name: str = "./graphics/Pistol.png", x: float = 0, y: float = 0
+    ) -> None:
+        self.damage = 0
+        self.cd = 0.5
+        self.pos = Vec2(x, y)
+        self.aim_pos = Vec2(0, 0)
+        self.is_right = True
+        self.force = 1200
+        self.texture_list = [
+            arcade.load_texture(gun_name),
+            arcade.load_texture(gun_name, flipped_horizontally=True),
+        ]
+        super().__init__(
+            filename=gun_name,
+            center_x=self.pos.x,
+            center_y=self.pos.y,
+            image_width=20,
+            image_height=10,
+        )
+        self.bullet = Bullet
+
+    def update(self) -> None:
+        self.center_x = self.pos.x
+        self.center_y = self.pos.y
+        if self.is_right:
+            self.texture = self.texture_list[0]
+        else:
+            self.texture = self.texture_list[1]
+
+    def aim(self, aim_pos: Vec2) -> None:
+        self.aim_pos = aim_pos
+        if aim_pos.x >= 0:
+            self.is_right = True
+            rotate_angle = math.degrees(math.asin(get_sin(aim_pos)))
+        else:
+            self.is_right = False
+            rotate_angle = -math.degrees(math.asin(get_sin(aim_pos)))
+
+        self.angle = rotate_angle
+
+    def get_bullet(self) -> Bullet:
+        bullet = self.bullet()
+        bullet.aim = self.aim_pos
+        bullet.center_x = self.center_x
+        bullet.center_y = self.center_y
+        bullet.speed = 100
+        return bullet
+
+
 class Character(arcade.Sprite):
     """Character base class."""
 
@@ -202,6 +272,8 @@ class Character(arcade.Sprite):
         # Properties
         self.is_walking = False
         self.speed = 800
+        self.cd = 0
+        self.cd_max = 40  # 40 / 60
 
         # Init position
         self.pos = Vec2(x, y)
@@ -380,8 +452,8 @@ class Player(Character):
         aim_pos = mouse_pos - self.pos
         self.weapons[self.weapon_index].aim(aim_pos)
 
-    def attack(self) -> None:
-        pass
+    def attack(self) -> Bullet:
+        return self.weapons[self.weapon_index].get_bullet()
 
 
 class EnemyWhite(Character):
@@ -469,51 +541,6 @@ class EnemyRed(Character):
                 self.speed, self.center_x - player_sprite.center_x)
 
 
-class Gun(arcade.Sprite):
-    """Gun weapon class."""
-
-    def __init__(
-        self, gun_name: str = "./graphics/Pistol.png", x: float = 0, y: float = 0
-    ) -> None:
-        self.damage = 0
-        self.cd = 0.5
-        self.pos = Vec2(x, y)
-        self.is_right = True
-        self.texture_list = [
-            arcade.load_texture(gun_name),
-            arcade.load_texture(gun_name, flipped_horizontally=True),
-        ]
-        super().__init__(
-            filename=gun_name,
-            center_x=self.pos.x,
-            center_y=self.pos.y,
-            image_width=20,
-            image_height=10,
-        )
-        self.bullet = arcade.SpriteSolidColor(5, 5, arcade.color.YELLOW)
-
-    def update(self) -> None:
-        self.center_x = self.pos.x
-        self.center_y = self.pos.y
-        if self.is_right:
-            self.texture = self.texture_list[0]
-        else:
-            self.texture = self.texture_list[1]
-
-    def aim(self, aim_pos: Vec2) -> None:
-        if aim_pos.x >= 0:
-            self.is_right = True
-            rotate_angle = math.degrees(math.asin(get_sin(aim_pos)))
-        else:
-            self.is_right = False
-            rotate_angle = -math.degrees(math.asin(get_sin(aim_pos)))
-
-        self.angle = rotate_angle
-    
-    def shoot(self) -> None:
-        pass
-
-
 class BoxHead(arcade.Window):
     """Main application class."""
 
@@ -528,13 +555,9 @@ class BoxHead(arcade.Window):
 
         # Sprite lists
         self.wall_list = None
-
-        # set up the player
-        self.player_sprite = None
-
-        # set up the enemy
+        self.player = None
+        self.bullet_list = None
         self.enemy_list = None
-        self.enemy_collider_list = None
 
         # Physics engine so we don't run into walls.
         self.physics_engine: Optional[PymunkPhysicsEngine] = None
@@ -555,9 +578,9 @@ class BoxHead(arcade.Window):
 
         # GameObject lists
         self.wall_list = arcade.SpriteList()
-        self.enemy_list = []
-        self.enemy_collider_list = arcade.SpriteList()
-        self.room_list = []
+        self.enemy_list = arcade.SpriteList()
+        self.bullet_list = arcade.SpriteList()
+        self.room_list = []  # used later
 
         # setup room background and player
         self.game_room = Room()
@@ -599,7 +622,7 @@ class BoxHead(arcade.Window):
                                             body_type=PymunkPhysicsEngine.STATIC)
 
         # create some boxes to push around
-        self.physics_engine.add_sprite_list(self.enemy_collider_list,
+        self.physics_engine.add_sprite_list(self.enemy_list,
                                             friction=0,
                                             moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
                                             damping=0.001,
@@ -609,11 +632,10 @@ class BoxHead(arcade.Window):
         if len(self.enemy_list) == 0:
             # enemy_test_1 = EnemyRed(200, 300)
             for i in range(0, 4):
-                for j in range(0, 10):
+                for _ in range(0, 10):
                     tmp_enemy = EnemyWhite(
                         self.game_room.spawn_pos[i].x, self.game_room.spawn_pos[i].y)
                     self.enemy_list.append(tmp_enemy)
-                    self.enemy_collider_list.append(tmp_enemy)
 
     def on_draw(self):
         """Render the screen."""
@@ -627,9 +649,9 @@ class BoxHead(arcade.Window):
         # draw all the sprites.
         self.game_room.draw()
         self.player.draw()
-
         for enemy in self.enemy_list:
             enemy.draw()
+        self.bullet_list.draw()
 
         # Select the (un-scrolled) camera for our GUI
         self.camera_gui.use()
@@ -656,6 +678,15 @@ class BoxHead(arcade.Window):
         for enemy in self.enemy_list:
             enemy.follow_sprite(self.player, self.physics_engine)
             enemy.update(self.physics_engine)
+
+        for bullet in self.bullet_list:
+            # print(str(bullet.center_x) + " " + str(bullet.center_y))
+            hit_list = arcade.check_for_collision_with_list(
+                bullet, self.enemy_list)
+
+            # If it did, get rid of the bullet
+            if len(hit_list) > 0:
+                bullet.remove_from_sprite_lists()
 
         # scroll the screen to the player
         self.scroll_to_player()
@@ -697,7 +728,20 @@ class BoxHead(arcade.Window):
 
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int) -> None:
         if button == arcade.MOUSE_BUTTON_LEFT:
-            self.player.is_attack = True
+            # self.player.is_attack = True
+
+            # if self.player.is_attack:
+            bullet = self.player.attack()
+            print(bullet.center_y)
+            self.physics_engine.add_sprite(bullet,
+                                           mass=1,
+                                           damping=1.0,
+                                           friction=0.6,
+                                           collision_type="bullet",
+                                           elasticity=0.9)
+            force = bullet.aim.scale(bullet.speed)
+            self.physics_engine.apply_force(bullet, (force.x, force.y))
+            self.bullet_list.append(bullet)
 
     def on_mouse_release(self, x: int, y: int, button: int, modifiers: int) -> None:
         if button == arcade.MOUSE_BUTTON_LEFT:
