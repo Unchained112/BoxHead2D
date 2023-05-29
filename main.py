@@ -47,31 +47,16 @@ def get_sin(v: Vec2) -> float:
     return v.y / v.distance(Vec2(0, 0))
 
 
-class GameObject:
-    """GameObject Base Class."""
-
-    def __init__(self) -> None:
-        self.pos = Vec2(0, 0)
-
-    # update the GameObject logic
-    def update(self) -> None:
-        pass
-
-    # render the GameObject
-    def draw(self) -> None:
-        pass
-
-
-class Wall(GameObject):
+class Wall(arcade.Sprite):
     """Basic wall class."""
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         self.pos = Vec2(x, y)
-        self.grid_idx = (int((x + (WALL_SIZE/2)) / 30),
-                         int((y + (WALL_SIZE/2)) / 30))
+        self.grid_idx = (int((x - (WALL_SIZE/2)) / 30),
+                         int((y - (WALL_SIZE/2)) / 30))
 
         # Wall
-        self.sprite = arcade.Sprite(
+        super().__init__(
             filename=None,
             center_x=self.pos.x,
             center_y=self.pos.y,
@@ -79,16 +64,13 @@ class Wall(GameObject):
             image_height=WALL_SIZE,
         )
 
-    def draw(self) -> None:
-        self.sprite.draw()
-
 
 class WallCorner(Wall):
     """Wall at the corner."""
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
-        self.sprite.texture = arcade.load_texture("./graphics/WallCorner.png")
+        self.texture = arcade.load_texture("./graphics/WallCorner.png")
 
 
 class WallSideHorizontal(Wall):
@@ -96,7 +78,7 @@ class WallSideHorizontal(Wall):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
-        self.sprite.texture = arcade.load_texture("./graphics/WallSide.png")
+        self.texture = arcade.load_texture("./graphics/WallSide.png")
 
 
 class WallSideVertical(Wall):
@@ -104,8 +86,8 @@ class WallSideVertical(Wall):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
-        self.sprite.texture = arcade.load_texture("./graphics/WallSide.png")
-        self.sprite.angle = -90
+        self.texture = arcade.load_texture("./graphics/WallSide.png")
+        self.angle = -90
 
 
 class Room:
@@ -213,7 +195,7 @@ class Room:
             wall.draw()
 
 
-class Character(GameObject):
+class Character(arcade.Sprite):
     """Character base class."""
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
@@ -230,11 +212,15 @@ class Character(GameObject):
         self.foot_r_pos = Vec2(8, -16)
         self.collider_pos = Vec2(0, -3)
 
-        # Track the player movement input
-        self.move_left = False
-        self.move_right = False
-        self.move_up = False
-        self.move_down = False
+        # init with collider
+        super().__init__(
+            "./graphics/CharacterCollider.png",
+            center_x=self.pos.x + self.collider_pos.x,
+            center_y=self.pos.y + self.collider_pos.y,
+            image_width=20,
+            image_height=30,
+            scale=1,
+        )
 
         # Animation init
         self.body_move_up = False
@@ -264,19 +250,10 @@ class Character(GameObject):
             image_height=4,
             scale=1,
         )
-        # Collider sprite for physics
-        self.box_collider = arcade.Sprite(
-            "./graphics/CharacterCollider.png",
-            center_x=self.pos.x + self.collider_pos.x,
-            center_y=self.pos.y + self.collider_pos.y,
-            image_width=20,
-            image_height=30,
-            scale=1,
-        )
 
     def move(self, physic_engine: PymunkPhysicsEngine) -> None:
-        self.pos.x = self.box_collider.center_x - self.collider_pos.x
-        self.pos.y = self.box_collider.center_y - self.collider_pos.y
+        self.pos.x = self.center_x - self.collider_pos.x
+        self.pos.y = self.center_y - self.collider_pos.y
 
         self.body.center_x = self.pos.x + self.body_pos.x
         self.body.center_y = self.pos.y + self.body_pos.y
@@ -329,6 +306,7 @@ class Player(Character):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
         self.speed = 2000
+        self.is_attack = False
 
         # Player body sprite
         self.body = arcade.Sprite(
@@ -340,6 +318,12 @@ class Player(Character):
             scale=1,
         )
 
+        # Track the player movement input
+        self.move_left = False
+        self.move_right = False
+        self.move_up = False
+        self.move_down = False
+
         # Weapon
         self.weapon_pos = Vec2(16, -2)
         self.weapons = []
@@ -347,8 +331,6 @@ class Player(Character):
         self.add_weapon()
 
     def move(self, physic_engine: PymunkPhysicsEngine) -> None:
-        # self.box_collider.change_x = 0
-        # self.box_collider.change_y = 0
         force = Vec2(0, 0)
 
         if self.move_up and not self.move_down:
@@ -361,7 +343,7 @@ class Player(Character):
             force.x = 1
 
         force = force.normalize().scale(self.speed)
-        physic_engine.apply_force(self.box_collider, (force.x, force.y))
+        physic_engine.apply_force(self, (force.x, force.y))
 
         if force.mag != 0:
             self.is_walking = True
@@ -379,7 +361,6 @@ class Player(Character):
         else:
             super().draw()
             self.weapons[self.weapon_index].draw()
-        # self.box_collider.draw() # for testing
 
     def update(self, physic_engine: PymunkPhysicsEngine) -> None:
         super().update(physic_engine)
@@ -398,6 +379,9 @@ class Player(Character):
     def aim(self, mouse_pos: Vec2) -> None:
         aim_pos = mouse_pos - self.pos
         self.weapons[self.weapon_index].aim(aim_pos)
+
+    def attack(self) -> None:
+        pass
 
 
 class EnemyWhite(Character):
@@ -419,8 +403,7 @@ class EnemyWhite(Character):
         )
 
     def follow_sprite(self, player_sprite: arcade.Sprite, physic_engine: PymunkPhysicsEngine) -> None:
-        current_pos = Vec2(self.box_collider.center_x,
-                           self.box_collider.center_y)
+        current_pos = Vec2(self.center_x, self.center_y)
         player_pos = Vec2(player_sprite.center_x, player_sprite.center_y)
         force = player_pos - current_pos
 
@@ -440,7 +423,7 @@ class EnemyWhite(Character):
             self.last_force = force
             force = force.normalize().scale(self.speed)
 
-        physic_engine.apply_force(self.box_collider, (force.x, force.y))
+        physic_engine.apply_force(self, (force.x, force.y))
 
     def draw(self) -> None:
         super().draw()
@@ -464,8 +447,7 @@ class EnemyRed(Character):
         )
 
     def follow_sprite(self, player_sprite: arcade.Sprite, physic_engine: PymunkPhysicsEngine) -> None:
-        current_pos = Vec2(self.box_collider.center_x,
-                           self.box_collider.center_y)
+        current_pos = Vec2(self.center_x, self.center_y)
         player_pos = Vec2(player_sprite.center_x, player_sprite.center_y)
         if current_pos.distance(player_pos) < 100:
             self.is_walking = False
@@ -473,21 +455,21 @@ class EnemyRed(Character):
 
         self.is_walking = True
         if current_pos.y < player_pos.y:
-            self.box_collider.center_y += min(
-                self.speed, player_sprite.center_y - self.box_collider.center_y)
+            self.center_y += min(
+                self.speed, player_sprite.center_y - self.center_y)
         elif current_pos.y > player_pos.y:
-            self.box_collider.center_y -= min(
-                self.speed, self.box_collider.center_y - player_sprite.center_y)
+            self.center_y -= min(
+                self.speed, self.center_y - player_sprite.center_y)
 
         if current_pos.x < player_pos.x:
-            self.box_collider.center_x += min(
-                self.speed, player_sprite.center_x - self.box_collider.center_x)
+            self.center_x += min(
+                self.speed, player_sprite.center_x - self.center_x)
         elif current_pos.x > player_pos.x:
-            self.box_collider.center_x -= min(
-                self.speed, self.box_collider.center_x - player_sprite.center_x)
+            self.center_x -= min(
+                self.speed, self.center_x - player_sprite.center_x)
 
 
-class Gun(GameObject):
+class Gun(arcade.Sprite):
     """Gun weapon class."""
 
     def __init__(
@@ -497,29 +479,26 @@ class Gun(GameObject):
         self.cd = 0.5
         self.pos = Vec2(x, y)
         self.is_right = True
-        self.textures = [
+        self.texture_list = [
             arcade.load_texture(gun_name),
             arcade.load_texture(gun_name, flipped_horizontally=True),
         ]
-        self.sprite = arcade.Sprite(
+        super().__init__(
             filename=gun_name,
             center_x=self.pos.x,
             center_y=self.pos.y,
             image_width=20,
             image_height=10,
         )
-        # self.sprite.angle = 90
-
-    def draw(self) -> None:
-        self.sprite.draw()
+        self.bullet = arcade.SpriteSolidColor(5, 5, arcade.color.YELLOW)
 
     def update(self) -> None:
-        self.sprite.center_x = self.pos.x
-        self.sprite.center_y = self.pos.y
+        self.center_x = self.pos.x
+        self.center_y = self.pos.y
         if self.is_right:
-            self.sprite.texture = self.textures[0]
+            self.texture = self.texture_list[0]
         else:
-            self.sprite.texture = self.textures[1]
+            self.texture = self.texture_list[1]
 
     def aim(self, aim_pos: Vec2) -> None:
         if aim_pos.x >= 0:
@@ -529,7 +508,10 @@ class Gun(GameObject):
             self.is_right = False
             rotate_angle = -math.degrees(math.asin(get_sin(aim_pos)))
 
-        self.sprite.angle = rotate_angle
+        self.angle = rotate_angle
+    
+    def shoot(self) -> None:
+        pass
 
 
 class BoxHead(arcade.Window):
@@ -580,7 +562,7 @@ class BoxHead(arcade.Window):
         # setup room background and player
         self.game_room = Room()
         for wall in self.game_room.walls:
-            self.wall_list.append(wall.sprite)
+            self.wall_list.append(wall)
 
         # set up the player
         self.player = Player(float(SCREEN_WIDTH / 2), float(SCREEN_HEIGHT / 2))
@@ -602,7 +584,7 @@ class BoxHead(arcade.Window):
                                                   gravity=gravity)
 
         # add the player
-        self.physics_engine.add_sprite(self.player.box_collider,
+        self.physics_engine.add_sprite(self.player,
                                        friction=0,
                                        moment_of_inertia=PymunkPhysicsEngine.MOMENT_INF,
                                        damping=0.001,
@@ -631,7 +613,7 @@ class BoxHead(arcade.Window):
                     tmp_enemy = EnemyWhite(
                         self.game_room.spawn_pos[i].x, self.game_room.spawn_pos[i].y)
                     self.enemy_list.append(tmp_enemy)
-                    self.enemy_collider_list.append(tmp_enemy.box_collider)
+                    self.enemy_collider_list.append(tmp_enemy)
 
     def on_draw(self):
         """Render the screen."""
@@ -672,7 +654,7 @@ class BoxHead(arcade.Window):
 
         self.player.update(self.physics_engine)
         for enemy in self.enemy_list:
-            enemy.follow_sprite(self.player.box_collider, self.physics_engine)
+            enemy.follow_sprite(self.player, self.physics_engine)
             enemy.update(self.physics_engine)
 
         # scroll the screen to the player
@@ -712,6 +694,14 @@ class BoxHead(arcade.Window):
         self.mouse_sprite.center_x = self.mouse_x
         self.mouse_sprite.center_y = self.mouse_y
         self.player.aim(self.mouse_pos)
+
+    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int) -> None:
+        if button == arcade.MOUSE_BUTTON_LEFT:
+            self.player.is_attack = True
+
+    def on_mouse_release(self, x: int, y: int, button: int, modifiers: int) -> None:
+        if button == arcade.MOUSE_BUTTON_LEFT:
+            self.player.is_attack = False
 
     def scroll_to_player(self):
         """
