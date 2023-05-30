@@ -14,6 +14,7 @@ DARK_RED = (183, 4, 4)
 LIGHT_GRAY = (207, 210, 207)
 DARK_GRAY = (67, 66, 66)
 LIGHT_BLACK = (34, 34, 34)
+RED_TRANSPARENT = (180, 0, 0, 100)
 
 # Screen size
 SCREEN_WIDTH = int(1280)
@@ -36,9 +37,12 @@ R_WALK_X = [1, 1, 1, 0, 0, 0, -1, -1, -1, 0, 0,
             0, -1, -1, -1, 0, 0, 0, 1, 1, 1, 0, 0, 0]
 R_WALK_Y = [1, 1, 1, 0, 0, 0, -1, -1, -1, 0, 0,
             0, 1, 1, 1, 0, 0, 0, -1, -1, -1, 0, 0, 0]
+GET_DAMAGE_LEN = int(8)
 
 # Grid size, room width and height should be multiple of it
 WALL_SIZE = float(30)
+BULLET_FORCE = float(1000)
+ENEMY_FORCE = float(4000)
 
 
 def get_sin(v: Vec2) -> float:
@@ -200,13 +204,15 @@ class Bullet(arcade.Sprite):
 
     def __init__(self) -> None:
         super().__init__(
-            filename="./graphics/Foot.png",
-            image_width=4,
-            image_height=4,
+            filename="./graphics/Bullet.png",
+            image_width=6,
+            image_height=6,
             scale=1,
         )
         self.aim = Vec2(0, 0)
         self.speed = float(0)
+        self.damage = int(0)
+        self.life_span = int(20)
 
     def set_angle(self, rotate_angle: float) -> None:
         self.angle = rotate_angle
@@ -218,12 +224,12 @@ class Gun(arcade.Sprite):
     def __init__(
         self, gun_name: str = "./graphics/Pistol.png", x: float = 0, y: float = 0
     ) -> None:
-        self.damage = 0
-        self.cd_max = int(30) # 0.5s
+        self.damage = 40
+        self.cd_max = int(30)  # 0.5s
         self.pos = Vec2(x, y)
         self.aim_pos = Vec2(0, 0)
         self.is_right = True
-        self.force = 1200
+        self.bullet_speed = 25
         self.texture_list = [
             arcade.load_texture(gun_name),
             arcade.load_texture(gun_name, flipped_horizontally=True),
@@ -258,10 +264,11 @@ class Gun(arcade.Sprite):
 
     def get_bullet(self) -> Bullet:
         bullet = self.bullet()
-        bullet.aim = self.aim_pos
         bullet.center_x = self.center_x
         bullet.center_y = self.center_y
-        bullet.speed = 10
+        bullet.speed = self.bullet_speed
+        bullet.aim = self.aim_pos.normalize().scale(bullet.speed)
+        bullet.damage = self.damage
         return bullet
 
 
@@ -270,10 +277,12 @@ class Character(arcade.Sprite):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         # Properties
+        self.health = 100
         self.is_walking = False
         self.speed = 800
         self.cd = int(0)
         self.cd_max = int(40)  # 40 / 60
+        self.get_damage_len = int(0)
 
         # Init position
         self.pos = Vec2(x, y)
@@ -365,11 +374,19 @@ class Character(arcade.Sprite):
             self.foot_r.center_y = self.foot_r_pos.y + self.pos.y
             self.walking_frames = self.walking_frames_max
 
+        self.get_damage_len -= 1
+
     def draw(self) -> None:
         # self.box_collider.draw()
         self.body.draw()
         self.foot_l.draw()
         self.foot_r.draw()
+        if self.get_damage_len > 0:
+            self.draw_get_damage()
+
+    def draw_get_damage(self) -> None:
+        arcade.draw_rectangle_filled(self.center_x, self.center_y,
+                                     20, 24, RED_TRANSPARENT)
 
 
 class Player(Character):
@@ -401,6 +418,7 @@ class Player(Character):
         self.weapons = []
         self.weapon_index = 0
         self.add_weapon()
+        self.current_weapon = self.weapons[self.weapon_index]
 
     def move(self, physic_engine: PymunkPhysicsEngine) -> None:
         force = Vec2(0, 0)
@@ -424,23 +442,23 @@ class Player(Character):
 
         super().move(physic_engine)
 
-        self.weapons[self.weapon_index].pos = self.pos + self.weapon_pos
+        self.current_weapon.pos = self.pos + self.weapon_pos
 
     def draw(self) -> None:
-        if self.weapons[self.weapon_index].is_right:
-            self.weapons[self.weapon_index].draw()
+        if self.current_weapon.is_right:
+            self.current_weapon.draw()
             super().draw()
         else:
             super().draw()
-            self.weapons[self.weapon_index].draw()
+            self.current_weapon.draw()
 
     def update(self, physic_engine: PymunkPhysicsEngine) -> None:
         super().update(physic_engine)
-        if self.weapons[self.weapon_index].is_right:
+        if self.current_weapon.is_right:
             self.weapon_pos = Vec2(16, -2)
         else:
             self.weapon_pos = Vec2(9, -2)
-        self.weapons[self.weapon_index].update()
+        self.current_weapon.update()
 
     def add_weapon(self, name: str = "./graphics/Pistol.png") -> None:
         gun = Gun(
@@ -449,12 +467,16 @@ class Player(Character):
         self.cd_max = gun.cd_max
         self.weapons.append(gun)
 
+    def change_weapon(self):
+        # TODO: add change weapon with Q and E
+        self.current_weapon = self.weapons[self.weapon_index]
+
     def aim(self, mouse_pos: Vec2) -> None:
         aim_pos = mouse_pos - self.pos
-        self.weapons[self.weapon_index].aim(aim_pos)
+        self.current_weapon.aim(aim_pos)
 
     def attack(self) -> Bullet:
-        return self.weapons[self.weapon_index].get_bullet()
+        return self.current_weapon.get_bullet()
 
 
 class EnemyWhite(Character):
@@ -640,35 +662,53 @@ class BoxHead(arcade.Window):
 
     def update_player_attack(self):
         if self.player.is_attack:
-            if self.player.cd == 0:
-                bullet = self.player.attack()
-                force = bullet.aim.normalize().scale(bullet.speed)
-                bullet.change_x = force.x
-                bullet.change_y = force.y
-                self.player_bullet_list.append(bullet)
-
-            self.player.cd += 1
-
             if self.player.cd == self.player.cd_max:
                 self.player.cd = 0
-        else:
-            # reset cd when player is not attacking
-            self.player.cd = 0
-    
+
+            if self.player.cd == 0:
+                bullet = self.player.attack()
+                bullet.change_x = bullet.aim.x
+                bullet.change_y = bullet.aim.y
+                self.player_bullet_list.append(bullet)
+
+        self.player.cd = min(self.player.cd + 1, self.player.cd_max)
+
     def process_player_bullet(self):
         self.player_bullet_list.update()
+
         for bullet in self.player_bullet_list:
+            bullet.life_span -= 1
+
             hit_list = arcade.check_for_collision_with_list(
                 bullet, self.enemy_list)
 
+            for enemy in hit_list:
+                enemy.health -= bullet.damage
+                self.physics_engine.apply_force(
+                    enemy, (bullet.aim.x * BULLET_FORCE, bullet.aim.y * BULLET_FORCE))
+                enemy.get_damage_len = GET_DAMAGE_LEN
+                if enemy.health <= 0:
+                    enemy.remove_from_sprite_lists()
+
             if len(hit_list) > 0:
                 bullet.remove_from_sprite_lists()
-            
+
             hit_list = arcade.check_for_collision_with_list(
                 bullet, self.wall_list)
-            
+
             if len(hit_list) > 0:
                 bullet.remove_from_sprite_lists()
+
+            if bullet.life_span <= 0:
+                bullet.remove_from_sprite_lists()
+
+    def update_enemy_attack(self):
+        for enemy in self.enemy_list:
+            if arcade.check_for_collision(enemy, self.player):
+                self.player.health -= 20
+                push = enemy.last_force.normalize().scale(ENEMY_FORCE)
+                self.physics_engine.apply_force(self.player, (push.x, push.y))
+                self.player.get_damage_len = GET_DAMAGE_LEN
 
     def on_draw(self):
         """Render the screen."""
@@ -682,6 +722,9 @@ class BoxHead(arcade.Window):
         # draw all the sprites.
         self.game_room.draw()
         self.player.draw()
+        # for bullet in self.player_bullet_list:
+        #     arcade.draw_line(self.player.current_weapon.center_x,
+        #                      self.player.current_weapon.center_y, bullet.center_x, bullet.center_y, DARK_RED)
         for enemy in self.enemy_list:
             enemy.draw()
         self.player_bullet_list.draw()
@@ -716,8 +759,7 @@ class BoxHead(arcade.Window):
         for enemy in self.enemy_list:
             enemy.follow_sprite(self.player, self.physics_engine)
             enemy.update(self.physics_engine)
-
-        
+        self.update_enemy_attack()
 
         # scroll the screen to the player
         self.scroll_to_player()
