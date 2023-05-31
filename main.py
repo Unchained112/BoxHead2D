@@ -14,7 +14,7 @@ DARK_RED = (183, 4, 4)
 LIGHT_GRAY = (207, 210, 207)
 DARK_GRAY = (67, 66, 66)
 LIGHT_BLACK = (34, 34, 34)
-RED_TRANSPARENT = (180, 0, 0, 100)
+RED_TRANSPARENT = (160, 100, 100, 120)
 
 # Screen size
 SCREEN_WIDTH = int(1280)
@@ -224,6 +224,14 @@ class Bullet(arcade.Sprite):
 
     def set_angle(self, rotate_angle: float) -> None:
         self.angle = rotate_angle
+
+
+class FireBall(Bullet):
+    """FireBall class for enemy red."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.life_span = int(60)
 
 
 class Gun(arcade.Sprite):
@@ -528,16 +536,17 @@ class EnemyWhite(Character):
 
         physic_engine.apply_force(self, (force.x, force.y))
 
-    def draw(self) -> None:
-        super().draw()
-
 
 class EnemyRed(Character):
     """EnemyRed class."""
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
-        self.speed = 1
+        self.is_walking = True
+        self.last_force = Vec2(0, 0)
+        self.shoot_range = 280
+        self.cd_max = int(60)
+        self.bullet = FireBall
 
         # EnemyRed body sprite
         self.body = arcade.Sprite(
@@ -552,24 +561,45 @@ class EnemyRed(Character):
     def follow_sprite(self, player_sprite: arcade.Sprite, physic_engine: PymunkPhysicsEngine) -> None:
         current_pos = Vec2(self.center_x, self.center_y)
         player_pos = Vec2(player_sprite.center_x, player_sprite.center_y)
-        if current_pos.distance(player_pos) < 100:
+        force = player_pos - current_pos
+
+        if current_pos.distance(player_pos) < self.shoot_range:
             self.is_walking = False
             return
 
         self.is_walking = True
-        if current_pos.y < player_pos.y:
-            self.center_y += min(
-                self.speed, player_sprite.center_y - self.center_y)
-        elif current_pos.y > player_pos.y:
-            self.center_y -= min(
-                self.speed, self.center_y - player_sprite.center_y)
 
-        if current_pos.x < player_pos.x:
-            self.center_x += min(
-                self.speed, player_sprite.center_x - self.center_x)
-        elif current_pos.x > player_pos.x:
-            self.center_x -= min(
-                self.speed, self.center_x - player_sprite.center_x)
+        if random.randrange(0, 100) < 20:  # add some randomization
+            tmp = Vec2(random.gauss(0, 0.2), random.gauss(0, 0.2))
+            force = tmp.normalize().scale(self.speed)
+            return
+
+        if self.last_force.distance(force) < 0.1:
+            tmp = Vec2(0, 0)
+            if abs(self.last_force.x - force.x) < 0.1:
+                tmp.x = 1
+            if abs(self.last_force.y - force.y) < 0.1:
+                tmp.y = 1
+            force = tmp.scale(4 * self.speed)  # get rid of the barrier
+        else:
+            self.last_force = force
+            force = force.normalize().scale(self.speed)
+
+        physic_engine.apply_force(self, (force.x, force.y))
+
+    def attack(self, player_sprite: arcade.Sprite) -> FireBall:
+        # enemy red attack property
+        bullet_speed = 8
+        damage = 30
+        aim_pos = Vec2(player_sprite.center_x - self.center_x,
+                       player_sprite.center_y - self.center_y)
+        bullet = self.bullet()
+        bullet.center_x = self.center_x
+        bullet.center_y = self.center_y
+        bullet.speed = bullet_speed
+        bullet.aim = aim_pos.normalize().scale(bullet.speed)
+        bullet.damage = damage
+        return bullet
 
 
 class BoxHead(arcade.Window):
@@ -588,7 +618,9 @@ class BoxHead(arcade.Window):
         self.wall_list = None
         self.player = None
         self.player_bullet_list = None
-        self.enemy_list = None
+        self.enemy_white_list = None
+        self.enemy_red_list = None
+        self.enemy_bullet_list = None
 
         # Physics engine so we don't run into walls.
         self.physics_engine: Optional[PymunkPhysicsEngine] = None
@@ -609,8 +641,10 @@ class BoxHead(arcade.Window):
 
         # GameObject lists
         self.wall_list = arcade.SpriteList()
-        self.enemy_list = arcade.SpriteList()
+        self.enemy_white_list = arcade.SpriteList()
+        self.enemy_red_list = arcade.SpriteList()
         self.player_bullet_list = arcade.SpriteList()
+        self.enemy_bullet_list = arcade.SpriteList()
         self.room_list = []  # used later
 
         # setup room background and player
@@ -623,7 +657,6 @@ class BoxHead(arcade.Window):
 
         # set up the enemy
         self.spawn_enemy_cd = 0
-        # self.spawn_enemy()
 
         # set the most basic background color
         arcade.set_background_color(BLACK)
@@ -653,21 +686,33 @@ class BoxHead(arcade.Window):
                                             collision_type="wall",
                                             body_type=PymunkPhysicsEngine.STATIC)
 
-        # create some boxes to push around
-        self.physics_engine.add_sprite_list(self.enemy_list,
-                                            friction=0,
-                                            moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
-                                            damping=0.001,
-                                            collision_type="enemy")
-
     def spawn_enemy(self):
-        if len(self.enemy_list) == 0:
-            # enemy_test_1 = EnemyRed(200, 300)
+        # spawn enemy white
+        if self.spawn_enemy_cd <= 5:
             for i in range(0, 4):
-                for _ in range(0, 10):
-                    tmp_enemy = EnemyWhite(
-                        self.game_room.spawn_pos[i].x, self.game_room.spawn_pos[i].y)
-                    self.enemy_list.append(tmp_enemy)
+                tmp_enemy = EnemyWhite(
+                    self.game_room.spawn_pos[i].x, self.game_room.spawn_pos[i].y)
+                self.enemy_white_list.append(tmp_enemy)
+                self.physics_engine.add_sprite(tmp_enemy,
+                                               friction=0,
+                                               moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+                                               damping=0.001,
+                                               collision_type="enemy")
+
+        # spawn enemy red
+        if self.spawn_enemy_cd == 6:
+            for i in range(0, 4):
+                tmp_enemy = EnemyRed(
+                    self.game_room.spawn_pos[i].x, self.game_room.spawn_pos[i].y)
+                self.enemy_red_list.append(tmp_enemy)
+                self.physics_engine.add_sprite(tmp_enemy,
+                                               friction=0,
+                                               moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+                                               damping=0.001,
+                                               collision_type="enemy")
+        self.spawn_enemy_cd += 1
+        # TODO: change the time when designing the game play round
+        self.spawn_enemy_cd %= 6000
 
     def update_player_attack(self):
         if self.player.is_attack:
@@ -689,7 +734,12 @@ class BoxHead(arcade.Window):
             bullet.life_span -= 1
 
             hit_list = arcade.check_for_collision_with_list(
-                bullet, self.enemy_list)
+                bullet, self.enemy_white_list)
+
+            hit_list_red = arcade.check_for_collision_with_list(
+                bullet, self.enemy_red_list)
+
+            hit_list.extend(hit_list_red)
 
             for enemy in hit_list:
                 enemy.health -= bullet.damage
@@ -712,12 +762,64 @@ class BoxHead(arcade.Window):
                 bullet.remove_from_sprite_lists()
 
     def update_enemy_attack(self):
-        for enemy in self.enemy_list:
+        for enemy in self.enemy_white_list:
             if arcade.check_for_collision(enemy, self.player):
-                self.player.health -= 20
+                self.player.health -= 10
                 push = enemy.last_force.normalize().scale(ENEMY_FORCE)
                 self.physics_engine.apply_force(self.player, (push.x, push.y))
                 self.player.get_damage_len = GET_DAMAGE_LEN
+
+        for enemy in self.enemy_red_list:
+            if arcade.check_for_collision(enemy, self.player):
+                self.player.health -= 10
+                push = enemy.last_force.normalize().scale(ENEMY_FORCE)
+                self.physics_engine.apply_force(self.player, (push.x, push.y))
+                self.player.get_damage_len = GET_DAMAGE_LEN
+
+            if enemy.is_walking == False:
+                if enemy.cd == enemy.cd_max:
+                    enemy.cd = 0
+
+                if enemy.cd == 0:
+                    bullet = enemy.attack(self.player)
+                    bullet.change_x = bullet.aim.x
+                    bullet.change_y = bullet.aim.y
+                    self.enemy_bullet_list.append(bullet)
+
+            enemy.cd = min(enemy.cd + 1, enemy.cd_max)
+    
+    def process_enemy_bullet(self):
+        self.enemy_bullet_list.update()
+
+        for bullet in self.enemy_bullet_list:
+            bullet.life_span -= 1
+
+            # TODO: decide whether to allow enemy shoot at each other
+            # hit_list = arcade.check_for_collision_with_list(
+            #     bullet, self.enemy_white_list)
+            
+            # for enemy in hit_list:
+            #     enemy.health -= bullet.damage
+            #     self.physics_engine.apply_force(
+            #         enemy, (bullet.aim.x * BULLET_FORCE, bullet.aim.y * BULLET_FORCE))
+            #     enemy.get_damage_len = GET_DAMAGE_LEN
+            #     if enemy.health <= 0:
+            #         enemy.remove_from_sprite_lists()
+
+
+            if arcade.check_for_collision(bullet, self.player):
+                self.player.health -= bullet.damage
+                bullet.remove_from_sprite_lists()
+                print(self.player.health)
+
+            hit_list = arcade.check_for_collision_with_list(
+                bullet, self.wall_list)
+
+            if len(hit_list) > 0:
+                bullet.remove_from_sprite_lists()
+
+            if bullet.life_span <= 0:
+                bullet.remove_from_sprite_lists()
 
     def on_draw(self):
         """Render the screen."""
@@ -731,12 +833,13 @@ class BoxHead(arcade.Window):
         # draw all the sprites.
         self.game_room.draw()
         self.player.draw()
-        # for bullet in self.player_bullet_list:
-        #     arcade.draw_line(self.player.current_weapon.center_x,
-        #                      self.player.current_weapon.center_y, bullet.center_x, bullet.center_y, DARK_RED)
-        for enemy in self.enemy_list:
+        # TODO: Bullet design review
+        for enemy in self.enemy_white_list:
+            enemy.draw()
+        for enemy in self.enemy_red_list:
             enemy.draw()
         self.player_bullet_list.draw()
+        self.enemy_bullet_list.draw()
 
         # Select the (un-scrolled) camera for our GUI
         self.camera_gui.use()
@@ -765,16 +868,19 @@ class BoxHead(arcade.Window):
         self.process_player_bullet()
 
         # update enemy
-        for enemy in self.enemy_list:
-            enemy.follow_sprite(self.player, self.physics_engine)
+        self.spawn_enemy()
+        for enemy in self.enemy_white_list:
             enemy.update(self.physics_engine)
+            enemy.follow_sprite(self.player, self.physics_engine)
+
+        for enemy in self.enemy_red_list:
+            enemy.update(self.physics_engine)
+            enemy.follow_sprite(self.player, self.physics_engine)
         self.update_enemy_attack()
+        self.process_enemy_bullet()
 
         # scroll the screen to the player
         self.scroll_to_player()
-
-        self.spawn_enemy_cd += 1
-        self.spawn_enemy_cd %= 6000
 
     def on_key_press(self, key, modifiers):
         """Called whenever a key is pressed."""
