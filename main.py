@@ -122,6 +122,8 @@ class Room:
                     half_wall + i * WALL_SIZE, half_wall))
                 continue
             elif i == tmp_idx:
+                self.walls.append(WallCorner(
+                    half_wall + i * WALL_SIZE, -half_wall))
                 self.spawn_pos.append(
                     Vec2(half_wall + i * WALL_SIZE, half_wall))
                 continue
@@ -136,6 +138,8 @@ class Room:
                     half_wall + i * WALL_SIZE, self.height - half_wall))
                 continue
             elif i == tmp_idx:
+                self.walls.append(WallCorner(
+                    half_wall + i * WALL_SIZE, self.height + half_wall))
                 self.spawn_pos.append(
                     Vec2(half_wall + i * WALL_SIZE, self.height - half_wall))
                 continue
@@ -150,6 +154,8 @@ class Room:
                     half_wall, half_wall + i * WALL_SIZE))
                 continue
             elif i == tmp_idx:
+                self.walls.append(WallCorner(
+                    -half_wall, half_wall + i * WALL_SIZE))
                 self.spawn_pos.append(
                     Vec2(half_wall, half_wall + i * WALL_SIZE))
                 continue
@@ -164,6 +170,8 @@ class Room:
                     self.width - half_wall, half_wall + i * WALL_SIZE))
                 continue
             elif i == tmp_idx:
+                self.walls.append(WallCorner(
+                    self.width + half_wall, half_wall + i * WALL_SIZE))
                 self.spawn_pos.append(
                     Vec2(self.width - half_wall, half_wall + i * WALL_SIZE))
                 continue
@@ -282,7 +290,7 @@ class Character(arcade.Sprite):
         self.speed = 800
         self.cd = int(0)
         self.cd_max = int(40)  # 40 / 60
-        self.get_damage_len = int(0)
+        self.get_damage_len = int(0) # draw get damage effect
 
         # Init position
         self.pos = Vec2(x, y)
@@ -614,7 +622,8 @@ class BoxHead(arcade.Window):
         self.player = Player(float(SCREEN_WIDTH / 2), float(SCREEN_HEIGHT / 2))
 
         # set up the enemy
-        self.spawn_enemy()
+        self.spawn_enemy_cd = 0
+        # self.spawn_enemy()
 
         # set the most basic background color
         arcade.set_background_color(BLACK)
@@ -763,6 +772,9 @@ class BoxHead(arcade.Window):
 
         # scroll the screen to the player
         self.scroll_to_player()
+
+        self.spawn_enemy_cd += 1
+        self.spawn_enemy_cd %= 6000
 
     def on_key_press(self, key, modifiers):
         """Called whenever a key is pressed."""
