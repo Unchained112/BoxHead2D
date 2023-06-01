@@ -41,8 +41,10 @@ GET_DAMAGE_LEN = int(8)
 
 # Grid size, room width and height should be multiple of it
 WALL_SIZE = float(30)
+
 BULLET_FORCE = float(1000)
 ENEMY_FORCE = float(4000)
+KILL_RECOVER = int(5)
 
 
 def get_sin(v: Vec2) -> float:
@@ -502,6 +504,7 @@ class EnemyWhite(Character):
         super().__init__(x, y)
         self.is_walking = True
         self.last_force = Vec2(0, 0)
+        self.hit_damage = int(20)
 
         # EnemyWhite body sprite
         self.body = arcade.Sprite(
@@ -542,11 +545,13 @@ class EnemyRed(Character):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
+        self.health = int(220)
         self.is_walking = True
         self.last_force = Vec2(0, 0)
         self.shoot_range = 280
         self.cd_max = int(60)
         self.bullet = FireBall
+        self.hit_damage = int(10)
 
         # EnemyRed body sprite
         self.body = arcade.Sprite(
@@ -748,7 +753,7 @@ class BoxHead(arcade.Window):
                 enemy.get_damage_len = GET_DAMAGE_LEN
                 if enemy.health <= 0:
                     enemy.remove_from_sprite_lists()
-
+                    self.player.health += KILL_RECOVER
             if len(hit_list) > 0:
                 bullet.remove_from_sprite_lists()
 
@@ -764,14 +769,14 @@ class BoxHead(arcade.Window):
     def update_enemy_attack(self):
         for enemy in self.enemy_white_list:
             if arcade.check_for_collision(enemy, self.player):
-                self.player.health -= 10
+                self.player.health -= self.hit_damage
                 push = enemy.last_force.normalize().scale(ENEMY_FORCE)
                 self.physics_engine.apply_force(self.player, (push.x, push.y))
                 self.player.get_damage_len = GET_DAMAGE_LEN
 
         for enemy in self.enemy_red_list:
             if arcade.check_for_collision(enemy, self.player):
-                self.player.health -= 10
+                self.player.health -= self.hit_damage
                 push = enemy.last_force.normalize().scale(ENEMY_FORCE)
                 self.physics_engine.apply_force(self.player, (push.x, push.y))
                 self.player.get_damage_len = GET_DAMAGE_LEN
@@ -787,7 +792,7 @@ class BoxHead(arcade.Window):
                     self.enemy_bullet_list.append(bullet)
 
             enemy.cd = min(enemy.cd + 1, enemy.cd_max)
-    
+
     def process_enemy_bullet(self):
         self.enemy_bullet_list.update()
 
@@ -797,7 +802,7 @@ class BoxHead(arcade.Window):
             # TODO: decide whether to allow enemy shoot at each other
             # hit_list = arcade.check_for_collision_with_list(
             #     bullet, self.enemy_white_list)
-            
+
             # for enemy in hit_list:
             #     enemy.health -= bullet.damage
             #     self.physics_engine.apply_force(
