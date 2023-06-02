@@ -15,6 +15,7 @@ LIGHT_GRAY = (207, 210, 207)
 DARK_GRAY = (67, 66, 66)
 LIGHT_BLACK = (34, 34, 34)
 RED_TRANSPARENT = (160, 100, 100, 120)
+HEALTH_RED = (205, 24, 24)
 
 # Screen size
 SCREEN_WIDTH = int(1280)
@@ -414,6 +415,9 @@ class Player(Character):
         super().__init__(x, y)
         self.speed = 2000
         self.is_attack = False
+        self.energy = 0
+        self.energy_max = 200
+        self.player_health_max = 100
 
         # Player body sprite
         self.body = arcade.Sprite(
@@ -502,6 +506,7 @@ class EnemyWhite(Character):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
+        self.health_max = int(100)
         self.is_walking = True
         self.last_force = Vec2(0, 0)
         self.hit_damage = int(20)
@@ -546,6 +551,7 @@ class EnemyRed(Character):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
         self.health = int(220)
+        self.health_max = int(220)
         self.is_walking = True
         self.last_force = Vec2(0, 0)
         self.shoot_range = 280
@@ -594,7 +600,7 @@ class EnemyRed(Character):
 
     def attack(self, player_sprite: arcade.Sprite) -> FireBall:
         # enemy red attack property
-        bullet_speed = 8
+        bullet_speed = 6
         damage = 30
         aim_pos = Vec2(player_sprite.center_x - self.center_x,
                        player_sprite.center_y - self.center_y)
@@ -643,6 +649,10 @@ class BoxHead(arcade.Window):
 
     def setup(self):
         """Set up the game and initialize the variables."""
+
+        # Gameplay set up
+        self.round = 0
+        self.score = 0
 
         # GameObject lists
         self.wall_list = arcade.SpriteList()
@@ -716,8 +726,8 @@ class BoxHead(arcade.Window):
                                                damping=0.001,
                                                collision_type="enemy")
         self.spawn_enemy_cd += 1
-        # TODO: change the time when designing the game play round
-        self.spawn_enemy_cd %= 6000
+        # # TODO: change the time when designing the game play round
+        # self.spawn_enemy_cd %= 600
 
     def update_player_attack(self):
         if self.player.is_attack:
@@ -753,7 +763,9 @@ class BoxHead(arcade.Window):
                 enemy.get_damage_len = GET_DAMAGE_LEN
                 if enemy.health <= 0:
                     enemy.remove_from_sprite_lists()
-                    self.player.health += KILL_RECOVER
+                    self.player.health = min(self.player.health + KILL_RECOVER,
+                                             self.player.player_health_max)
+                    self.score += enemy.health_max
             if len(hit_list) > 0:
                 bullet.remove_from_sprite_lists()
 
@@ -769,14 +781,14 @@ class BoxHead(arcade.Window):
     def update_enemy_attack(self):
         for enemy in self.enemy_white_list:
             if arcade.check_for_collision(enemy, self.player):
-                self.player.health -= self.hit_damage
+                self.player.health = max(self.player.health - enemy.hit_damage, 0)
                 push = enemy.last_force.normalize().scale(ENEMY_FORCE)
                 self.physics_engine.apply_force(self.player, (push.x, push.y))
                 self.player.get_damage_len = GET_DAMAGE_LEN
 
         for enemy in self.enemy_red_list:
             if arcade.check_for_collision(enemy, self.player):
-                self.player.health -= self.hit_damage
+                self.player.health = max(self.player.health - enemy.hit_damage, 0)
                 push = enemy.last_force.normalize().scale(ENEMY_FORCE)
                 self.physics_engine.apply_force(self.player, (push.x, push.y))
                 self.player.get_damage_len = GET_DAMAGE_LEN
@@ -813,9 +825,11 @@ class BoxHead(arcade.Window):
 
 
             if arcade.check_for_collision(bullet, self.player):
-                self.player.health -= bullet.damage
+                self.player.health = max(self.player.health - bullet.damage, 0)
                 bullet.remove_from_sprite_lists()
-                print(self.player.health)
+                self.physics_engine.apply_force(
+                    self.player, (bullet.aim.x * BULLET_FORCE, bullet.aim.y * BULLET_FORCE))
+                self.player.get_damage_len = GET_DAMAGE_LEN
 
             hit_list = arcade.check_for_collision_with_list(
                 bullet, self.wall_list)
@@ -825,6 +839,36 @@ class BoxHead(arcade.Window):
 
             if bullet.life_span <= 0:
                 bullet.remove_from_sprite_lists()
+
+    def draw_ui_player(self):
+        arcade.draw_rectangle_filled(140, SCREEN_HEIGHT - 50,
+                                     204, 32, LIGHT_BLACK)
+        arcade.draw_rectangle_filled(140, SCREEN_HEIGHT - 50,
+                                     200, 28, LIGHT_GRAY)
+        arcade.draw_rectangle_filled(40 + self.player.health, SCREEN_HEIGHT - 50,
+                                     self.player.health * 2, 28, HEALTH_RED)
+        # arcade.draw_rectangle_filled(320 - self.player.health, SCREEN_HEIGHT - 120,
+        #                              self.player.health * 2, 32, HEALTH_RED)
+        if self.player.weapon_index - 1 >= 0:
+            pass
+        if self.player.weapon_index <= len(self.player.weapons) - 1:
+            pass
+        cur_weapon_sprit = arcade.Sprite()
+        cur_weapon_sprit.texture = self.player.current_weapon.textures[0]
+        cur_weapon_sprit.scale = 2
+        cur_weapon_sprit.center_x = 100
+        cur_weapon_sprit.center_y = SCREEN_HEIGHT - 100
+        cur_weapon_sprit.draw()
+
+    def draw_ui_game(self):
+        round = str(self.round)
+        arcade.draw_text(round, float(SCREEN_WIDTH/2) - 100,
+                         SCREEN_HEIGHT - 50, BLACK,
+                         20, 2, "left", "Kenney Future")
+        score = str(self.score)
+        arcade.draw_text(score, SCREEN_WIDTH - 100,
+                         SCREEN_HEIGHT - 50, BLACK,
+                         20, 2, "left", "Kenney Future")
 
     def on_draw(self):
         """Render the screen."""
@@ -854,6 +898,8 @@ class BoxHead(arcade.Window):
             self.mouse_sprite.draw()
 
         # Render the GUI
+        self.draw_ui_player()
+        self.draw_ui_game()
         # arcade.draw_rectangle_filled(self.width // 2,
         #                              20,
         #                              self.width,
@@ -873,6 +919,12 @@ class BoxHead(arcade.Window):
         self.process_player_bullet()
 
         # update enemy
+        if len(self.enemy_white_list) == 0 and len(self.enemy_red_list) == 0:
+            self.round += 1
+            # TODO: change this value when refining the numbers
+            self.spawn_enemy_cd = 0
+        else:
+            self.spawn_enemy_cd = 1000
         self.spawn_enemy()
         for enemy in self.enemy_white_list:
             enemy.update(self.physics_engine)
