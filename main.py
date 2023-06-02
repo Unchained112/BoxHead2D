@@ -16,6 +16,7 @@ DARK_GRAY = (67, 66, 66)
 LIGHT_BLACK = (34, 34, 34)
 RED_TRANSPARENT = (160, 100, 100, 120)
 HEALTH_RED = (205, 24, 24)
+ENERGY_BLUE = (77, 166, 255)
 
 # Screen size
 SCREEN_WIDTH = int(1280)
@@ -234,6 +235,7 @@ class FireBall(Bullet):
 
     def __init__(self) -> None:
         super().__init__()
+        self.texture = arcade.load_texture("./graphics/FireBall.png")
         self.life_span = int(60)
 
 
@@ -301,7 +303,7 @@ class Character(arcade.Sprite):
         self.speed = 800
         self.cd = int(0)
         self.cd_max = int(40)  # 40 / 60
-        self.get_damage_len = int(0) # draw get damage effect
+        self.get_damage_len = int(0)  # draw get damage effect
 
         # Init position
         self.pos = Vec2(x, y)
@@ -415,7 +417,7 @@ class Player(Character):
         super().__init__(x, y)
         self.speed = 2000
         self.is_attack = False
-        self.energy = 0
+        self.energy = 200
         self.energy_max = 200
         self.player_health_max = 100
 
@@ -423,7 +425,7 @@ class Player(Character):
         self.body = arcade.Sprite(
             filename="./graphics/Player.png",
             center_x=self.body_pos.x + self.pos.x,
-            center_y=self.body_pos.y + self.pos.x,
+            center_y=self.body_pos.y + self.pos.y,
             image_width=20,
             image_height=24,
             scale=1,
@@ -515,7 +517,7 @@ class EnemyWhite(Character):
         self.body = arcade.Sprite(
             filename="./graphics/EnemyWhite.png",
             center_x=self.body_pos.x + self.pos.x,
-            center_y=self.body_pos.y + self.pos.x,
+            center_y=self.body_pos.y + self.pos.y,
             image_width=20,
             image_height=24,
             scale=1,
@@ -563,7 +565,7 @@ class EnemyRed(Character):
         self.body = arcade.Sprite(
             filename="./graphics/EnemyRed.png",
             center_x=self.body_pos.x + self.pos.x,
-            center_y=self.body_pos.y + self.pos.x,
+            center_y=self.body_pos.y + self.pos.y,
             image_width=20,
             image_height=26,
             scale=1,
@@ -654,6 +656,32 @@ class BoxHead(arcade.Window):
         self.round = 0
         self.score = 0
 
+        # UI set up
+        self.health_sprite = arcade.Sprite(
+            filename="./graphics/Health.png",
+            center_x=40,
+            center_y=SCREEN_HEIGHT - 40,
+            image_width=25,
+            image_height=25,
+            scale=1,
+        )
+        self.energy_sprite = arcade.Sprite(
+            filename="./graphics/Energy.png",
+            center_x=40,
+            center_y=SCREEN_HEIGHT - 70,
+            image_width=25,
+            image_height=25,
+            scale=1,
+        )
+        self.weapon_slot_sprite = arcade.Sprite(
+            filename="./graphics/WeaponSlot.png",
+            center_x=150,
+            center_y=SCREEN_HEIGHT - 120,
+            image_width=80,
+            image_height=40,
+            scale=1,
+        )
+
         # GameObject lists
         self.wall_list = arcade.SpriteList()
         self.enemy_white_list = arcade.SpriteList()
@@ -726,8 +754,7 @@ class BoxHead(arcade.Window):
                                                damping=0.001,
                                                collision_type="enemy")
         self.spawn_enemy_cd += 1
-        # # TODO: change the time when designing the game play round
-        # self.spawn_enemy_cd %= 600
+        self.spawn_enemy_cd %= 10000
 
     def update_player_attack(self):
         if self.player.is_attack:
@@ -781,14 +808,16 @@ class BoxHead(arcade.Window):
     def update_enemy_attack(self):
         for enemy in self.enemy_white_list:
             if arcade.check_for_collision(enemy, self.player):
-                self.player.health = max(self.player.health - enemy.hit_damage, 0)
+                self.player.health = max(
+                    self.player.health - enemy.hit_damage, 0)
                 push = enemy.last_force.normalize().scale(ENEMY_FORCE)
                 self.physics_engine.apply_force(self.player, (push.x, push.y))
                 self.player.get_damage_len = GET_DAMAGE_LEN
 
         for enemy in self.enemy_red_list:
             if arcade.check_for_collision(enemy, self.player):
-                self.player.health = max(self.player.health - enemy.hit_damage, 0)
+                self.player.health = max(
+                    self.player.health - enemy.hit_damage, 0)
                 push = enemy.last_force.normalize().scale(ENEMY_FORCE)
                 self.physics_engine.apply_force(self.player, (push.x, push.y))
                 self.player.get_damage_len = GET_DAMAGE_LEN
@@ -823,7 +852,6 @@ class BoxHead(arcade.Window):
             #     if enemy.health <= 0:
             #         enemy.remove_from_sprite_lists()
 
-
             if arcade.check_for_collision(bullet, self.player):
                 self.player.health = max(self.player.health - bullet.damage, 0)
                 bullet.remove_from_sprite_lists()
@@ -841,32 +869,53 @@ class BoxHead(arcade.Window):
                 bullet.remove_from_sprite_lists()
 
     def draw_ui_player(self):
-        arcade.draw_rectangle_filled(140, SCREEN_HEIGHT - 50,
-                                     204, 32, LIGHT_BLACK)
-        arcade.draw_rectangle_filled(140, SCREEN_HEIGHT - 50,
-                                     200, 28, LIGHT_GRAY)
-        arcade.draw_rectangle_filled(40 + self.player.health, SCREEN_HEIGHT - 50,
-                                     self.player.health * 2, 28, HEALTH_RED)
-        # arcade.draw_rectangle_filled(320 - self.player.health, SCREEN_HEIGHT - 120,
-        #                              self.player.health * 2, 32, HEALTH_RED)
+        # Health bar
+        self.health_sprite.draw()
+        arcade.draw_rectangle_filled(160, SCREEN_HEIGHT - 40,
+                                     204, 22, LIGHT_BLACK)
+        arcade.draw_rectangle_filled(160, SCREEN_HEIGHT - 40,
+                                     200, 16, LIGHT_GRAY)
+        arcade.draw_rectangle_filled(60 + self.player.health, SCREEN_HEIGHT - 40,
+                                     self.player.health * 2, 16, HEALTH_RED)
+        
+        # Energy bar
+        self.energy_sprite.draw()
+        arcade.draw_rectangle_filled(160, SCREEN_HEIGHT - 70,
+                                     204, 22, LIGHT_BLACK)
+        arcade.draw_rectangle_filled(160, SCREEN_HEIGHT - 70,
+                                     200, 16, LIGHT_GRAY)
+        arcade.draw_rectangle_filled(60 + float(self.player.energy/2), SCREEN_HEIGHT - 70,
+                                     self.player.energy, 16, ENERGY_BLUE)
+        
+        # Weapon slot
+        self.weapon_slot_sprite.draw()
+        cur_weapon_sprit = arcade.Sprite()
+        cur_weapon_sprit.texture = self.player.current_weapon.textures[0]
+        cur_weapon_sprit.scale = 2
+        cur_weapon_sprit.center_x = 150
+        cur_weapon_sprit.center_y = SCREEN_HEIGHT - 120
+        cur_weapon_sprit.draw()
+
         if self.player.weapon_index - 1 >= 0:
             pass
         if self.player.weapon_index <= len(self.player.weapons) - 1:
             pass
-        cur_weapon_sprit = arcade.Sprite()
-        cur_weapon_sprit.texture = self.player.current_weapon.textures[0]
-        cur_weapon_sprit.scale = 2
-        cur_weapon_sprit.center_x = 100
-        cur_weapon_sprit.center_y = SCREEN_HEIGHT - 100
-        cur_weapon_sprit.draw()
+        last_weapon_sprit = cur_weapon_sprit
+        last_weapon_sprit.center_x = 70
+        last_weapon_sprit.color = (255, 255, 255, 100)
+        last_weapon_sprit.draw()
+        next_weapon_sprit = cur_weapon_sprit
+        next_weapon_sprit.center_x = 230
+        next_weapon_sprit.color = (255, 255, 255, 100)
+        next_weapon_sprit.draw()
 
     def draw_ui_game(self):
         round = str(self.round)
-        arcade.draw_text(round, float(SCREEN_WIDTH/2) - 100,
+        arcade.draw_text(round, float(SCREEN_WIDTH/2),
                          SCREEN_HEIGHT - 50, BLACK,
                          20, 2, "left", "Kenney Future")
         score = str(self.score)
-        arcade.draw_text(score, SCREEN_WIDTH - 100,
+        arcade.draw_text(score, SCREEN_WIDTH - 150,
                          SCREEN_HEIGHT - 50, BLACK,
                          20, 2, "left", "Kenney Future")
 
@@ -900,14 +949,6 @@ class BoxHead(arcade.Window):
         # Render the GUI
         self.draw_ui_player()
         self.draw_ui_game()
-        # arcade.draw_rectangle_filled(self.width // 2,
-        #                              20,
-        #                              self.width,
-        #                              40,
-        #                              arcade.color.ALMOND)
-        # text = f"Scroll value: ({self.camera_sprites.position[0]:5.1f}, " \
-        #        f"{self.camera_sprites.position[1]:5.1f})"
-        # arcade.draw_text(text, 10, 10, arcade.color.BLACK_BEAN, 20)
 
     def on_update(self, delta_time):
         # call update on all sprites
@@ -923,8 +964,7 @@ class BoxHead(arcade.Window):
             self.round += 1
             # TODO: change this value when refining the numbers
             self.spawn_enemy_cd = 0
-        else:
-            self.spawn_enemy_cd = 1000
+
         self.spawn_enemy()
         for enemy in self.enemy_white_list:
             enemy.update(self.physics_engine)
