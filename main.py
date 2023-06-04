@@ -2,6 +2,7 @@ import random
 import math
 import arcade
 from typing import Optional
+from arcade.application import Window
 from pyglet.math import Vec2
 from arcade.pymunk_physics_engine import PymunkPhysicsEngine
 
@@ -200,6 +201,49 @@ class Room:
             half_wall + 30 * WALL_SIZE, half_wall + 20 * WALL_SIZE))
         self.walls.append(WallCorner(
             half_wall + 40 * WALL_SIZE, half_wall + 20 * WALL_SIZE))
+
+    def draw(self) -> None:
+        # Room background
+        arcade.draw_rectangle_filled(
+            self.pos.x, self.pos.y, self.width, self.height, GROUND_WHITE
+        )
+        # Walls
+        for wall in self.walls:
+            wall.draw()
+
+
+class StartRoom:
+    """Game start room."""
+
+    def __init__(self, width: float = 1500, height: float = 900) -> None:
+        self.width = width
+        self.height = height
+        self.pos = Vec2(self.width / 2, self.height / 2)
+        self.spawn_pos = []
+
+        self.grid_w = int(self.width / WALL_SIZE)
+        self.grid_h = int(self.height / WALL_SIZE)
+
+        # Basic room layout
+        half_wall = WALL_SIZE / 2
+
+        # set boundary corner walls
+        self.walls = [WallCorner(half_wall, half_wall), WallCorner(half_wall, self.height - half_wall), WallCorner(
+            self.width - half_wall, half_wall), WallCorner(self.width - half_wall, self.height - half_wall)]
+
+        # set bottom and top walls
+        for i in range(1, self.grid_w - 1):
+            self.walls.append(WallSideHorizontal(
+                half_wall + i * WALL_SIZE, half_wall))
+            self.walls.append(WallSideHorizontal(
+                half_wall + i * WALL_SIZE, self.height - half_wall))
+
+        # set left and right walls
+        for i in range(1, self.grid_h - 1):
+            self.walls.append(WallSideVertical(
+                half_wall, half_wall + i * WALL_SIZE))
+            self.walls.append(WallSideVertical(
+                self.width - half_wall, half_wall + i * WALL_SIZE))
 
     def draw(self) -> None:
         # Room background
@@ -615,13 +659,13 @@ class EnemyRed(Character):
         return bullet
 
 
-class BoxHead(arcade.Window):
+class BoxHeadGame(arcade.View):
     """Main application class."""
 
-    def __init__(self, width, height, title):
+    def __init__(self):
         """Initializer"""
-        super().__init__(width, height, title, resizable=False)
-        self.set_mouse_visible(False)
+
+        super().__init__()
         self.mouse_x = None
         self.mouse_y = None
         self.mouse_pos = Vec2(0, 0)
@@ -688,7 +732,6 @@ class BoxHead(arcade.Window):
         self.enemy_red_list = arcade.SpriteList()
         self.player_bullet_list = arcade.SpriteList()
         self.enemy_bullet_list = arcade.SpriteList()
-        self.room_list = []  # used later
 
         # setup room background and player
         self.game_room = Room()
@@ -877,7 +920,7 @@ class BoxHead(arcade.Window):
                                      200, 16, LIGHT_GRAY)
         arcade.draw_rectangle_filled(60 + self.player.health, SCREEN_HEIGHT - 40,
                                      self.player.health * 2, 16, HEALTH_RED)
-        
+
         # Energy bar
         self.energy_sprite.draw()
         arcade.draw_rectangle_filled(160, SCREEN_HEIGHT - 70,
@@ -886,7 +929,7 @@ class BoxHead(arcade.Window):
                                      200, 16, LIGHT_GRAY)
         arcade.draw_rectangle_filled(60 + float(self.player.energy/2), SCREEN_HEIGHT - 70,
                                      self.player.energy, 16, ENERGY_BLUE)
-        
+
         # Weapon slot
         self.weapon_slot_sprite.draw()
         cur_weapon_sprit = arcade.Sprite()
@@ -1048,11 +1091,163 @@ class BoxHead(arcade.Window):
         self.camera_sprites.move_to(position, CAMERA_SPEED)
 
 
+class BoxHeadMenu(BoxHeadGame):
+    """Start menu."""
+
+    def __init__(self):
+        super().__init__()
+
+    def setup(self):
+        super().setup()
+        
+        # clean up
+        for wall in self.wall_list:
+            self.physics_engine.remove_sprite(wall)
+        self.wall_list.clear()
+
+        # setup game view
+        self.game_view = BoxHeadGame()
+        self.game_view.setup()
+
+        # Start menu background
+        self.game_room = StartRoom()
+        self.physics_engine.add_sprite_list(self.game_room.walls,
+                                            friction=0,
+                                            collision_type="wall",
+                                            body_type=PymunkPhysicsEngine.STATIC)
+        self.start_sprite_list = arcade.SpriteList()
+        self.start_sprite_list.append(
+            arcade.Sprite(filename="./graphics/Title.png",
+                          scale=0.4,
+                          center_x=SCREEN_WIDTH / 2,
+                          center_y=SCREEN_HEIGHT - 160)
+        )
+        self.start_sprite_list.append(
+            arcade.Sprite(filename="./graphics/MoveGuide.png",
+                          scale=0.3,
+                          center_x=200,
+                          center_y=200)
+        )
+        self.start_sprite_list.append(
+            arcade.Sprite(filename="./graphics/ShootGuide.png",
+                          scale=0.3,
+                          center_x=SCREEN_WIDTH - 200,
+                          center_y=200)
+        )
+        self.start_sprite_list.append(
+            arcade.Sprite(filename="./graphics/PauseGuide.png",
+                          scale=0.3,
+                          center_x=200,
+                          center_y=SCREEN_HEIGHT - 100)
+        )
+        self.start_sprite_list.append(
+            arcade.Sprite(filename="./graphics/WeaponChangeGuide.png",
+                          scale=0.3,
+                          center_x=200,
+                          center_y=SCREEN_HEIGHT - 200)
+        )
+        self.start_button = arcade.Sprite(
+            filename="./graphics/Start.png",
+            scale=0.3,
+            center_x=SCREEN_WIDTH/2 + 160,
+            center_y=SCREEN_HEIGHT / 2
+        )
+        self.option_button = arcade.Sprite(
+            filename="./graphics/Option.png",
+            scale=0.3,
+            center_x=SCREEN_WIDTH/2 + 160,
+            center_y=SCREEN_HEIGHT / 2 - 60
+        )
+        self.exit_button = arcade.Sprite(
+            filename="./graphics/Exit.png",
+            scale=0.3,
+            center_x=SCREEN_WIDTH/2 + 160,
+            center_y=SCREEN_HEIGHT / 2 - 120
+        )
+
+    def on_update(self, delta_time):
+        # call update on all sprites
+        self.physics_engine.step()
+
+        # update player
+        self.player.update(self.physics_engine)
+        self.update_player_attack()
+        self.process_player_bullet()
+
+        # scroll the screen to the player
+        self.scroll_to_player()
+
+    def on_draw(self):
+        self.clear()
+        self.camera_sprites.use()
+
+        # draw all the sprites.
+        self.game_room.draw()
+        self.start_sprite_list.draw()
+        self.player.draw()
+        self.player_bullet_list.draw()
+        self.start_button.draw()
+        self.option_button.draw()
+        self.exit_button.draw()
+
+        # Select the (un-scrolled) camera for our GUI
+        self.camera_gui.use()
+
+        # Mouse cursor
+        if self.mouse_x and self.mouse_y:
+            self.mouse_sprite.draw()
+
+    def spawn_enemy(self):
+        pass
+
+    def draw_ui_game(self):
+        pass
+
+    def draw_ui_player(self):
+        pass
+
+    def process_player_bullet(self):
+        self.player_bullet_list.update()
+
+        for bullet in self.player_bullet_list:
+            bullet.life_span -= 1
+
+            if arcade.check_for_collision(bullet, self.start_button):
+                self.window.show_view(self.game_view)
+                bullet.remove_from_sprite_lists()
+
+            if arcade.check_for_collision(bullet, self.option_button):
+                bullet.remove_from_sprite_lists()
+
+            if arcade.check_for_collision(bullet, self.exit_button):
+                arcade.close_window()
+                pass
+
+            hit_list = arcade.check_for_collision_with_list(
+                bullet, self.wall_list)
+
+            if len(hit_list) > 0:
+                bullet.remove_from_sprite_lists()
+
+            if bullet.life_span <= 0:
+                bullet.remove_from_sprite_lists()
+
+    def update_enemy_attack(self):
+        pass
+
+    def process_enemy_bullet(self):
+        pass
+
+
 def main():
     """Main function"""
 
-    window = BoxHead(SCREEN_WIDTH, SCREEN_HEIGHT, "BoxHead 2D: Invincible")
-    window.setup()
+    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT,
+                           "BoxHead 2D: Invincible")
+    window.set_mouse_visible(False)
+    menu_view = BoxHeadMenu()
+    menu_view.setup()
+    window.show_view(menu_view)
     arcade.run()
 
 
