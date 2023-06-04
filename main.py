@@ -1148,19 +1148,19 @@ class BoxHeadMenu(BoxHeadGame):
         )
         self.start_button = arcade.Sprite(
             filename="./graphics/Start.png",
-            scale=0.3,
+            scale=0.6,
             center_x=SCREEN_WIDTH/2 + 160,
             center_y=SCREEN_HEIGHT / 2
         )
         self.option_button = arcade.Sprite(
             filename="./graphics/Option.png",
-            scale=0.3,
+            scale=0.6,
             center_x=SCREEN_WIDTH/2 + 160,
             center_y=SCREEN_HEIGHT / 2 - 60
         )
         self.exit_button = arcade.Sprite(
             filename="./graphics/Exit.png",
-            scale=0.3,
+            scale=0.6,
             center_x=SCREEN_WIDTH/2 + 160,
             center_y=SCREEN_HEIGHT / 2 - 120
         )
