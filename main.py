@@ -111,6 +111,7 @@ class Room:
 
         self.grid_w = int(self.width / WALL_SIZE)
         self.grid_h = int(self.height / WALL_SIZE)
+        self.grid = [[0] * self.grid_h] * self.grid_w
 
         # Basic room layout
         half_wall = WALL_SIZE / 2
@@ -201,6 +202,13 @@ class Room:
             half_wall + 30 * WALL_SIZE, half_wall + 20 * WALL_SIZE))
         self.walls.append(WallCorner(
             half_wall + 40 * WALL_SIZE, half_wall + 20 * WALL_SIZE))
+
+        for wall in self.walls:
+            if (wall.grid_idx[0] < self.grid_w and wall.grid_idx[1] < self.grid_h
+                    and wall.grid_idx[0] >= 0 and wall.grid_idx[1] >= 0):
+                x = wall.grid_idx[0]
+                y = wall.grid_idx[1]
+                self.grid[x][y] = 1
 
     def draw(self) -> None:
         # Room background
@@ -1099,7 +1107,7 @@ class BoxHeadMenu(BoxHeadGame):
 
     def setup(self):
         super().setup()
-        
+
         # clean up
         for wall in self.wall_list:
             self.physics_engine.remove_sprite(wall)
