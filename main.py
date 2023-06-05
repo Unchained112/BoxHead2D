@@ -291,11 +291,11 @@ class FireBall(Bullet):
         self.life_span = int(60)
 
 
-class Gun(arcade.Sprite):
-    """Gun weapon class."""
+class Weapon(arcade.Sprite):
+    """Weapon class."""
 
     def __init__(
-        self, gun_name: str = "./graphics/Pistol.png", x: float = 0, y: float = 0
+        self, weapon_name: str = "./graphics/Pistol.png", x: float = 0, y: float = 0
     ) -> None:
         self.is_gun = True
         self.damage = 40
@@ -306,11 +306,11 @@ class Gun(arcade.Sprite):
         self.bullet_speed = 25
         self.cost = 0
         self.texture_list = [
-            arcade.load_texture(gun_name),
-            arcade.load_texture(gun_name, flipped_horizontally=True),
+            arcade.load_texture(weapon_name),
+            arcade.load_texture(weapon_name, flipped_horizontally=True),
         ]
         super().__init__(
-            filename=gun_name,
+            filename=weapon_name,
             center_x=self.pos.x,
             center_y=self.pos.y,
             image_width=20,
@@ -349,14 +349,14 @@ class Gun(arcade.Sprite):
         return bullets
 
 
-class Shotgun(Gun):
+class Shotgun(Weapon):
     """Shotgun class."""
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__("./graphics/Shotgun.png", x, y)
         self.cd_max = int(30)  # 0.5 s
         self.cost = 12
-    
+
     def get_bullet(self) -> arcade.SpriteList:
         bullets = arcade.SpriteList()
         for angle in [-0.1, 0, 0.1]:
@@ -368,6 +368,37 @@ class Shotgun(Gun):
             bullet.aim = bullet.aim.normalize().scale(bullet.speed)
             bullet.damage = self.damage
             bullets.append(bullet)
+        return bullets
+
+
+class Barrel(Weapon):
+    """Barrel class."""
+
+    def __init__(self, x: float = 0, y: float = 0) -> None:
+        self.is_gun = False
+        self.damage = 30
+        self.cd_max = int(20)  # 2/3 s
+        self.pos = Vec2(x, y)
+        self.aim_pos = Vec2(0, 0)
+        self.bullet_speed = 25
+        self.cost = 0
+        self.texture_list = [
+            arcade.load_texture("./graphics/Barrel.png",
+                                flipped_horizontally=True),
+        ]
+
+    def update(self) -> None:
+        self.center_x = self.pos.x
+        self.center_y = self.pos.y
+
+    def draw(self) -> None:
+        pass
+
+    def aim(self, aim_pos: Vec2) -> None:
+        pass
+
+    def get_bullet(self) -> arcade.SpriteList:
+        bullets = arcade.SpriteList()
         return bullets
 
 
@@ -519,8 +550,8 @@ class Player(Character):
         self.weapon_pos = Vec2(16, -2)
         self.weapons = []
         self.weapon_index = 0
-        pistol = Gun(x=self.pos.x + self.weapon_pos.x,
-                     y=self.pos.y + self.weapon_pos.y)
+        pistol = Weapon(x=self.pos.x + self.weapon_pos.x,
+                        y=self.pos.y + self.weapon_pos.y)
         self.add_weapon(pistol)
         self.current_weapon = self.weapons[self.weapon_index]
 
@@ -564,9 +595,9 @@ class Player(Character):
             self.weapon_pos = Vec2(9, -2)
         self.current_weapon.update()
 
-    def add_weapon(self, gun: arcade.Sprite) -> None:
-        self.cd_max = gun.cd_max
-        self.weapons.append(gun)
+    def add_weapon(self, weapon: arcade.Sprite) -> None:
+        self.cd_max = weapon.cd_max
+        self.weapons.append(weapon)
 
     def change_weapon(self, index_change: int) -> None:
         self.weapon_index += index_change
@@ -841,7 +872,9 @@ class BoxHeadGame(arcade.View):
             if self.player.cd == self.player.cd_max:
                 self.player.cd = 0
 
-            if self.player.cd == 0:
+            if self.player.cd == 0 and self.player.energy - self.player.current_weapon.cost >= 0:
+                self.player.energy = max(
+                    0, self.player.energy - self.player.current_weapon.cost)
                 bullets = self.player.attack()
                 for bullet in bullets:
                     bullet.change_x = bullet.aim.x
@@ -979,17 +1012,25 @@ class BoxHeadGame(arcade.View):
         cur_weapon_sprit.center_y = SCREEN_HEIGHT - 120
         cur_weapon_sprit.draw()
 
+        last_weapon_sprit = arcade.Sprite()
+        last_weapon_sprit.center_x = 70
+        last_weapon_sprit.center_y = SCREEN_HEIGHT - 120
+        last_weapon_sprit.color = (255, 255, 255, 100)
+
+        next_weapon_sprit = arcade.Sprite()
+        next_weapon_sprit.center_x = 230
+        next_weapon_sprit.center_y = SCREEN_HEIGHT - 120
+        next_weapon_sprit.color = (255, 255, 255, 100)
         if self.player.weapon_index - 1 >= 0:
-            last_weapon_sprit = arcade.Sprite()
-            last_weapon_sprit.texture = self.player.weapons[self.player.weapon_index - 1].textures[0]
-            last_weapon_sprit.center_x = 70
-            last_weapon_sprit.color = (255, 255, 255, 100)
+            last_weapon_sprit.texture = (
+                self.player.weapons[self.player.weapon_index - 1]).textures[0]
+            last_weapon_sprit.scale = 2
             last_weapon_sprit.draw()
+            # print(self.player.weapon_index - 1)
         if self.player.weapon_index + 1 < len(self.player.weapons):
-            next_weapon_sprit = arcade.Sprite()
-            next_weapon_sprit.texture = self.player.weapons[self.player.weapon_index + 1].textures[0]
-            next_weapon_sprit.center_x = 230
-            next_weapon_sprit.color = (255, 255, 255, 100)
+            next_weapon_sprit.texture = (
+                self.player.weapons[self.player.weapon_index + 1]).textures[0]
+            next_weapon_sprit.scale = 2
             next_weapon_sprit.draw()
 
     def draw_ui_game(self):
@@ -1073,7 +1114,7 @@ class BoxHeadGame(arcade.View):
             self.player.move_left = True
         elif key == arcade.key.D:
             self.player.move_right = True
-        
+
         # change weapon
         if key == arcade.key.Q:
             self.player.change_weapon(-1)

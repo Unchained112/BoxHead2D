@@ -32,8 +32,8 @@ PARTICLE_GRAVITY = 0.05
 PARTICLE_FADE_RATE = 8
 
 # How fast the particle moves. Range is from 2.5 <--> 5 with 2.5 and 2.5 set.
-PARTICLE_MIN_SPEED = 2.5
-PARTICLE_SPEED_RANGE = 2.5
+PARTICLE_MIN_SPEED = 1
+PARTICLE_SPEED_RANGE = 1
 
 # How many particles per explosion
 PARTICLE_COUNT = 30
