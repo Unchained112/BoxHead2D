@@ -80,6 +80,17 @@ class WallCorner(Wall):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
         self.texture = arcade.load_texture("./graphics/WallCorner.png")
+        self.shadow = arcade.Sprite(
+            center_x=self.pos.x - 3,
+            center_y=self.pos.y - 3,
+            scale=1,
+        )
+        self.shadow.texture = arcade.make_soft_square_texture(
+            30, LIGHT_BLACK, 200, 100)
+
+    def draw(self) -> None:
+        self.shadow.draw()
+        super().draw()
 
 
 class WallSideHorizontal(Wall):
@@ -422,6 +433,7 @@ class Character(arcade.Sprite):
         self.foot_l_pos = Vec2(-8, -16)
         self.foot_r_pos = Vec2(8, -16)
         self.collider_pos = Vec2(0, -3)
+        self.shadow_pos = Vec2(-1, -9)
 
         # init with collider
         super().__init__(
@@ -461,6 +473,14 @@ class Character(arcade.Sprite):
             image_height=4,
             scale=1,
         )
+        # Shadow sprite
+        self.shadow = arcade.Sprite(
+            center_x=self.collider_pos.x + self.pos.x,
+            center_y=self.collider_pos.y + self.pos.x,
+            scale=1,
+        )
+        self.shadow.texture = arcade.make_soft_square_texture(
+            22, LIGHT_BLACK, 160, 100)
 
     def move(self, physic_engine: PymunkPhysicsEngine) -> None:
         self.pos.x = self.center_x - self.collider_pos.x
@@ -473,6 +493,9 @@ class Character(arcade.Sprite):
         self.foot_l.center_y = self.pos.y + self.foot_l_pos.y
         self.foot_r.center_x = self.pos.x + self.foot_r_pos.x
         self.foot_r.center_y = self.pos.y + self.foot_r_pos.y
+
+        self.shadow.center_x = self.pos.x + self.shadow_pos.x
+        self.shadow.center_y = self.pos.y + self.shadow_pos.y
 
     def update(self, physic_engine: PymunkPhysicsEngine) -> None:
         self.move(physic_engine)
@@ -508,6 +531,7 @@ class Character(arcade.Sprite):
 
     def draw(self) -> None:
         # self.box_collider.draw()
+        self.shadow.draw()
         self.body.draw()
         self.foot_l.draw()
         self.foot_r.draw()
