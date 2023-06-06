@@ -310,11 +310,11 @@ class Weapon(arcade.Sprite):
         self, weapon_name: str = "./graphics/Pistol.png", x: float = 0, y: float = 0
     ) -> None:
         self.is_gun = True
-        self.damage = 40
-        self.cd_max = int(20)  # 2/3 s
         self.pos = Vec2(x, y)
         self.aim_pos = Vec2(0, 0)
         self.is_right = True
+        self.damage = 30
+        self.cd_max = int(20)  # 2/3 s
         self.bullet_speed = 25
         self.cost = 0
         self.texture_list = [
@@ -368,6 +368,7 @@ class Shotgun(Weapon):
         super().__init__("./graphics/Shotgun.png", x, y)
         self.cd_max = int(30)  # 0.5 s
         self.cost = 12
+        self.damage = 40
 
     def get_bullet(self) -> arcade.SpriteList:
         bullets = arcade.SpriteList()
@@ -384,8 +385,30 @@ class Shotgun(Weapon):
         return bullets
 
 
+class Object(arcade.Sprite):
+    """Base object class that can be placed by the player."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            image_width=30,
+            image_height=30,
+            scale=1,
+        )
+        self.health = 1
+        self.object_type = 0  # Wall
+
+
+class BarrelObject(Object):
+    """Barrel object class (placed by the player). """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.texture = arcade.load_texture("./graphics/Barrel.png")
+        self.object_type = 1  # Barrel object
+
+
 class Barrel(Weapon):
-    """Barrel class."""
+    """Barrel class (as a weapon)."""
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__()
@@ -409,8 +432,7 @@ class Barrel(Weapon):
         pass
 
     def get_object(self) -> arcade.Sprite:
-        barrel = arcade.Sprite(filename="./graphics/Barrel.png",
-                               scale=1)
+        barrel = BarrelObject()
         return barrel
 
 
@@ -579,6 +601,7 @@ class Player(Character):
                         y=self.pos.y + self.weapon_pos.y)
         self.add_weapon(pistol)
         self.current_weapon = self.weapons[self.weapon_index]
+        self.cd_max = self.current_weapon.cd_max
 
     def move(self, physic_engine: PymunkPhysicsEngine) -> None:
         force = Vec2(0, 0)
@@ -621,7 +644,6 @@ class Player(Character):
         self.current_weapon.update()
 
     def add_weapon(self, weapon: arcade.Sprite) -> None:
-        self.cd_max = weapon.cd_max
         self.weapons.append(weapon)
 
     def change_weapon(self, index_change: int) -> None:
@@ -629,6 +651,7 @@ class Player(Character):
         self.weapon_index = max(0, self.weapon_index)
         self.weapon_index = min(len(self.weapons) - 1, self.weapon_index)
         self.current_weapon = self.weapons[self.weapon_index]
+        self.cd_max = self.current_weapon.cd_max
 
     def aim(self, mouse_pos: Vec2) -> None:
         aim_pos = mouse_pos - self.pos
@@ -793,6 +816,7 @@ class BoxHeadGame(arcade.View):
         # Gameplay set up
         self.round = 0
         self.score = 0
+        self.weapon_check = 0
 
         # UI set up
         self.health_sprite = arcade.Sprite(
@@ -835,10 +859,6 @@ class BoxHeadGame(arcade.View):
 
         # set up the player
         self.player = Player(float(SCREEN_WIDTH / 2), float(SCREEN_HEIGHT / 2))
-        shotgun = Shotgun()
-        self.player.add_weapon(shotgun)
-        barrel = Barrel()
-        self.player.add_weapon(barrel)
 
         # set up the enemy
         self.spawn_enemy_cd = 0
@@ -873,7 +893,7 @@ class BoxHeadGame(arcade.View):
 
     def spawn_enemy(self):
         # spawn enemy white
-        if self.spawn_enemy_cd <= 5:
+        if self.spawn_enemy_cd <= 3 * self.round:
             for i in range(0, 4):
                 tmp_enemy = EnemyWhite(
                     self.game_room.spawn_pos[i].x, self.game_room.spawn_pos[i].y)
@@ -885,7 +905,7 @@ class BoxHeadGame(arcade.View):
                                                collision_type="enemy")
 
         # spawn enemy red
-        if self.spawn_enemy_cd == 6:
+        if 3 * self.round < self.spawn_enemy_cd and self.spawn_enemy_cd < 4 * self.round:
             for i in range(0, 4):
                 tmp_enemy = EnemyRed(
                     self.game_room.spawn_pos[i].x, self.game_room.spawn_pos[i].y)
@@ -896,7 +916,7 @@ class BoxHeadGame(arcade.View):
                                                damping=0.001,
                                                collision_type="enemy")
         self.spawn_enemy_cd += 1
-        self.spawn_enemy_cd %= 10000
+        self.spawn_enemy_cd %= 100000
 
     def update_player_attack(self):
         if self.player.is_attack:
@@ -932,6 +952,22 @@ class BoxHeadGame(arcade.View):
 
         self.player.cd = min(self.player.cd + 1, self.player.cd_max)
 
+    def update_player_weapon(self):
+        if self.score == 1600 and self.weapon_check == 0:
+            shotgun = Shotgun()
+            self.player.add_weapon(shotgun)
+            self.weapon_check += 1
+        if self.score >= 5200 and self.weapon_check == 1:
+            barrel = Barrel()
+            self.player.add_weapon(barrel)
+            self.weapon_check += 1
+
+        # for testing
+        # if self.score >= 0 and self.weapon_check == 0:
+        #     barrel = Barrel()
+        #     self.player.add_weapon(barrel)
+        #     self.weapon_check += 1
+
     def process_player_bullet(self):
         self.player_bullet_list.update()
         self.player_object_list.update()
@@ -939,6 +975,7 @@ class BoxHeadGame(arcade.View):
         for bullet in self.player_bullet_list:
             bullet.life_span -= 1
 
+            # check hit with enemy
             hit_list = arcade.check_for_collision_with_list(
                 bullet, self.enemy_white_list)
 
@@ -959,9 +996,25 @@ class BoxHeadGame(arcade.View):
                     self.player.health = min(self.player.health + KILL_RECOVER,
                                              self.player.player_health_max)
                     self.score += enemy.health_max
+
             if len(hit_list) > 0:
                 bullet.remove_from_sprite_lists()
 
+            # check hit with player objects
+            hit_list = arcade.check_for_collision_with_list(
+                bullet, self.player_object_list)
+
+            for object in hit_list:
+                if object.object_type == 1:  # Barrel object
+                    object.health -= bullet.damage
+                    if object.health <= 0:
+                        object.remove_from_sprite_lists()
+                        # self.physics_engine.remove_sprite(object)
+
+            if len(hit_list) > 0:
+                bullet.remove_from_sprite_lists()
+
+            # check hit with room walls
             hit_list = arcade.check_for_collision_with_list(
                 bullet, self.wall_list)
 
@@ -1018,6 +1071,7 @@ class BoxHeadGame(arcade.View):
             #     if enemy.health <= 0:
             #         enemy.remove_from_sprite_lists()
 
+            # check hit with player
             if arcade.check_for_collision(bullet, self.player):
                 self.player.health = max(self.player.health - bullet.damage, 0)
                 bullet.remove_from_sprite_lists()
@@ -1025,6 +1079,20 @@ class BoxHeadGame(arcade.View):
                     self.player, (bullet.aim.x * BULLET_FORCE, bullet.aim.y * BULLET_FORCE))
                 self.player.get_damage_len = GET_DAMAGE_LEN
 
+            # check hit with player objects
+            hit_list = arcade.check_for_collision_with_list(
+                bullet, self.player_object_list)
+
+            for object in hit_list:
+                if object.object_type == 1:  # Barrel object
+                    object.health -= bullet.damage
+                    if object.health <= 0:
+                        object.remove_from_sprite_lists()
+
+            if len(hit_list) > 0:
+                bullet.remove_from_sprite_lists()
+
+             # check hit with room walls
             hit_list = arcade.check_for_collision_with_list(
                 bullet, self.wall_list)
 
@@ -1133,6 +1201,7 @@ class BoxHeadGame(arcade.View):
         self.player.update(self.physics_engine)
         self.update_player_attack()
         self.process_player_bullet()
+        self.update_player_weapon()
 
         # update enemy
         if len(self.enemy_white_list) == 0 and len(self.enemy_red_list) == 0:
