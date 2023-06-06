@@ -61,8 +61,8 @@ class Wall(arcade.Sprite):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         self.pos = Vec2(x, y)
-        self.grid_idx = (int((x - (WALL_SIZE/2)) / 30),
-                         int((y - (WALL_SIZE/2)) / 30))
+        self.grid_idx = (math.floor(x / 30),
+                         math.floor(y / 30))
 
         # Wall
         super().__init__(
@@ -122,7 +122,8 @@ class Room:
 
         self.grid_w = int(self.width / WALL_SIZE)
         self.grid_h = int(self.height / WALL_SIZE)
-        self.grid = [[0] * self.grid_h] * self.grid_w
+        self.grid = {(i, j): 0 for i in range(self.grid_w)
+                     for j in range(self.grid_h)}
 
         # Basic room layout
         half_wall = WALL_SIZE / 2
@@ -219,7 +220,7 @@ class Room:
                     and wall.grid_idx[0] >= 0 and wall.grid_idx[1] >= 0):
                 x = wall.grid_idx[0]
                 y = wall.grid_idx[1]
-                self.grid[x][y] = 1
+                self.grid[x, y] = 1
 
     def draw(self) -> None:
         # Room background
@@ -370,8 +371,9 @@ class Shotgun(Weapon):
 
     def get_bullet(self) -> arcade.SpriteList:
         bullets = arcade.SpriteList()
-        for angle in [-0.1, 0, 0.1]:
+        for angle in [-0.05, 0, 0.05]:
             bullet = self.bullet()
+            bullet.life_span = 15
             bullet.center_x = self.center_x
             bullet.center_y = self.center_y
             bullet.speed = self.bullet_speed
@@ -386,16 +388,17 @@ class Barrel(Weapon):
     """Barrel class."""
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
+        super().__init__()
         self.is_gun = False
         self.damage = 30
-        self.cd_max = int(20)  # 2/3 s
+        self.cd_max = int(10)  # 2/3 s
         self.pos = Vec2(x, y)
         self.aim_pos = Vec2(0, 0)
         self.bullet_speed = 25
         self.cost = 0
+        self.is_right = True
         self.texture_list = [
-            arcade.load_texture("./graphics/Barrel.png",
-                                flipped_horizontally=True),
+            arcade.load_texture("./graphics/Barrel.png"),
         ]
 
     def update(self) -> None:
@@ -405,12 +408,10 @@ class Barrel(Weapon):
     def draw(self) -> None:
         pass
 
-    def aim(self, aim_pos: Vec2) -> None:
-        pass
-
-    def get_bullet(self) -> arcade.SpriteList:
-        bullets = arcade.SpriteList()
-        return bullets
+    def get_object(self) -> arcade.Sprite:
+        barrel = arcade.Sprite(filename="./graphics/Barrel.png",
+                               scale=1)
+        return barrel
 
 
 class Character(arcade.Sprite):
@@ -636,6 +637,9 @@ class Player(Character):
     def attack(self) -> arcade.SpriteList:
         return self.current_weapon.get_bullet()
 
+    def place(self) -> arcade.Sprite:
+        return self.current_weapon.get_object()
+
 
 class EnemyWhite(Character):
     """EnemyWhite class."""
@@ -821,6 +825,7 @@ class BoxHeadGame(arcade.View):
         self.enemy_white_list = arcade.SpriteList()
         self.enemy_red_list = arcade.SpriteList()
         self.player_bullet_list = arcade.SpriteList()
+        self.player_object_list = arcade.SpriteList()
         self.enemy_bullet_list = arcade.SpriteList()
 
         # setup room background and player
@@ -832,6 +837,8 @@ class BoxHeadGame(arcade.View):
         self.player = Player(float(SCREEN_WIDTH / 2), float(SCREEN_HEIGHT / 2))
         shotgun = Shotgun()
         self.player.add_weapon(shotgun)
+        barrel = Barrel()
+        self.player.add_weapon(barrel)
 
         # set up the enemy
         self.spawn_enemy_cd = 0
@@ -899,16 +906,35 @@ class BoxHeadGame(arcade.View):
             if self.player.cd == 0 and self.player.energy - self.player.current_weapon.cost >= 0:
                 self.player.energy = max(
                     0, self.player.energy - self.player.current_weapon.cost)
-                bullets = self.player.attack()
-                for bullet in bullets:
-                    bullet.change_x = bullet.aim.x
-                    bullet.change_y = bullet.aim.y
-                    self.player_bullet_list.append(bullet)
+
+                if self.player.current_weapon.is_gun:
+                    bullets = self.player.attack()
+                    for bullet in bullets:
+                        bullet.change_x = bullet.aim.x
+                        bullet.change_y = bullet.aim.y
+                        self.player_bullet_list.append(bullet)
+                else:
+                    barrel = self.player.place()
+                    place_point = self.player.pos + \
+                        self.player.current_weapon.aim_pos.normalize().scale(30)
+                    grid_x = math.floor(place_point.x / 30)
+                    grid_y = math.floor(place_point.y / 30)
+                    if self.game_room.grid[grid_x, grid_y] != 1:
+                        # print(1)
+                        barrel.center_x = grid_x * 30 + float(WALL_SIZE/2)
+                        barrel.center_y = grid_y * 30 + float(WALL_SIZE/2)
+                        self.player_object_list.append(barrel)
+                        self.physics_engine.add_sprite(barrel,
+                                                       friction=0,
+                                                       collision_type="barrel",
+                                                       body_type=PymunkPhysicsEngine.STATIC)
+                        self.game_room.grid[grid_x, grid_y] = 1
 
         self.player.cd = min(self.player.cd + 1, self.player.cd_max)
 
     def process_player_bullet(self):
         self.player_bullet_list.update()
+        self.player_object_list.update()
 
         for bullet in self.player_bullet_list:
             bullet.life_span -= 1
@@ -1030,8 +1056,9 @@ class BoxHeadGame(arcade.View):
         # Weapon slot
         self.weapon_slot_sprite.draw()
         cur_weapon_sprit = arcade.Sprite()
-        cur_weapon_sprit.texture = self.player.current_weapon.textures[0]
-        cur_weapon_sprit.scale = 2
+        cur_weapon_sprit.texture = self.player.current_weapon.texture_list[0]
+        if self.player.current_weapon.is_gun:
+            cur_weapon_sprit.scale = 2
         cur_weapon_sprit.center_x = 150
         cur_weapon_sprit.center_y = SCREEN_HEIGHT - 120
         cur_weapon_sprit.draw()
@@ -1046,15 +1073,14 @@ class BoxHeadGame(arcade.View):
         next_weapon_sprit.center_y = SCREEN_HEIGHT - 120
         next_weapon_sprit.color = (255, 255, 255, 100)
         if self.player.weapon_index - 1 >= 0:
-            last_weapon_sprit.texture = (
-                self.player.weapons[self.player.weapon_index - 1]).textures[0]
-            last_weapon_sprit.scale = 2
+            last_weapon_sprit.texture = self.player.weapons[self.player.weapon_index - 1].texture_list[0]
+            if self.player.weapons[self.player.weapon_index - 1].is_gun:
+                last_weapon_sprit.scale = 2
             last_weapon_sprit.draw()
-            # print(self.player.weapon_index - 1)
         if self.player.weapon_index + 1 < len(self.player.weapons):
-            next_weapon_sprit.texture = (
-                self.player.weapons[self.player.weapon_index + 1]).textures[0]
-            next_weapon_sprit.scale = 2
+            next_weapon_sprit.texture = self.player.weapons[self.player.weapon_index + 1].texture_list[0]
+            if self.player.weapons[self.player.weapon_index + 1].is_gun:
+                next_weapon_sprit.scale = 2
             next_weapon_sprit.draw()
 
     def draw_ui_game(self):
@@ -1085,6 +1111,7 @@ class BoxHeadGame(arcade.View):
         for enemy in self.enemy_red_list:
             enemy.draw()
         self.player_bullet_list.draw()
+        self.player_object_list.draw()
         self.enemy_bullet_list.draw()
 
         # Select the (un-scrolled) camera for our GUI
