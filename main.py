@@ -63,7 +63,6 @@ PARTICLE_COLORS = [arcade.color.ALIZARIN_CRIMSON,
 
 def get_sin(v: Vec2) -> float:
     """Get sine value of a given vector."""
-
     return v.y / v.distance(Vec2(0, 0))
 
 
@@ -305,6 +304,14 @@ class Bullet(arcade.Sprite):
         self.angle = rotate_angle
 
 
+class EnergyBullet(Bullet):
+    """Bullet that cost energy. """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.texture = arcade.load_texture("./graphics/EnergyBullet.png")
+
+
 class FireBall(Bullet):
     """FireBall class for enemy red."""
 
@@ -314,12 +321,22 @@ class FireBall(Bullet):
         self.life_span = int(60)
 
 
+class ExplosionParticle(Bullet):
+    """Particle class for explosion."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.texture = arcade.load_texture("./graphics/Particle.png")
+        self.height = 4
+        self.width = 4
+
+
 class Smoke(arcade.SpriteCircle):
     """ This represents a puff of smoke """
 
     def __init__(self, size):
         super().__init__(size, arcade.color.DARK_GRAY, soft=True)
-        self.scale = 0.5 # smoke scale
+        self.scale = 0.5  # smoke scale
 
     def update(self):
         """ Update this particle """
@@ -328,10 +345,11 @@ class Smoke(arcade.SpriteCircle):
             self.remove_from_sprite_lists()
         else:
             # Update values
-            self.alpha -= 42 # smoke fade rate
+            self.alpha -= 42  # smoke fade rate
             self.center_x += self.change_x
             self.center_y += self.change_y
-            self.scale += 0.03 # smoke expansion rate
+            self.scale += 0.03  # smoke expansion rate
+
 
 class Particle(arcade.SpriteCircle):
     """ Explosion particle """
@@ -369,13 +387,13 @@ class Particle(arcade.SpriteCircle):
             self.remove_from_sprite_lists()
         else:
             # Update
-            self.my_alpha -= 36 # particle fade rate
+            self.my_alpha -= 36  # particle fade rate
             self.alpha = self.my_alpha
             self.center_x += self.change_x
             self.center_y += self.change_y
 
             # Should we sparkle this?
-            if random.random() <= 0.02: # sparkle chance
+            if random.random() <= 0.02:  # sparkle chance
                 self.alpha = 255
                 self.texture = arcade.make_circle_texture(int(self.width),
                                                           arcade.color.WHITE)
@@ -383,7 +401,7 @@ class Particle(arcade.SpriteCircle):
                 self.texture = self.normal_texture
 
             # Leave a smoke particle?
-            if random.random() <= 0.25: # smoke chance
+            if random.random() <= 0.25:  # smoke chance
                 smoke = Smoke(5)
                 smoke.position = self.position
                 self.my_list.append(smoke)
@@ -455,6 +473,7 @@ class Shotgun(Weapon):
         self.cd_max = int(30)  # 0.5 s
         self.cost = 12
         self.damage = 40
+        self.bullet = EnergyBullet
 
     def get_bullet(self) -> arcade.SpriteList:
         bullets = arcade.SpriteList()
@@ -482,6 +501,7 @@ class Object(arcade.Sprite):
         )
         self.health = 1
         self.object_type = 0  # Wall
+        self.grid_idx = (0, 0)
 
 
 class BarrelObject(Object):
@@ -491,6 +511,19 @@ class BarrelObject(Object):
         super().__init__()
         self.texture = arcade.load_texture("./graphics/Barrel.png")
         self.object_type = 1  # Barrel object
+
+
+class PlacedWallObject(Object):
+    """Wall """
+
+    def __init__(self) -> None:
+        super().__init__()
+
+
+class PlacedWall(Weapon):
+
+    def __init__(self, weapon_name: str = "./graphics/Pistol.png", x: float = 0, y: float = 0) -> None:
+        super().__init__(weapon_name, x, y)
 
 
 class Barrel(Weapon):
@@ -504,7 +537,7 @@ class Barrel(Weapon):
         self.pos = Vec2(x, y)
         self.aim_pos = Vec2(0, 0)
         self.bullet_speed = 25
-        self.cost = 0
+        self.cost = 10
         self.is_right = True
         self.texture_list = [
             arcade.load_texture("./graphics/Barrel.png"),
@@ -1011,13 +1044,13 @@ class BoxHeadGame(arcade.View):
             particle = Particle(self.explosions_list)
             particle.position = position
             self.explosions_list.append(particle)
-            
-            bullet = Bullet()
+
+            bullet = ExplosionParticle()
             bullet.position = position
             bullet.life_span = 8
             bullet.change_x = particle.change_x
             bullet.change_y = particle.change_y
-            bullet.damage = 10 # TODO: set explosion damage
+            bullet.damage = 10  # TODO: set explosion damage
             self.player_bullet_list.append(bullet)
 
         smoke = Smoke(30)
@@ -1046,9 +1079,9 @@ class BoxHeadGame(arcade.View):
                     grid_x = math.floor(place_point.x / 30)
                     grid_y = math.floor(place_point.y / 30)
                     if self.game_room.grid[grid_x, grid_y] != 1:
-                        # print(1)
                         barrel.center_x = grid_x * 30 + float(WALL_SIZE/2)
                         barrel.center_y = grid_y * 30 + float(WALL_SIZE/2)
+                        barrel.grid_idx = (grid_x, grid_y)
                         self.player_object_list.append(barrel)
                         self.physics_engine.add_sprite(barrel,
                                                        friction=0,
@@ -1070,6 +1103,8 @@ class BoxHeadGame(arcade.View):
 
         # for testing
         if self.score >= 0 and self.weapon_check == 0:
+            shotgun = Shotgun()
+            self.player.add_weapon(shotgun)
             barrel = Barrel()
             self.player.add_weapon(barrel)
             self.weapon_check += 1
@@ -1115,9 +1150,9 @@ class BoxHeadGame(arcade.View):
                     object.health -= bullet.damage
                     if object.health <= 0:
                         self.set_explosion(object.position)
-                        self.game_room.grid[object.grid_idx[0], object.grid_idx[1]] = 0
+                        self.game_room.grid[object.grid_idx[0],
+                                            object.grid_idx[1]] = 0
                         object.remove_from_sprite_lists()
-                        # self.physics_engine.remove_sprite(object)
 
             if len(hit_list) > 0:
                 bullet.remove_from_sprite_lists()
@@ -1196,7 +1231,8 @@ class BoxHeadGame(arcade.View):
                     object.health -= bullet.damage
                     if object.health <= 0:
                         self.set_explosion(object.position)
-                        self.game_room.grid[object.grid_idx[0], object.grid_idx[1]] = 0
+                        self.game_room.grid[object.grid_idx[0],
+                                            object.grid_idx[1]] = 0
                         object.remove_from_sprite_lists()
 
             if len(hit_list) > 0:
