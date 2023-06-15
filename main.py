@@ -49,6 +49,17 @@ BULLET_FORCE = float(1000)
 ENEMY_FORCE = float(4000)
 KILL_RECOVER = int(5)
 
+# Explosion related
+PARTICLE_FADE_RATE = 60
+PARTICLE_MIN_SPEED = 6
+PARTICLE_SPEED_RANGE = 1
+PARTICLE_RADIUS = 3
+PARTICLE_COLORS = [arcade.color.ALIZARIN_CRIMSON,
+                   arcade.color.COQUELICOT,
+                   arcade.color.LAVA,
+                   arcade.color.KU_CRIMSON,
+                   arcade.color.DARK_TANGERINE]
+
 
 def get_sin(v: Vec2) -> float:
     """Get sine value of a given vector."""
@@ -301,6 +312,81 @@ class FireBall(Bullet):
         super().__init__()
         self.texture = arcade.load_texture("./graphics/FireBall.png")
         self.life_span = int(60)
+
+
+class Smoke(arcade.SpriteCircle):
+    """ This represents a puff of smoke """
+
+    def __init__(self, size):
+        super().__init__(size, arcade.color.DARK_GRAY, soft=True)
+        self.scale = 0.5 # smoke scale
+
+    def update(self):
+        """ Update this particle """
+        if self.alpha <= PARTICLE_FADE_RATE:
+            # Remove faded out particles
+            self.remove_from_sprite_lists()
+        else:
+            # Update values
+            self.alpha -= 42 # smoke fade rate
+            self.center_x += self.change_x
+            self.center_y += self.change_y
+            self.scale += 0.03 # smoke expansion rate
+
+class Particle(arcade.SpriteCircle):
+    """ Explosion particle """
+
+    def __init__(self, my_list):
+        # Choose a random color
+        color = random.choice(PARTICLE_COLORS)
+
+        # Make the particle
+        super().__init__(PARTICLE_RADIUS, color)
+
+        # Track normal particle texture, so we can 'flip' when we sparkle.
+        self.normal_texture = self.texture
+
+        # Keep track of the list we are in, so we can add a smoke trail
+        self.my_list = my_list
+
+        # Set direction/speed
+        speed = random.random() * PARTICLE_SPEED_RANGE + PARTICLE_MIN_SPEED
+        direction = random.randrange(360)
+        self.change_x = math.sin(math.radians(direction)) * speed
+        self.change_y = math.cos(math.radians(direction)) * speed
+
+        # Track original alpha. Used as part of 'sparkle' where we temp set the
+        # alpha back to 255
+        self.my_alpha = 255
+
+        # What list do we add smoke particles to?
+        self.my_list = my_list
+
+    def update(self):
+        """ Update the particle """
+        if self.my_alpha <= PARTICLE_FADE_RATE:
+            # Faded out, remove
+            self.remove_from_sprite_lists()
+        else:
+            # Update
+            self.my_alpha -= 36 # particle fade rate
+            self.alpha = self.my_alpha
+            self.center_x += self.change_x
+            self.center_y += self.change_y
+
+            # Should we sparkle this?
+            if random.random() <= 0.02: # sparkle chance
+                self.alpha = 255
+                self.texture = arcade.make_circle_texture(int(self.width),
+                                                          arcade.color.WHITE)
+            else:
+                self.texture = self.normal_texture
+
+            # Leave a smoke particle?
+            if random.random() <= 0.25: # smoke chance
+                smoke = Smoke(5)
+                smoke.position = self.position
+                self.my_list.append(smoke)
 
 
 class Weapon(arcade.Sprite):
@@ -795,6 +881,7 @@ class BoxHeadGame(arcade.View):
         self.enemy_white_list = None
         self.enemy_red_list = None
         self.enemy_bullet_list = None
+        self.explosions_list = None
 
         # Physics engine so we don't run into walls.
         self.physics_engine: Optional[PymunkPhysicsEngine] = None
@@ -851,6 +938,7 @@ class BoxHeadGame(arcade.View):
         self.player_bullet_list = arcade.SpriteList()
         self.player_object_list = arcade.SpriteList()
         self.enemy_bullet_list = arcade.SpriteList()
+        self.explosions_list = arcade.SpriteList()
 
         # setup room background and player
         self.game_room = Room()
@@ -918,6 +1006,24 @@ class BoxHeadGame(arcade.View):
         self.spawn_enemy_cd += 1
         self.spawn_enemy_cd %= 100000
 
+    def set_explosion(self, position):
+        for i in range(24):
+            particle = Particle(self.explosions_list)
+            particle.position = position
+            bullet = Bullet()
+            bullet.position = position
+            bullet.life_span = 6
+            self.explosions_list.append(particle)
+
+            bullet.change_x = particle.change_x
+            bullet.change_y = particle.change_y
+            bullet.damage = 10 # TODO: set explosion damage
+            self.player_bullet_list.append(bullet)
+
+        smoke = Smoke(30)
+        smoke.position = position
+        self.explosions_list.append(smoke)
+
     def update_player_attack(self):
         if self.player.is_attack:
             if self.player.cd == self.player.cd_max:
@@ -953,20 +1059,20 @@ class BoxHeadGame(arcade.View):
         self.player.cd = min(self.player.cd + 1, self.player.cd_max)
 
     def update_player_weapon(self):
-        if self.score == 1600 and self.weapon_check == 0:
-            shotgun = Shotgun()
-            self.player.add_weapon(shotgun)
-            self.weapon_check += 1
-        if self.score >= 5200 and self.weapon_check == 1:
-            barrel = Barrel()
-            self.player.add_weapon(barrel)
-            self.weapon_check += 1
-
-        # for testing
-        # if self.score >= 0 and self.weapon_check == 0:
+        # if self.score == 1600 and self.weapon_check == 0:
+        #     shotgun = Shotgun()
+        #     self.player.add_weapon(shotgun)
+        #     self.weapon_check += 1
+        # if self.score >= 5200 and self.weapon_check == 1:
         #     barrel = Barrel()
         #     self.player.add_weapon(barrel)
         #     self.weapon_check += 1
+
+        # for testing
+        if self.score >= 0 and self.weapon_check == 0:
+            barrel = Barrel()
+            self.player.add_weapon(barrel)
+            self.weapon_check += 1
 
     def process_player_bullet(self):
         self.player_bullet_list.update()
@@ -1009,6 +1115,7 @@ class BoxHeadGame(arcade.View):
                     object.health -= bullet.damage
                     if object.health <= 0:
                         object.remove_from_sprite_lists()
+                        self.set_explosion(object.position)
                         # self.physics_engine.remove_sprite(object)
 
             if len(hit_list) > 0:
@@ -1181,6 +1288,7 @@ class BoxHeadGame(arcade.View):
         self.player_bullet_list.draw()
         self.player_object_list.draw()
         self.enemy_bullet_list.draw()
+        self.explosions_list.draw()
 
         # Select the (un-scrolled) camera for our GUI
         self.camera_gui.use()
@@ -1219,6 +1327,8 @@ class BoxHeadGame(arcade.View):
             enemy.follow_sprite(self.player, self.physics_engine)
         self.update_enemy_attack()
         self.process_enemy_bullet()
+
+        self.explosions_list.update()
 
         # scroll the screen to the player
         self.scroll_to_player()
