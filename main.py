@@ -1007,14 +1007,14 @@ class BoxHeadGame(arcade.View):
         self.spawn_enemy_cd %= 100000
 
     def set_explosion(self, position):
-        for i in range(24):
+        for i in range(28):
             particle = Particle(self.explosions_list)
             particle.position = position
+            self.explosions_list.append(particle)
+            
             bullet = Bullet()
             bullet.position = position
-            bullet.life_span = 6
-            self.explosions_list.append(particle)
-
+            bullet.life_span = 8
             bullet.change_x = particle.change_x
             bullet.change_y = particle.change_y
             bullet.damage = 10 # TODO: set explosion damage
@@ -1114,8 +1114,9 @@ class BoxHeadGame(arcade.View):
                 if object.object_type == 1:  # Barrel object
                     object.health -= bullet.damage
                     if object.health <= 0:
-                        object.remove_from_sprite_lists()
                         self.set_explosion(object.position)
+                        self.game_room.grid[object.grid_idx[0], object.grid_idx[1]] = 0
+                        object.remove_from_sprite_lists()
                         # self.physics_engine.remove_sprite(object)
 
             if len(hit_list) > 0:
@@ -1194,6 +1195,8 @@ class BoxHeadGame(arcade.View):
                 if object.object_type == 1:  # Barrel object
                     object.health -= bullet.damage
                     if object.health <= 0:
+                        self.set_explosion(object.position)
+                        self.game_room.grid[object.grid_idx[0], object.grid_idx[1]] = 0
                         object.remove_from_sprite_lists()
 
             if len(hit_list) > 0:
