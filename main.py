@@ -97,7 +97,7 @@ class WallCorner(Wall):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
-        self.texture = arcade.load_texture("./graphics/WallCorner.png")
+        self.texture = arcade.load_texture("graphics/WallCorner.png")
         self.shadow = arcade.Sprite(
             center_x=self.pos.x - 3,
             center_y=self.pos.y - 3,
@@ -116,7 +116,7 @@ class WallSideHorizontal(Wall):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
-        self.texture = arcade.load_texture("./graphics/WallSide.png")
+        self.texture = arcade.load_texture("graphics/WallSide.png")
 
 
 class WallSideVertical(Wall):
@@ -124,7 +124,7 @@ class WallSideVertical(Wall):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
-        self.texture = arcade.load_texture("./graphics/WallSide.png")
+        self.texture = arcade.load_texture("graphics/WallSide.png")
         self.angle = -90
 
 
@@ -298,7 +298,7 @@ class Bullet(arcade.Sprite):
 
     def __init__(self) -> None:
         super().__init__(
-            filename="./graphics/Bullet.png",
+            filename="graphics/Bullet.png",
             image_width=6,
             image_height=6,
             scale=1,
@@ -318,7 +318,7 @@ class EnergyBullet(Bullet):
 
     def __init__(self) -> None:
         super().__init__()
-        self.texture = arcade.load_texture("./graphics/EnergyBullet.png")
+        self.texture = arcade.load_texture("graphics/EnergyBullet.png")
 
 
 class FireBall(Bullet):
@@ -326,7 +326,7 @@ class FireBall(Bullet):
 
     def __init__(self) -> None:
         super().__init__()
-        self.texture = arcade.load_texture("./graphics/FireBall.png")
+        self.texture = arcade.load_texture("graphics/FireBall.png")
         self.life_span = int(60)
 
 
@@ -335,7 +335,7 @@ class ExplosionParticle(Bullet):
 
     def __init__(self) -> None:
         super().__init__()
-        self.texture = arcade.load_texture("./graphics/Particle.png")
+        self.texture = arcade.load_texture("graphics/Particle.png")
         self.height = 4
         self.width = 4
 
@@ -441,7 +441,7 @@ class Weapon(arcade.Sprite):
     """Weapon class."""
 
     def __init__(
-        self, weapon_name: str = "./graphics/Pistol.png", x: float = 0, y: float = 0
+        self, weapon_name: str = "graphics/Pistol.png", x: float = 0, y: float = 0
     ) -> None:
         self.is_gun = True
         self.pos = Vec2(x, y)
@@ -501,7 +501,7 @@ class Shotgun(Weapon):
     """Shotgun class."""
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
-        super().__init__("./graphics/Shotgun.png", x, y)
+        super().__init__("graphics/Shotgun.png", x, y)
         self.cd_max = int(30)  # 1/2 s
         self.cost = 8
         self.damage = 40
@@ -526,7 +526,7 @@ class Uzi(Weapon):
     """Uzi class."""
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
-        super().__init__("./graphics/Uzi.png", x, y)
+        super().__init__("graphics/Uzi.png", x, y)
         self.cd_max = int(10)  # 1/6 s
         self.cost = 2
         self.damage = 30
@@ -564,12 +564,12 @@ class PlacedWallObject(Object):
 
     def __init__(self) -> None:
         super().__init__()
-        self.texture = arcade.load_texture("./graphics/PlacedWall0.png")
+        self.texture = arcade.load_texture("graphics/PlacedWall0.png")
         self.health = 100
         self.object_type = 0  # Wall object
         self.textures = [
-            arcade.load_texture("./graphics/PlacedWall1.png"),
-            arcade.load_texture("./graphics/PlacedWall2.png")
+            arcade.load_texture("graphics/PlacedWall1.png"),
+            arcade.load_texture("graphics/PlacedWall2.png")
         ]
 
     def update(self) -> None:
@@ -585,7 +585,7 @@ class BarrelObject(Object):
 
     def __init__(self) -> None:
         super().__init__()
-        self.texture = arcade.load_texture("./graphics/Barrel.png")
+        self.texture = arcade.load_texture("graphics/Barrel.png")
         self.health = 0
         self.object_type = 1  # Barrel object
 
@@ -603,7 +603,7 @@ class PlacedWall(Weapon):
         self.cost = 6
         self.is_right = True
         self.texture_list = [
-            arcade.load_texture("./graphics/PlacedWall0.png"),
+            arcade.load_texture("graphics/PlacedWall0.png"),
         ]
 
     def update(self) -> None:
@@ -632,7 +632,7 @@ class Barrel(Weapon):
         self.cost = 9
         self.is_right = True
         self.texture_list = [
-            arcade.load_texture("./graphics/Barrel.png"),
+            arcade.load_texture("graphics/Barrel.png"),
         ]
 
     def update(self) -> None:
@@ -671,7 +671,7 @@ class Character(arcade.Sprite):
 
         # init with collider
         super().__init__(
-            "./graphics/CharacterCollider.png",
+            "graphics/CharacterCollider.png",
             center_x=self.pos.x + self.collider_pos.x,
             center_y=self.pos.y + self.collider_pos.y,
             image_width=20,
@@ -692,7 +692,7 @@ class Character(arcade.Sprite):
         self.body = arcade.Sprite()
         # Feet sprite
         self.foot_l = arcade.Sprite(
-            filename="./graphics/Foot.png",
+            filename="graphics/Foot.png",
             center_x=self.foot_l_pos.x + self.pos.x,
             center_y=self.foot_l_pos.y + self.pos.x,
             image_width=4,
@@ -700,7 +700,7 @@ class Character(arcade.Sprite):
             scale=1,
         )
         self.foot_r = arcade.Sprite(
-            filename="./graphics/Foot.png",
+            filename="graphics/Foot.png",
             center_x=self.foot_r_pos.x + self.pos.x,
             center_y=self.foot_r_pos.y + self.pos.x,
             image_width=4,
@@ -790,7 +790,7 @@ class Player(Character):
 
         # Player body sprite
         self.body = arcade.Sprite(
-            filename="./graphics/Player.png",
+            filename="graphics/Player.png",
             center_x=self.body_pos.x + self.pos.x,
             center_y=self.body_pos.y + self.pos.y,
             image_width=20,
@@ -888,7 +888,7 @@ class EnemyWhite(Character):
 
         # EnemyWhite body sprite
         self.body = arcade.Sprite(
-            filename="./graphics/EnemyWhite.png",
+            filename="graphics/EnemyWhite.png",
             center_x=self.body_pos.x + self.pos.x,
             center_y=self.body_pos.y + self.pos.y,
             image_width=20,
@@ -936,7 +936,7 @@ class EnemyRed(Character):
 
         # EnemyRed body sprite
         self.body = arcade.Sprite(
-            filename="./graphics/EnemyRed.png",
+            filename="graphics/EnemyRed.png",
             center_x=self.body_pos.x + self.pos.x,
             center_y=self.body_pos.y + self.pos.y,
             image_width=20,
@@ -998,7 +998,7 @@ class BoxHeadGame(arcade.View):
         self.mouse_x = None
         self.mouse_y = None
         self.mouse_pos = Vec2(0, 0)
-        self.mouse_sprite = arcade.Sprite("./graphics/Cursor.png")
+        self.mouse_sprite = arcade.Sprite("graphics/Cursor.png")
 
         # Sprite lists
         self.wall_list = None
@@ -1034,7 +1034,7 @@ class BoxHeadGame(arcade.View):
 
         # UI set up
         self.health_sprite = arcade.Sprite(
-            filename="./graphics/Health.png",
+            filename="graphics/Health.png",
             center_x=40,
             center_y=SCREEN_HEIGHT - 40,
             image_width=25,
@@ -1042,7 +1042,7 @@ class BoxHeadGame(arcade.View):
             scale=1,
         )
         self.energy_sprite = arcade.Sprite(
-            filename="./graphics/Energy.png",
+            filename="graphics/Energy.png",
             center_x=40,
             center_y=SCREEN_HEIGHT - 70,
             image_width=25,
@@ -1050,7 +1050,7 @@ class BoxHeadGame(arcade.View):
             scale=1,
         )
         self.weapon_slot_sprite = arcade.Sprite(
-            filename="./graphics/WeaponSlot.png",
+            filename="graphics/WeaponSlot.png",
             center_x=150,
             center_y=SCREEN_HEIGHT - 120,
             image_width=80,
@@ -1132,7 +1132,6 @@ class BoxHeadGame(arcade.View):
                                                damping=0.001,
                                                collision_type="enemy")
         self.spawn_enemy_cd += 1
-        self.spawn_enemy_cd %= 100000
 
     def set_explosion(self, position: arcade.Point) -> None:
         for i in range(24):
@@ -1166,10 +1165,9 @@ class BoxHeadGame(arcade.View):
                 self.player.cd = 0
 
             if self.player.cd == 0 and self.player.energy - self.player.current_weapon.cost >= 0:
-                self.player.energy = max(
-                    0, self.player.energy - self.player.current_weapon.cost)
-
                 if self.player.current_weapon.is_gun:
+                    self.player.energy = max(
+                        0, self.player.energy - self.player.current_weapon.cost)
                     bullets = self.player.attack()
                     for bullet in bullets:
                         bullet.change_x = bullet.aim.x
@@ -1192,6 +1190,10 @@ class BoxHeadGame(arcade.View):
                                                        body_type=PymunkPhysicsEngine.STATIC)
                         self.game_room.grid[grid_x, grid_y] = 1
 
+                        # Consume energy only when object is placed
+                        self.player.energy = max(
+                            0, self.player.energy - self.player.current_weapon.cost)
+
         self.player.cd = min(self.player.cd + 1, self.player.cd_max)
 
     def update_player_weapon(self) -> None:
@@ -1201,7 +1203,7 @@ class BoxHeadGame(arcade.View):
             shotgun = Shotgun()
             self.player.add_weapon(shotgun)
             self.weapon_check += 1
-        if self.score == 3200 and self.weapon_check == 1:
+        if self.score >= 3200 and self.weapon_check == 1:
             placed_wall = PlacedWall()
             self.player.add_weapon(placed_wall)
             self.weapon_check += 1
@@ -1631,49 +1633,49 @@ class BoxHeadMenu(BoxHeadGame):
                                             body_type=PymunkPhysicsEngine.STATIC)
         self.start_sprite_list = arcade.SpriteList()
         self.start_sprite_list.append(
-            arcade.Sprite(filename="./graphics/Title.png",
+            arcade.Sprite(filename="graphics/Title.png",
                           scale=0.4,
                           center_x=SCREEN_WIDTH / 2,
                           center_y=SCREEN_HEIGHT - 160)
         )
         self.start_sprite_list.append(
-            arcade.Sprite(filename="./graphics/MoveGuide.png",
+            arcade.Sprite(filename="graphics/MoveGuide.png",
                           scale=0.3,
                           center_x=200,
                           center_y=200)
         )
         self.start_sprite_list.append(
-            arcade.Sprite(filename="./graphics/ShootGuide.png",
+            arcade.Sprite(filename="graphics/ShootGuide.png",
                           scale=0.3,
                           center_x=SCREEN_WIDTH - 200,
                           center_y=200)
         )
         self.start_sprite_list.append(
-            arcade.Sprite(filename="./graphics/PauseGuide.png",
+            arcade.Sprite(filename="graphics/PauseGuide.png",
                           scale=0.3,
                           center_x=200,
                           center_y=SCREEN_HEIGHT - 100)
         )
         self.start_sprite_list.append(
-            arcade.Sprite(filename="./graphics/WeaponChangeGuide.png",
+            arcade.Sprite(filename="graphics/WeaponChangeGuide.png",
                           scale=0.3,
                           center_x=200,
                           center_y=SCREEN_HEIGHT - 200)
         )
         self.start_button = arcade.Sprite(
-            filename="./graphics/Start.png",
+            filename="graphics/Start.png",
             scale=0.6,
             center_x=SCREEN_WIDTH/2 + 160,
             center_y=SCREEN_HEIGHT / 2
         )
         self.option_button = arcade.Sprite(
-            filename="./graphics/Option.png",
+            filename="graphics/Option.png",
             scale=0.6,
             center_x=SCREEN_WIDTH/2 + 160,
             center_y=SCREEN_HEIGHT / 2 - 60
         )
         self.exit_button = arcade.Sprite(
-            filename="./graphics/Exit.png",
+            filename="graphics/Exit.png",
             scale=0.6,
             center_x=SCREEN_WIDTH/2 + 160,
             center_y=SCREEN_HEIGHT / 2 - 120
