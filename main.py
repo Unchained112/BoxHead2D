@@ -65,13 +65,14 @@ PARTICLE_COLORS = [arcade.color.ALIZARIN_CRIMSON,
 
 """ UTILITIES """
 
+
 def get_sin(v: Vec2) -> float:
     """Get sine value of a given vector."""
     return v.y / v.distance(Vec2(0, 0))
 
 
-
 """ CLASS """
+
 
 class Wall(arcade.Sprite):
     """Basic wall."""
@@ -419,8 +420,8 @@ class Blood(arcade.SpriteSolidColor):
     """Bleeding effect particle. """
 
     def __init__(self) -> None:
-        color = (65, 100, 74) # Dark green
-        super().__init__(random.randint(4, 12), random.randint(4, 12), color)
+        color = (65, 100, 74)  # Dark green
+        super().__init__(random.randint(4, 12), random.randint(4, 12), DARK_RED)
         self.my_alpha = 255
         # Set direction/speed
         speed = random.random() * 6
@@ -429,8 +430,8 @@ class Blood(arcade.SpriteSolidColor):
         self.change_y = math.cos(math.radians(direction)) * speed
 
     def update(self):
-        if self.my_alpha > 200: # alpha threshold
-            self.my_alpha -= 20 # blood particle fade rate
+        if self.my_alpha > 200:  # alpha threshold
+            self.my_alpha -= 20  # blood particle fade rate
             self.alpha = self.my_alpha
             self.center_x += self.change_x
             self.center_y += self.change_y
@@ -554,8 +555,29 @@ class Object(arcade.Sprite):
             scale=1,
         )
         self.health = 100
-        self.object_type = 0 # Specify the object type
+        self.object_type = 0  # Specify the object type
         self.grid_idx = (0, 0)
+
+
+class PlacedWallObject(Object):
+    """Wall that can be placed by the player."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.texture = arcade.load_texture("./graphics/PlacedWall0.png")
+        self.health = 100
+        self.object_type = 0  # Wall object
+        self.textures = [
+            arcade.load_texture("./graphics/PlacedWall1.png"),
+            arcade.load_texture("./graphics/PlacedWall2.png")
+        ]
+
+    def update(self) -> None:
+        if self.health <= 70 and self.health > 40:
+            self.texture = self.textures[0]
+        elif self.health <= 40:
+            self.texture = self.textures[1]
+        super().update()
 
 
 class BarrelObject(Object):
@@ -564,16 +586,8 @@ class BarrelObject(Object):
     def __init__(self) -> None:
         super().__init__()
         self.texture = arcade.load_texture("./graphics/Barrel.png")
+        self.health = 0
         self.object_type = 1  # Barrel object
-
-
-class PlacedWallObject(Object):
-    """Wall """
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.texture = arcade.load_texture("./graphics/Barrel.png")
-        self.object_type = 0  # Wall object
 
 
 class PlacedWall(Weapon):
@@ -586,11 +600,22 @@ class PlacedWall(Weapon):
         self.pos = Vec2(x, y)
         self.aim_pos = Vec2(0, 0)
         self.bullet_speed = 25
-        self.cost = 9
+        self.cost = 6
         self.is_right = True
         self.texture_list = [
-            arcade.load_texture("./graphics/Barrel.png"),
+            arcade.load_texture("./graphics/PlacedWall0.png"),
         ]
+
+    def update(self) -> None:
+        self.center_x = self.pos.x
+        self.center_y = self.pos.y
+
+    def draw(self) -> None:
+        pass
+
+    def get_object(self) -> arcade.Sprite:
+        placed_wall = PlacedWallObject()
+        return placed_wall
 
 
 class Barrel(Weapon):
@@ -900,7 +925,7 @@ class EnemyRed(Character):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
-        self.health = int(220)
+        self.health = int(200)
         self.health_max = int(220)
         self.is_walking = True
         self.last_force = Vec2(0, 0)
@@ -1151,19 +1176,19 @@ class BoxHeadGame(arcade.View):
                         bullet.change_y = bullet.aim.y
                         self.player_bullet_list.append(bullet)
                 else:
-                    barrel = self.player.place()
+                    object = self.player.place()
                     place_point = self.player.pos + \
                         self.player.current_weapon.aim_pos.normalize().scale(30)
                     grid_x = math.floor(place_point.x / 30)
                     grid_y = math.floor(place_point.y / 30)
                     if self.game_room.grid[grid_x, grid_y] != 1:
-                        barrel.center_x = grid_x * 30 + float(WALL_SIZE/2)
-                        barrel.center_y = grid_y * 30 + float(WALL_SIZE/2)
-                        barrel.grid_idx = (grid_x, grid_y)
-                        self.player_object_list.append(barrel)
-                        self.physics_engine.add_sprite(barrel,
+                        object.center_x = grid_x * 30 + float(WALL_SIZE/2)
+                        object.center_y = grid_y * 30 + float(WALL_SIZE/2)
+                        object.grid_idx = (grid_x, grid_y)
+                        self.player_object_list.append(object)
+                        self.physics_engine.add_sprite(object,
                                                        friction=0,
-                                                       collision_type="barrel",
+                                                       collision_type="object",
                                                        body_type=PymunkPhysicsEngine.STATIC)
                         self.game_room.grid[grid_x, grid_y] = 1
 
@@ -1172,24 +1197,34 @@ class BoxHeadGame(arcade.View):
     def update_player_weapon(self) -> None:
         """Update player's weapons based on the current score."""
 
-        # if self.score == 1600 and self.weapon_check == 0:
-        #     shotgun = Shotgun()
-        #     self.player.add_weapon(shotgun)
-        #     self.weapon_check += 1
-        # if self.score >= 5200 and self.weapon_check == 1:
-        #     barrel = Barrel()
-        #     self.player.add_weapon(barrel)
-        #     self.weapon_check += 1
-
-        # For testing
-        if self.score >= 0 and self.weapon_check == 0:
+        if self.score == 1600 and self.weapon_check == 0:
             shotgun = Shotgun()
             self.player.add_weapon(shotgun)
+            self.weapon_check += 1
+        if self.score == 3200 and self.weapon_check == 1:
+            placed_wall = PlacedWall()
+            self.player.add_weapon(placed_wall)
+            self.weapon_check += 1
+        if self.score >= 4800 and self.weapon_check == 2:
             uzi = Uzi()
             self.player.add_weapon(uzi)
+            self.weapon_check += 1
+        if self.score >= 6400 and self.weapon_check == 3:
             barrel = Barrel()
             self.player.add_weapon(barrel)
             self.weapon_check += 1
+
+        # For testing
+        # if self.score >= 0 and self.weapon_check == 0:
+        #     shotgun = Shotgun()
+        #     self.player.add_weapon(shotgun)
+        #     uzi = Uzi()
+        #     self.player.add_weapon(uzi)
+        #     barrel = Barrel()
+        #     self.player.add_weapon(barrel)
+        #     placed_wall = PlacedWall()
+        #     self.player.add_weapon(placed_wall)
+        #     self.weapon_check += 1
 
     def process_player_bullet(self) -> None:
         self.player_bullet_list.update()
@@ -1229,6 +1264,12 @@ class BoxHeadGame(arcade.View):
                 bullet, self.player_object_list)
 
             for object in hit_list:
+                if object.object_type == 0:  # Wall object
+                    object.health -= bullet.damage
+                    if object.health <= 0:
+                        self.game_room.grid[object.grid_idx[0],
+                                            object.grid_idx[1]] = 0
+                        object.remove_from_sprite_lists()
                 if object.object_type == 1:  # Barrel object
                     object.health -= bullet.damage
                     if object.health <= 0:
@@ -1310,6 +1351,12 @@ class BoxHeadGame(arcade.View):
                 bullet, self.player_object_list)
 
             for object in hit_list:
+                if object.object_type == 0:  # Wall object
+                    object.health -= bullet.damage
+                    if object.health <= 0:
+                        self.game_room.grid[object.grid_idx[0],
+                                            object.grid_idx[1]] = 0
+                        object.remove_from_sprite_lists()
                 if object.object_type == 1:  # Barrel object
                     object.health -= bullet.damage
                     if object.health <= 0:
@@ -1558,7 +1605,6 @@ class BoxHeadGame(arcade.View):
                                   damping=shake_damping)
 
 
-
 class BoxHeadMenu(BoxHeadGame):
     """Start menu."""
 
@@ -1722,14 +1768,14 @@ class BoxHeadPause(arcade.View):
         self.clear()
 
         arcade.draw_text("PAUSED", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 50,
-                         arcade.color.BLACK, font_size=50, anchor_x="center")
+                         arcade.color.BLACK, font_size=50, font_name="Kenney Future", anchor_x="center")
 
         # Show tip to return or reset
         arcade.draw_text("Press Esc. to return",
                          SCREEN_WIDTH / 2,
                          SCREEN_HEIGHT / 2,
                          arcade.color.BLACK,
-                         font_size=20,
+                         font_size=16,
                          anchor_x="center")
 
     def on_key_press(self, key, _modifiers) -> None:
