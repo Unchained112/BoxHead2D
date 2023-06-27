@@ -1,10 +1,11 @@
 import arcade
 import math
+import utils
 from pyglet.math import Vec2
-from color import *
 
 WALL_SIZE = 30
 HALF_WALL_SIZE = 15
+
 
 class Wall(arcade.Sprite):
     """Basic wall."""
@@ -22,6 +23,7 @@ class Wall(arcade.Sprite):
             image_height=WALL_SIZE,
         )
 
+
 class WallCorner(Wall):
     """Wall at the corner."""
 
@@ -34,7 +36,7 @@ class WallCorner(Wall):
             scale=1,
         )
         self.shadow.texture = arcade.make_soft_square_texture(
-            30, LIGHT_BLACK, 200, 100)
+            30, utils.Color.LIGHT_BLACK, 150, 150)
 
     def draw(self) -> None:
         self.shadow.draw()
@@ -47,6 +49,17 @@ class WallSideHorizontal(Wall):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
         self.texture = arcade.load_texture("graphics/WallSide.png")
+        self.shadow = arcade.Sprite(
+            center_x=self.pos.x,
+            center_y=self.pos.y - 3,
+            scale=1,
+        )
+        self.shadow.texture = arcade.make_soft_square_texture(
+            30,  utils.Color.LIGHT_BLACK, 150, 150)
+
+    def draw(self) -> None:
+        self.shadow.draw()
+        super().draw()
 
 
 class WallSideVertical(Wall):
@@ -56,6 +69,18 @@ class WallSideVertical(Wall):
         super().__init__(x, y)
         self.texture = arcade.load_texture("graphics/WallSide.png")
         self.angle = -90
+        self.shadow = arcade.Sprite(
+            center_x=self.pos.x - 3,
+            center_y=self.pos.y,
+            scale=1,
+        )
+        self.shadow.texture = arcade.make_soft_square_texture(
+            30, utils.Color.LIGHT_BLACK, 150, 150)
+
+    def draw(self) -> None:
+        self.shadow.draw()
+        super().draw()
+
 
 class Room:
     """Room base class."""
@@ -78,6 +103,7 @@ class Room:
 
     def draw_walls(self) -> None:
         pass
+
 
 class StartRoom(Room):
     """Room for start menu."""
@@ -104,7 +130,7 @@ class StartRoom(Room):
 
     def draw_ground(self) -> None:
         arcade.draw_rectangle_filled(
-            self.pos.x, self.pos.y, self.width, self.height, GROUND_WHITE
+            self.pos.x, self.pos.y, self.width, self.height, utils.Color.GROUND_WHITE
         )
 
     def draw_walls(self) -> None:
