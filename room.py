@@ -111,8 +111,10 @@ class StartRoom(Room):
     def __init__(self, width: float = 2100, height: float = 1200) -> None:
         super().__init__(width, height)
         # set boundary corner walls
-        self.walls = [WallCorner(HALF_WALL_SIZE, HALF_WALL_SIZE), WallCorner(HALF_WALL_SIZE, self.height - HALF_WALL_SIZE), WallCorner(
-            self.width - HALF_WALL_SIZE, HALF_WALL_SIZE), WallCorner(self.width - HALF_WALL_SIZE, self.height - HALF_WALL_SIZE)]
+        self.walls = [WallCorner(HALF_WALL_SIZE, HALF_WALL_SIZE),
+                      WallCorner(HALF_WALL_SIZE, self.height - HALF_WALL_SIZE),
+                      WallCorner(self.width - HALF_WALL_SIZE, HALF_WALL_SIZE),
+                      WallCorner(self.width - HALF_WALL_SIZE, self.height - HALF_WALL_SIZE)]
 
         # set bottom and top walls
         for i in range(1, self.grid_w - 1):
