@@ -141,7 +141,8 @@ class Weapon(arcade.Sprite):
             self.texture = self.texture_list[1]
 
     def aim(self, aim_pos: Vec2) -> None:
-        """Ajust the sprite angle to the aiming position."""
+        """Adjust the sprite angle to the aiming position."""
+
         self.aim_pos = aim_pos
         if aim_pos.x >= 0:
             self.is_right = True
