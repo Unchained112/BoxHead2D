@@ -27,6 +27,7 @@ def main():
     """ Main function """
     game = BoxHead2d(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
     default = view.DefaultView()
+    default.setup()
     game.show_view(default)
     arcade.run()
 

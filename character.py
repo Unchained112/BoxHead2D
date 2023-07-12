@@ -203,7 +203,7 @@ class Player(Character):
             force.x = 1
 
         force = force.normalize().scale(self.speed)
-        self.physic_engine.apply_force(self, (force.x, force.y))
+        self.physics_engines[0].apply_force(self, (force.x, force.y))
 
         if force.mag != 0:
             self.is_walking = True
