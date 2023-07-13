@@ -89,6 +89,13 @@ class Character(arcade.Sprite):
         )
         self.shadow.texture = arcade.make_soft_square_texture(
             22, utils.Color.LIGHT_BLACK, 160, 100)
+        
+        # Body parts list for rendering 
+        self.parts = arcade.SpriteList()
+        self.parts.append(self.shadow)
+        self.parts.append(self.body)
+        self.parts.append(self.foot_l)
+        self.parts.append(self.foot_r)
 
     def move(self) -> None:
         """Move all the body parts"""
@@ -138,11 +145,7 @@ class Character(arcade.Sprite):
 
         self.get_damage_len -= 1
 
-    def draw(self) -> None:
-        self.shadow.draw()
-        self.body.draw()
-        self.foot_l.draw()
-        self.foot_r.draw()
+    def draw(self, *, filter=None, pixelated=None, blend_function=None) -> None:
         if self.get_damage_len > 0:
             self.draw_get_damage()
 
@@ -164,14 +167,15 @@ class Player(Character):
         self.player_health_max = 100
 
         # Player body sprite
-        self.body = arcade.Sprite(
-            filename="graphics/Player.png",
-            center_x=self.body_pos.x + self.pos.x,
-            center_y=self.body_pos.y + self.pos.y,
-            image_width=20,
-            image_height=24,
-            scale=1,
-        )
+        # self.body = arcade.Sprite(
+        #     filename="graphics/Player.png",
+        #     center_x=self.body_pos.x + self.pos.x,
+        #     center_y=self.body_pos.y + self.pos.y,
+        #     image_width=20,
+        #     image_height=24,
+        #     scale=1,
+        # )
+        self.body.texture = arcade.load_texture("graphics/Player.png")
 
         # Track the player movement input
         self.move_left = False

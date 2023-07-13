@@ -110,11 +110,13 @@ class StartRoom(Room):
 
     def __init__(self, width: float = 2100, height: float = 1200) -> None:
         super().__init__(width, height)
+        
         # set boundary corner walls
-        self.walls = [WallCorner(HALF_WALL_SIZE, HALF_WALL_SIZE),
-                      WallCorner(HALF_WALL_SIZE, self.height - HALF_WALL_SIZE),
-                      WallCorner(self.width - HALF_WALL_SIZE, HALF_WALL_SIZE),
-                      WallCorner(self.width - HALF_WALL_SIZE, self.height - HALF_WALL_SIZE)]
+        self.walls = arcade.SpriteList()
+        self.walls.append(WallCorner(HALF_WALL_SIZE, HALF_WALL_SIZE))
+        self.walls.append(WallCorner(HALF_WALL_SIZE, self.height - HALF_WALL_SIZE))
+        self.walls.append(WallCorner(self.width - HALF_WALL_SIZE, HALF_WALL_SIZE))
+        self.walls.append(WallCorner(self.width - HALF_WALL_SIZE, self.height - HALF_WALL_SIZE))
 
         # set bottom and top walls
         for i in range(1, self.grid_w - 1):
@@ -136,5 +138,4 @@ class StartRoom(Room):
         )
 
     def draw_walls(self) -> None:
-        for wall in self.walls:
-            wall.draw()
+        self.walls.draw()

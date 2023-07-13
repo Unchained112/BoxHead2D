@@ -30,3 +30,10 @@ Weapons:
 ### Developer Notes
 
 There is no game over as the gameplay design is not done yet.
+
+
+### Notes:
+
+When running on mac os, please disable popup showing accented characters when holding a key.
+Run the command `defaults write -g ApplePressAndHoldEnabled -bool false`.
+Link to the [reference](https://apple.stackexchange.com/questions/332769/macos-disable-popup-showing-accented-characters-when-holding-down-a-key)

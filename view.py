@@ -8,8 +8,9 @@ from arcade.pymunk_physics_engine import PymunkPhysicsEngine
 FADE_RATE = 8
 CAMERA_SPEED = 0.6
 
+
 class FadingView(arcade.View):
-    """Fading transiton between two views."""
+    """Fading transition between two views."""
 
     def __init__(self) -> None:
         super().__init__()
@@ -22,7 +23,7 @@ class FadingView(arcade.View):
         if self.fade_out is not None:
             self.fade_out += FADE_RATE
             if (self.fade_out is not None and self.fade_out > 255 and
-                self.next_view is not None):
+                    self.next_view is not None):
                 view = self.next_view()
                 view.setup()
                 self.window.show_view(view)
@@ -55,7 +56,7 @@ class DefaultView(FadingView):
                                    center_x=self.w / 2,
                                    center_y=self.h/2 - 20)
         self.text_alpha = 250
-        self.text_fading = -5 # must be divisible by 250
+        self.text_fading = -5  # must be divisible by 250
 
     def on_update(self, delta_time: float) -> None:
         self.update_fade()
@@ -71,7 +72,7 @@ class DefaultView(FadingView):
                          self.w / 2, self.h/2 - 80,
                          color=(0, 0, 0, self.text_alpha),
                          font_size=24, font_name="Kenney Future",
-                         anchor_x="center") # TODO: replace with a Text object
+                         anchor_x="center")  # TODO: replace with a Text object
         self.title.draw()
         self.draw_fading()
 
@@ -100,6 +101,7 @@ class StartView(FadingView):
         self.wall_list = None
         self.player = None
         self.player_bullet_list = None
+        self.character_sprites = None
 
         # Physics engine so we don't run into walls.
         self.physics_engine = None
@@ -120,19 +122,17 @@ class StartView(FadingView):
                                                   gravity=gravity)
 
         # GameObject lists
-        self.wall_list = arcade.SpriteList()
         self.player_bullet_list = arcade.SpriteList()
-        self.player_object_list = arcade.SpriteList()
 
         # Set up room background and player
         self.room = room.StartRoom()
-        for wall in self.room.walls:
-            self.wall_list.append(wall)
 
         # Set up the player
         self.player = character.Player(float(self.w / 2),
                                        float(self.h / 2),
                                        self.physics_engine)
+        self.character_sprites = arcade.SpriteList()
+        self.character_sprites.extend(self.player.parts)
 
         # Set the most basic background color
         arcade.set_background_color(utils.Color.BLACK)
@@ -147,7 +147,7 @@ class StartView(FadingView):
                                        max_velocity=400)
 
         # Create the walls
-        self.physics_engine.add_sprite_list(self.wall_list,
+        self.physics_engine.add_sprite_list(self.room.walls,
                                             friction=0,
                                             collision_type="wall",
                                             body_type=PymunkPhysicsEngine.STATIC)
@@ -158,6 +158,7 @@ class StartView(FadingView):
 
         self.room.draw_ground()
         self.room.draw_walls()
+        self.character_sprites.draw()
         self.player.draw()
         self.player_bullet_list.draw()
 
@@ -216,10 +217,10 @@ class StartView(FadingView):
                         self.camera_sprites.position.y)
         # limit the camera position within the room
         if (self.player.pos.x > float(self.w / 2) - 5
-            and self.room.width - self.player.pos.x > float(self.w / 2) - 5):
+                and self.room.width - self.player.pos.x > float(self.w / 2) - 5):
             position.x = self.player.pos.x - float(self.w / 2)
         if (self.player.pos.y > float(self.h / 2) - 5
-            and self.room.height - self.player.pos.y > float(self.h / 2) - 5):
+                and self.room.height - self.player.pos.y > float(self.h / 2) - 5):
             position.y = self.player.pos.y - float(self.h / 2)
 
         self.camera_sprites.move_to(position, CAMERA_SPEED)
@@ -227,6 +228,7 @@ class StartView(FadingView):
 
 class SelectionView(FadingView):
     """Character and map selection."""
+
 
 class OptionView(FadingView):
     """Optional menu."""
