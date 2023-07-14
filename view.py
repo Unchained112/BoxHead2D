@@ -59,10 +59,10 @@ class DefaultView(FadingView):
         self.text_alpha = 250
         self.text_fading = -5  # must be divisible by 250
         self.title_text = arcade.Text("Press any key to proceed...",
-                         self.w / 2, self.h/2 - 80,
-                         color=(0, 0, 0, 250),
-                         font_size=16, font_name="FFF Forward",
-                         anchor_x="center")
+                                      self.w / 2, self.h/2 - 80,
+                                      color=(0, 0, 0, 250),
+                                      font_size=16, font_name="FFF Forward",
+                                      anchor_x="center")
 
     def on_update(self, delta_time: float) -> None:
         self.update_fade()

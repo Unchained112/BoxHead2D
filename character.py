@@ -89,8 +89,8 @@ class Character(arcade.Sprite):
         )
         self.shadow.texture = arcade.make_soft_square_texture(
             22, utils.Color.LIGHT_BLACK, 160, 100)
-        
-        # Body parts list for rendering 
+
+        # Body parts list for rendering
         self.parts = arcade.SpriteList()
         self.parts.append(self.shadow)
         self.parts.append(self.body)
