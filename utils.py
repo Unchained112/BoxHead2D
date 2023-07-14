@@ -24,3 +24,21 @@ class Utils:
     def get_sin(v: Vec2) -> float:
         """Get sine value of a given vector."""
         return v.y / v.distance(Vec2(0, 0))
+
+
+class Style:
+    """Design styles."""
+
+    BUTTON_DEFAULT = {
+            "font_name": ("FFF Forward"),
+            "font_size": 12,
+            "font_color": Color.BLACK,
+            "border_width": 2,
+            "border_color": Color.BLACK,
+            "bg_color": Color.LIGHT_GRAY,
+
+            # used if button is pressed
+            "bg_color_pressed": Color.DARK_GRAY,
+            "border_color_pressed": Color.LIGHT_GRAY,  # also used when hovered
+            "font_color_pressed": Color.DARK_GRAY,
+        }

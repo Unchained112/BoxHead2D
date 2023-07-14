@@ -25,6 +25,8 @@ class BoxHead2d(arcade.Window):
 
 def main():
     """ Main function """
+    arcade.load_font("fonts/FFFFORWA.ttf")
+    arcade.load_font("fonts/Minercraftory.ttf")
     game = BoxHead2d(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
     default = view.DefaultView()
     default.setup()

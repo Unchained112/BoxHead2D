@@ -1,4 +1,5 @@
 import arcade
+import arcade.gui
 import utils
 import room
 import character
@@ -57,6 +58,11 @@ class DefaultView(FadingView):
                                    center_y=self.h/2 - 20)
         self.text_alpha = 250
         self.text_fading = -5  # must be divisible by 250
+        self.title_text = arcade.Text("Press any key to proceed...",
+                         self.w / 2, self.h/2 - 80,
+                         color=(0, 0, 0, 250),
+                         font_size=16, font_name="FFF Forward",
+                         anchor_x="center")
 
     def on_update(self, delta_time: float) -> None:
         self.update_fade()
@@ -65,19 +71,17 @@ class DefaultView(FadingView):
         if self.text_alpha == 10 or self.text_alpha == 250:
             self.text_fading = -self.text_fading
         self.text_alpha %= 255
+        self.title_text.color = (0, 0, 0, self.text_alpha)
 
     def on_draw(self) -> None:
         self.clear()
-        arcade.draw_text("Press any key to proceed...",
-                         self.w / 2, self.h/2 - 80,
-                         color=(0, 0, 0, self.text_alpha),
-                         font_size=24, font_name="Kenney Future",
-                         anchor_x="center")  # TODO: replace with a Text object
+        self.title_text.draw()
         self.title.draw()
         self.draw_fading()
 
     def on_mouse_press(self, _x, _y, _button, _modifiers) -> None:
         self.next_view = StartView
+        # NOTE: Always set the next view before set fade_out to 0
         if self.fade_out is None:
             self.fade_out = 0
 
@@ -128,8 +132,8 @@ class StartView(FadingView):
         self.room = room.StartRoom()
 
         # Set up the player
-        self.player = character.Player(float(self.w / 2),
-                                       float(self.h / 2),
+        self.player = character.Player(float(self.w / 2) - 80,
+                                       float(self.h / 2) - 80,
                                        self.physics_engine)
         self.character_sprites = arcade.SpriteList()
         self.character_sprites.extend(self.player.parts)
@@ -152,15 +156,62 @@ class StartView(FadingView):
                                             collision_type="wall",
                                             body_type=PymunkPhysicsEngine.STATIC)
 
+        # Add insturctions
+        self.start_sprite_list = arcade.SpriteList()
+        self.start_sprite_list.append(
+            arcade.Sprite(filename="graphics/MoveGuide.png",
+                          scale=0.3,
+                          center_x=200,
+                          center_y=200)
+        )
+        self.start_sprite_list.append(
+            arcade.Sprite(filename="graphics/ShootGuide.png",
+                          scale=0.3,
+                          center_x=self.w - 200,
+                          center_y=200)
+        )
+        self.start_sprite_list.append(
+            arcade.Sprite(filename="graphics/PauseGuide.png",
+                          scale=0.3,
+                          center_x=200,
+                          center_y=self.h - 100)
+        )
+        self.start_sprite_list.append(
+            arcade.Sprite(filename="graphics/WeaponChangeGuide.png",
+                          scale=0.3,
+                          center_x=200,
+                          center_y=self.h - 200)
+        )
+
+        # Add UI elements
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+        self.vertical_box = arcade.gui.UIBoxLayout()
+        title = arcade.Sprite(filename="graphics/Title.png", scale=2)
+        title_ui = arcade.gui.UISpriteWidget(sprite=title)
+        self.vertical_box.add(title_ui.with_space_around(bottom=0))
+        ui_flatbutton = arcade.gui.UIFlatButton(text="Flat Button",
+                                                width=200,
+                                                style=utils.Style.BUTTON_DEFAULT)
+        self.vertical_box.add(ui_flatbutton.with_space_around(bottom=20))
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(
+                anchor_x="center_x",
+                anchor_y="center_y",
+                child=self.vertical_box)
+        )
+
     def on_draw(self) -> None:
         self.clear()
         self.camera_sprites.use()
 
         self.room.draw_ground()
         self.room.draw_walls()
+        self.start_sprite_list.draw()
         self.character_sprites.draw()
         self.player.draw()
         self.player_bullet_list.draw()
+        self.manager.draw()
 
     def on_update(self, delta_time: float) -> None:
         self.update_fade()
