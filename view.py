@@ -186,12 +186,13 @@ class StartView(FadingView):
         # Add UI elements
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
-        self.vertical_box = arcade.gui.UIBoxLayout()
+        self.vertical_box = arcade.gui.UIBoxLayout(x=200)
         title = arcade.Sprite(filename="graphics/Title.png", scale=2)
-        title_ui = arcade.gui.UISpriteWidget(sprite=title)
+        title_ui = arcade.gui.UISpriteWidget(
+            sprite=title, width=400, height=300)
         self.vertical_box.add(title_ui.with_space_around(bottom=0))
         ui_flatbutton = arcade.gui.UIFlatButton(text="Flat Button",
-                                                width=200,
+                                                width=150,
                                                 style=utils.Style.BUTTON_DEFAULT)
         self.vertical_box.add(ui_flatbutton.with_space_around(bottom=20))
         self.manager.add(

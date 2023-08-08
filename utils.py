@@ -8,6 +8,7 @@ class Color:
     GROUND_WHITE = (240, 237, 212)
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
+    ALMOST_WHITE = (240, 240, 240)
     DARK_RED = (183, 4, 4)
     LIGHT_GRAY = (207, 210, 207)
     DARK_GRAY = (67, 66, 66)
@@ -31,14 +32,14 @@ class Style:
 
     BUTTON_DEFAULT = {
         "font_name": ("FFF Forward"),
-        "font_size": 12,
-        "font_color": Color.BLACK,
+        "font_size": 10,
+        "font_color": Color.WHITE,
         "border_width": 2,
         "border_color": Color.BLACK,
-        "bg_color": Color.LIGHT_GRAY,
+        "bg_color": Color.DARK_GRAY,
 
         # used if button is pressed
-        "bg_color_pressed": Color.DARK_GRAY,
-        "border_color_pressed": Color.LIGHT_GRAY,  # also used when hovered
-        "font_color_pressed": Color.DARK_GRAY,
+        "bg_color_pressed": Color.LIGHT_GRAY,
+        "border_color_pressed": Color.WHITE,  # also used when hovered
+        "font_color_pressed": Color.BLACK,
     }
