@@ -158,7 +158,7 @@ class StartView(FadingView):
                                             collision_type="wall",
                                             body_type=PymunkPhysicsEngine.STATIC)
 
-        # Add insturctions
+        # Add instructions
         self.start_sprite_list = arcade.SpriteList()
         self.start_sprite_list.append(
             arcade.Sprite(filename="graphics/MoveGuide.png",
@@ -193,10 +193,18 @@ class StartView(FadingView):
         title_ui = arcade.gui.UISpriteWidget(
             sprite=title, width=400, height=300)
         self.vertical_box.add(title_ui.with_space_around(bottom=0))
-        ui_flatbutton = arcade.gui.UIFlatButton(text="Flat Button",
+        start_button = arcade.gui.UIFlatButton(text="Start",
                                                 width=150,
                                                 style=utils.Style.BUTTON_DEFAULT)
-        self.vertical_box.add(ui_flatbutton.with_space_around(bottom=20))
+        option_button = arcade.gui.UIFlatButton(text="Option",
+                                                width=150,
+                                                style=utils.Style.BUTTON_DEFAULT)
+        quit_button = arcade.gui.UIFlatButton(text="Quit",
+                                                width=150,
+                                                style=utils.Style.BUTTON_DEFAULT)
+        self.vertical_box.add(start_button.with_space_around(bottom=20))
+        self.vertical_box.add(option_button.with_space_around(bottom=20))
+        self.vertical_box.add(quit_button.with_space_around(bottom=20))
         self.manager.add(
             arcade.gui.UIAnchorWidget(
                 anchor_x="center_x",
