@@ -26,6 +26,12 @@ class Utils:
         """Get sine value of a given vector."""
         return v.y / v.distance(Vec2(0, 0))
 
+    @staticmethod
+    def round_to_multiple(number: int, multiple: int) -> int:
+        """Round n to the nearest multiple of m."""
+        quotient = round(number / multiple)
+        return quotient * multiple
+
 
 class Style:
     """Design styles."""

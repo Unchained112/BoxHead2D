@@ -129,7 +129,9 @@ class StartView(FadingView):
         self.player_bullet_list = arcade.SpriteList()
 
         # Set up room background and player
-        self.room = room.StartRoom()
+        room_w = utils.Utils.round_to_multiple(self.w, 30)
+        room_h = utils.Utils.round_to_multiple(self.h, 30)
+        self.room = room.StartRoom(room_w, room_h)
 
         # Set up the player
         self.player = character.Player(float(self.w / 2) - 80,
