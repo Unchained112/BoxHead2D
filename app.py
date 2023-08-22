@@ -10,6 +10,14 @@ SCREEN_TITLE = "Box Head 2D: Invincible"
 
 class BoxHead2d(arcade.Window):
     """ Main application class. """
+    def __init__(self, width: int, height: int, title: str):
+        super().__init__(width, height, title)
+        self.effect_volume = 2
+        self.music_volume = 2
+        self.state = 0 # game state
+        self.w_scale = [720, 1280, 1920]
+        self.h_scale = [480, 720, 1080]
+        self.res_index = 1
 
     def on_key_press(self, key, modifiers):
         """Called whenever a key is pressed. """

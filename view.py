@@ -23,8 +23,11 @@ class FadingView(arcade.View):
     def update_fade(self) -> None:
         if self.fade_out is not None:
             self.fade_out += FADE_RATE
-            if (self.fade_out is not None and self.fade_out > 255 and
-                    self.next_view is not None):
+            if (
+                self.fade_out is not None
+                and self.fade_out > 255
+                and self.next_view is not None
+            ):
                 view = self.next_view()
                 view.setup()
                 self.window.show_view(view)
@@ -36,14 +39,22 @@ class FadingView(arcade.View):
 
     def draw_fading(self) -> None:
         if self.fade_out is not None:
-            arcade.draw_rectangle_filled(self.window.width / 2, self.window.height / 2,
-                                         self.window.width, self.window.height,
-                                         (0, 0, 0, self.fade_out))
+            arcade.draw_rectangle_filled(
+                self.window.width / 2,
+                self.window.height / 2,
+                self.window.width,
+                self.window.height,
+                (0, 0, 0, self.fade_out),
+            )
 
         if self.fade_in is not None:
-            arcade.draw_rectangle_filled(self.window.width / 2, self.window.height / 2,
-                                         self.window.width, self.window.height,
-                                         (0, 0, 0, self.fade_in))
+            arcade.draw_rectangle_filled(
+                self.window.width / 2,
+                self.window.height / 2,
+                self.window.width,
+                self.window.height,
+                (0, 0, 0, self.fade_in),
+            )
 
 
 class DefaultView(FadingView):
@@ -52,17 +63,23 @@ class DefaultView(FadingView):
     def setup(self) -> None:
         arcade.set_background_color(utils.Color.GROUND_WHITE)
         self.w, self.h = self.window.get_size()
-        self.title = arcade.Sprite(filename="graphics/Title.png",
-                                   scale=2,
-                                   center_x=self.w / 2,
-                                   center_y=self.h/2 - 20)
+        self.title = arcade.Sprite(
+            filename="graphics/Title.png",
+            scale=2,
+            center_x=self.w / 2,
+            center_y=self.h / 2 - 20,
+        )
         self.text_alpha = 250
         self.text_fading = -5  # must be divisible by 250
-        self.title_text = arcade.Text("Press any key to proceed...",
-                                      self.w / 2, self.h/2 - 80,
-                                      color=(0, 0, 0, 250),
-                                      font_size=16, font_name="FFF Forward",
-                                      anchor_x="center")
+        self.title_text = arcade.Text(
+            "Press any key to proceed...",
+            self.w / 2,
+            self.h / 2 - 80,
+            color=(0, 0, 0, 250),
+            font_size=16,
+            font_name="FFF Forward",
+            anchor_x="center",
+        )
 
     def on_update(self, delta_time: float) -> None:
         self.update_fade()
@@ -122,8 +139,7 @@ class StartView(FadingView):
         # Create the physics engine
         damping = 0.01
         gravity = (0, 0)
-        self.physics_engine = PymunkPhysicsEngine(damping=damping,
-                                                  gravity=gravity)
+        self.physics_engine = PymunkPhysicsEngine(damping=damping, gravity=gravity)
 
         # GameObject lists
         self.player_bullet_list = arcade.SpriteList()
@@ -134,9 +150,9 @@ class StartView(FadingView):
         self.room = room.StartRoom(room_w, room_h)
 
         # Set up the player
-        self.player = character.Player(float(self.w / 2) - 80,
-                                       float(self.h / 2) - 80,
-                                       self.physics_engine)
+        self.player = character.Player(
+            float(self.w / 2), float(self.h / 2) + 20, self.physics_engine
+        )
         self.character_sprites = arcade.SpriteList()
         self.character_sprites.extend(self.player.parts)
 
@@ -144,45 +160,54 @@ class StartView(FadingView):
         arcade.set_background_color(utils.Color.BLACK)
 
         # Add the player
-        self.physics_engine.add_sprite(self.player,
-                                       friction=0,
-                                       moment_of_inertia=PymunkPhysicsEngine.MOMENT_INF,
-                                       damping=0.001,
-                                       collision_type="player",
-                                       elasticity=0.1,
-                                       max_velocity=400)
+        self.physics_engine.add_sprite(
+            self.player,
+            friction=0,
+            moment_of_inertia=PymunkPhysicsEngine.MOMENT_INF,
+            damping=0.001,
+            collision_type="player",
+            elasticity=0.1,
+            max_velocity=400,
+        )
 
         # Create the walls
-        self.physics_engine.add_sprite_list(self.room.walls,
-                                            friction=0,
-                                            collision_type="wall",
-                                            body_type=PymunkPhysicsEngine.STATIC)
+        self.physics_engine.add_sprite_list(
+            self.room.walls,
+            friction=0,
+            collision_type="wall",
+            body_type=PymunkPhysicsEngine.STATIC,
+        )
 
         # Add instructions
         self.start_sprite_list = arcade.SpriteList()
         self.start_sprite_list.append(
-            arcade.Sprite(filename="graphics/MoveGuide.png",
-                          scale=0.3,
-                          center_x=200,
-                          center_y=200)
+            arcade.Sprite(
+                filename="graphics/MoveGuide.png", scale=0.3, center_x=200, center_y=200
+            )
         )
         self.start_sprite_list.append(
-            arcade.Sprite(filename="graphics/ShootGuide.png",
-                          scale=0.3,
-                          center_x=self.w - 200,
-                          center_y=200)
+            arcade.Sprite(
+                filename="graphics/ShootGuide.png",
+                scale=0.3,
+                center_x=self.w - 200,
+                center_y=200,
+            )
         )
         self.start_sprite_list.append(
-            arcade.Sprite(filename="graphics/PauseGuide.png",
-                          scale=0.3,
-                          center_x=200,
-                          center_y=self.h - 100)
+            arcade.Sprite(
+                filename="graphics/PauseGuide.png",
+                scale=0.3,
+                center_x=200,
+                center_y=self.h - 100,
+            )
         )
         self.start_sprite_list.append(
-            arcade.Sprite(filename="graphics/WeaponChangeGuide.png",
-                          scale=0.3,
-                          center_x=200,
-                          center_y=self.h - 200)
+            arcade.Sprite(
+                filename="graphics/WeaponChangeGuide.png",
+                scale=0.3,
+                center_x=200,
+                center_y=self.h - 200,
+            )
         )
 
         # Add UI elements
@@ -190,26 +215,31 @@ class StartView(FadingView):
         self.manager.enable()
         self.vertical_box = arcade.gui.UIBoxLayout(x=200)
         title = arcade.Sprite(filename="graphics/Title.png", scale=2)
-        title_ui = arcade.gui.UISpriteWidget(
-            sprite=title, width=400, height=300)
+        title_ui = arcade.gui.UISpriteWidget(sprite=title, width=400, height=300)
         self.vertical_box.add(title_ui.with_space_around(bottom=0))
-        start_button = arcade.gui.UIFlatButton(text="Start",
-                                                width=150,
-                                                style=utils.Style.BUTTON_DEFAULT)
-        option_button = arcade.gui.UIFlatButton(text="Option",
-                                                width=150,
-                                                style=utils.Style.BUTTON_DEFAULT)
-        quit_button = arcade.gui.UIFlatButton(text="Quit",
-                                                width=150,
-                                                style=utils.Style.BUTTON_DEFAULT)
+
+        start_button = arcade.gui.UIFlatButton(
+            text="Start", width=150, style=utils.Style.BUTTON_DEFAULT
+        )
+        option_button = arcade.gui.UIFlatButton(
+            text="Option", width=150, style=utils.Style.BUTTON_DEFAULT
+        )
+        quit_button = arcade.gui.UIFlatButton(
+            text="Quit", width=150, style=utils.Style.BUTTON_DEFAULT
+        )
+
         self.vertical_box.add(start_button.with_space_around(bottom=20))
         self.vertical_box.add(option_button.with_space_around(bottom=20))
         self.vertical_box.add(quit_button.with_space_around(bottom=20))
+
+        start_button.on_click = self.on_click_start
+        option_button.on_click = self.on_click_option
+        quit_button.on_click = self.on_click_quit
+
         self.manager.add(
             arcade.gui.UIAnchorWidget(
-                anchor_x="center_x",
-                anchor_y="center_y",
-                child=self.vertical_box)
+                anchor_x="center_x", anchor_y="center_y", child=self.vertical_box
+            )
         )
 
     def on_draw(self) -> None:
@@ -275,34 +305,232 @@ class StartView(FadingView):
         Anything between 0 and 1 will have the camera move to the location with a smoother
         pan.
         """
-        position = Vec2(self.camera_sprites.position.x,
-                        self.camera_sprites.position.y)
+        position = Vec2(self.camera_sprites.position.x, self.camera_sprites.position.y)
         # limit the camera position within the room
-        if (self.player.pos.x > float(self.w / 2) - 5
-                and self.room.width - self.player.pos.x > float(self.w / 2) - 5):
+        if (
+            self.player.pos.x > float(self.w / 2) - 5
+            and self.room.width - self.player.pos.x > float(self.w / 2) - 5
+        ):
             position.x = self.player.pos.x - float(self.w / 2)
-        if (self.player.pos.y > float(self.h / 2) - 5
-                and self.room.height - self.player.pos.y > float(self.h / 2) - 5):
+        if (
+            self.player.pos.y > float(self.h / 2) - 5
+            and self.room.height - self.player.pos.y > float(self.h / 2) - 5
+        ):
             position.y = self.player.pos.y - float(self.h / 2)
 
         self.camera_sprites.move_to(position, CAMERA_SPEED)
+
+    def resize_camera(self) -> None:
+        pass
+
+    def on_click_start(self, event) -> None:
+        print("Game Start")
+
+    def on_click_option(self, event) -> None:
+        print("Option Menu")
+        option_view = OptionView()
+        option_view.setup(self)
+        self.window.show_view(option_view)
+
+    def on_click_quit(self, event) -> None:
+        arcade.exit()
 
 
 class SelectionView(FadingView):
     """Character and map selection."""
 
+    def on_update(self, dt):
+        self.update_fade(next_view=GameView)
+
 
 class OptionView(FadingView):
     """Optional menu."""
 
-    def __init__(self):
-        super().__init__()
+    def on_show_view(self) -> None:
+        arcade.set_background_color(utils.Color.GROUND_WHITE)
 
-    def setup(self):
+    def setup(self, last_view) -> None:
+        self.last_view = last_view
+
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+        self.effect_volume_box = arcade.gui.UIBoxLayout(vertical=False)
+        self.music_volume_box = arcade.gui.UIBoxLayout(vertical=False)
+        self.screen_box = arcade.gui.UIBoxLayout(vertical=False)
+        self.resolution_box = arcade.gui.UIBoxLayout(vertical=False)
+        self.rest_box = arcade.gui.UIBoxLayout(vertical=False)
+
+        # Effect volume settings
+        effect_volume_label = arcade.gui.UITextArea(
+            text="Effect Volume",
+            width=300,
+            height=40,
+            font_size=20,
+            text_color=utils.Color.BLACK,
+            font_name="FFF Forward",
+        )
+        effect_volume_down_button = arcade.gui.UIFlatButton(
+            text="-", width=60, style=utils.Style.BUTTON_DEFAULT
+        )
+        self.effect_volume_text = arcade.gui.UITextArea(
+            text=str(self.window.effect_volume),
+            width=40,
+            height=40,
+            font_size=20,
+            text_color=utils.Color.BLACK,
+            font_name="FFF Forward",
+        )
+        effect_volume_up_button = arcade.gui.UIFlatButton(
+            text="+", width=60, style=utils.Style.BUTTON_DEFAULT
+        )
+        self.effect_volume_box.add(effect_volume_label.with_space_around(right=20))
+        self.effect_volume_box.add(
+            effect_volume_down_button.with_space_around(right=20)
+        )
+        self.effect_volume_box.add(self.effect_volume_text.with_space_around(right=10))
+        self.effect_volume_box.add(effect_volume_up_button.with_space_around(right=0))
+        effect_volume_up_button.on_click = self.on_click_effect_volume_up
+        effect_volume_down_button.on_click = self.on_click_effect_volume_down
+
+        # Music volume settings
+        music_volume_label = arcade.gui.UITextArea(
+            text="Music Volume",
+            width=300,
+            height=40,
+            font_size=20,
+            text_color=utils.Color.BLACK,
+            font_name="FFF Forward",
+        )
+        music_volume_down_button = arcade.gui.UIFlatButton(
+            text="-", width=60, style=utils.Style.BUTTON_DEFAULT
+        )
+        self.music_volume_text = arcade.gui.UITextArea(
+            text=str(self.window.music_volume),
+            width=40,
+            height=40,
+            font_size=20,
+            text_color=utils.Color.BLACK,
+            font_name="FFF Forward",
+        )
+        music_volume_up_button = arcade.gui.UIFlatButton(
+            text="+", width=60, style=utils.Style.BUTTON_DEFAULT
+        )
+        self.music_volume_box.add(music_volume_label.with_space_around(right=20))
+        self.music_volume_box.add(music_volume_down_button.with_space_around(right=20))
+        self.music_volume_box.add(self.music_volume_text.with_space_around(right=10))
+        self.music_volume_box.add(music_volume_up_button.with_space_around(right=0))
+        music_volume_up_button.on_click = self.on_click_music_volume_up
+        music_volume_down_button.on_click = self.on_click_music_volume_down
+
+        # Screen settings
+        fullscreen_label = arcade.gui.UITextArea(
+            text="Fullscreen: ",
+            width=200,
+            height=40,
+            font_size=20,
+            text_color=utils.Color.BLACK,
+            font_name="FFF Forward",
+        )
+        self.fullscreen_text = arcade.gui.UITextArea(
+            text=str(self.window.fullscreen),
+            width=120,
+            height=40,
+            font_size=20,
+            text_color=utils.Color.BLACK,
+            font_name="FFF Forward",
+        )
+        fullscreen_button = arcade.gui.UIFlatButton(
+            text="Switch", width=120, style=utils.Style.BUTTON_DEFAULT
+        )
+        self.screen_box.add(fullscreen_label.with_space_around(right=20))
+        self.screen_box.add(self.fullscreen_text.with_space_around(right=20))
+        self.screen_box.add(fullscreen_button.with_space_around(right=0))
+        fullscreen_button.on_click = self.on_click_fullscreen
+
+        # Resolution settings
+        resolution_label = arcade.gui.UITextArea(
+            text="Resolution",
+            width=200,
+            height=40,
+            font_size=20,
+            text_color=utils.Color.BLACK,
+            font_name="FFF Forward",
+        )
+        resolution_up_button = arcade.gui.UIFlatButton(
+            text="<", width=60, style=utils.Style.BUTTON_DEFAULT
+        )
+        self.resolution_text = arcade.gui.UITextArea(
+            text="1280 x 720",
+            width=200,
+            height=40,
+            font_size=20,
+            text_color=utils.Color.BLACK,
+            font_name="FFF Forward",
+        )
+        resolution_down_button = arcade.gui.UIFlatButton(
+            text=">", width=60, style=utils.Style.BUTTON_DEFAULT
+        )
+        self.resolution_box.add(resolution_label.with_space_around(right=20))
+        self.resolution_box.add(resolution_up_button.with_space_around(right=40))
+        self.resolution_box.add(self.resolution_text.with_space_around(right=0))
+        self.resolution_box.add(resolution_down_button.with_space_around(right=0))
+
+        # Rest buttons
+        back_button = arcade.gui.UIFlatButton(
+            text="Back", width=120, style=utils.Style.BUTTON_DEFAULT
+        )
+        start_view_button = arcade.gui.UIFlatButton(
+            text="Start Menu", width=180, style=utils.Style.BUTTON_DEFAULT
+        )
+        self.rest_box.add(back_button.with_space_around(right=100))
+        self.rest_box.add(start_view_button.with_space_around(right=0))
+
+        # Add box layouts
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(align_y=200, child=self.effect_volume_box)
+        )
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(align_y=100, child=self.music_volume_box)
+        )
+        self.manager.add(arcade.gui.UIAnchorWidget(align_y=0, child=self.screen_box))
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(align_y=-100, child=self.resolution_box)
+        )
+        self.manager.add(arcade.gui.UIAnchorWidget(align_y=-240, child=self.rest_box))
+
+    def on_draw(self) -> None:
+        self.clear()
+        self.manager.draw()
+
+    def on_click_effect_volume_up(self, event) -> None:
+        self.window.effect_volume = min(10, self.window.effect_volume + 1)
+        self.effect_volume_text.text = str(self.window.effect_volume)
+
+    def on_click_effect_volume_down(self, event) -> None:
+        self.window.effect_volume = max(0, self.window.effect_volume - 1)
+        self.effect_volume_text.text = str(self.window.effect_volume)
+
+    def on_click_music_volume_up(self, event) -> None:
+        self.window.music_volume = min(10, self.window.music_volume + 1)
+        self.music_volume_text.text = str(self.window.music_volume)
+
+    def on_click_music_volume_down(self, event) -> None:
+        self.window.music_volume = max(0, self.window.music_volume - 1)
+        self.music_volume_text.text = str(self.window.music_volume)
+
+    def on_click_fullscreen(self, event) -> None:
+        self.window.set_fullscreen(not self.window.fullscreen)
+        self.fullscreen_text.text = str(self.window.fullscreen)
+        self.resolution_text.text = "Fullscreen"
+
+    def on_click_resolution_up(self, event) -> None:
+        if self.window.fullscreen:
+            return
+        self.window.index += 1
+        self.window.index %= 3
+
+    def on_click_resolution_down(self, event) -> None:
         pass
-
-    def on_update(self, dt):
-        self.update_fade(next_view=GameView)
 
 
 class GameView(FadingView):
