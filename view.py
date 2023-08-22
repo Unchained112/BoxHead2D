@@ -139,7 +139,8 @@ class StartView(FadingView):
         # Create the physics engine
         damping = 0.01
         gravity = (0, 0)
-        self.physics_engine = PymunkPhysicsEngine(damping=damping, gravity=gravity)
+        self.physics_engine = PymunkPhysicsEngine(
+            damping=damping, gravity=gravity)
 
         # GameObject lists
         self.player_bullet_list = arcade.SpriteList()
@@ -215,7 +216,8 @@ class StartView(FadingView):
         self.manager.enable()
         self.vertical_box = arcade.gui.UIBoxLayout(x=200)
         title = arcade.Sprite(filename="graphics/Title.png", scale=2)
-        title_ui = arcade.gui.UISpriteWidget(sprite=title, width=400, height=300)
+        title_ui = arcade.gui.UISpriteWidget(
+            sprite=title, width=400, height=300)
         self.vertical_box.add(title_ui.with_space_around(bottom=0))
 
         start_button = arcade.gui.UIFlatButton(
@@ -305,7 +307,8 @@ class StartView(FadingView):
         Anything between 0 and 1 will have the camera move to the location with a smoother
         pan.
         """
-        position = Vec2(self.camera_sprites.position.x, self.camera_sprites.position.y)
+        position = Vec2(self.camera_sprites.position.x,
+                        self.camera_sprites.position.y)
         # limit the camera position within the room
         if (
             self.player.pos.x > float(self.w / 2) - 5
@@ -383,12 +386,15 @@ class OptionView(FadingView):
         effect_volume_up_button = arcade.gui.UIFlatButton(
             text="+", width=60, style=utils.Style.BUTTON_DEFAULT
         )
-        self.effect_volume_box.add(effect_volume_label.with_space_around(right=20))
+        self.effect_volume_box.add(
+            effect_volume_label.with_space_around(right=20))
         self.effect_volume_box.add(
             effect_volume_down_button.with_space_around(right=20)
         )
-        self.effect_volume_box.add(self.effect_volume_text.with_space_around(right=10))
-        self.effect_volume_box.add(effect_volume_up_button.with_space_around(right=0))
+        self.effect_volume_box.add(
+            self.effect_volume_text.with_space_around(right=10))
+        self.effect_volume_box.add(
+            effect_volume_up_button.with_space_around(right=0))
         effect_volume_up_button.on_click = self.on_click_effect_volume_up
         effect_volume_down_button.on_click = self.on_click_effect_volume_down
 
@@ -415,10 +421,14 @@ class OptionView(FadingView):
         music_volume_up_button = arcade.gui.UIFlatButton(
             text="+", width=60, style=utils.Style.BUTTON_DEFAULT
         )
-        self.music_volume_box.add(music_volume_label.with_space_around(right=20))
-        self.music_volume_box.add(music_volume_down_button.with_space_around(right=20))
-        self.music_volume_box.add(self.music_volume_text.with_space_around(right=10))
-        self.music_volume_box.add(music_volume_up_button.with_space_around(right=0))
+        self.music_volume_box.add(
+            music_volume_label.with_space_around(right=20))
+        self.music_volume_box.add(
+            music_volume_down_button.with_space_around(right=20))
+        self.music_volume_box.add(
+            self.music_volume_text.with_space_around(right=10))
+        self.music_volume_box.add(
+            music_volume_up_button.with_space_around(right=0))
         music_volume_up_button.on_click = self.on_click_music_volume_up
         music_volume_down_button.on_click = self.on_click_music_volume_down
 
@@ -456,7 +466,7 @@ class OptionView(FadingView):
             text_color=utils.Color.BLACK,
             font_name="FFF Forward",
         )
-        resolution_up_button = arcade.gui.UIFlatButton(
+        resolution_down_button = arcade.gui.UIFlatButton(
             text="<", width=60, style=utils.Style.BUTTON_DEFAULT
         )
         self.resolution_text = arcade.gui.UITextArea(
@@ -467,13 +477,18 @@ class OptionView(FadingView):
             text_color=utils.Color.BLACK,
             font_name="FFF Forward",
         )
-        resolution_down_button = arcade.gui.UIFlatButton(
+        resolution_up_button = arcade.gui.UIFlatButton(
             text=">", width=60, style=utils.Style.BUTTON_DEFAULT
         )
         self.resolution_box.add(resolution_label.with_space_around(right=20))
-        self.resolution_box.add(resolution_up_button.with_space_around(right=40))
-        self.resolution_box.add(self.resolution_text.with_space_around(right=0))
-        self.resolution_box.add(resolution_down_button.with_space_around(right=0))
+        self.resolution_box.add(
+            resolution_down_button.with_space_around(right=40))
+        self.resolution_box.add(
+            self.resolution_text.with_space_around(right=0))
+        self.resolution_box.add(
+            resolution_up_button.with_space_around(right=0))
+        resolution_up_button.on_click = self.on_click_resolution_up
+        resolution_down_button.on_click = self.on_click_resolution_down
 
         # Rest buttons
         back_button = arcade.gui.UIFlatButton(
@@ -487,16 +502,19 @@ class OptionView(FadingView):
 
         # Add box layouts
         self.manager.add(
-            arcade.gui.UIAnchorWidget(align_y=200, child=self.effect_volume_box)
+            arcade.gui.UIAnchorWidget(
+                align_y=200, child=self.effect_volume_box)
         )
         self.manager.add(
             arcade.gui.UIAnchorWidget(align_y=100, child=self.music_volume_box)
         )
-        self.manager.add(arcade.gui.UIAnchorWidget(align_y=0, child=self.screen_box))
+        self.manager.add(arcade.gui.UIAnchorWidget(
+            align_y=0, child=self.screen_box))
         self.manager.add(
             arcade.gui.UIAnchorWidget(align_y=-100, child=self.resolution_box)
         )
-        self.manager.add(arcade.gui.UIAnchorWidget(align_y=-240, child=self.rest_box))
+        self.manager.add(arcade.gui.UIAnchorWidget(
+            align_y=-240, child=self.rest_box))
 
     def on_draw(self) -> None:
         self.clear()
@@ -521,16 +539,31 @@ class OptionView(FadingView):
     def on_click_fullscreen(self, event) -> None:
         self.window.set_fullscreen(not self.window.fullscreen)
         self.fullscreen_text.text = str(self.window.fullscreen)
-        self.resolution_text.text = "Fullscreen"
+        if self.window.fullscreen:
+            self.resolution_text.text = "Fullscreen"
+        else:
+            self.resolution_text.text = str(
+            self.window.w_scale[self.window.res_index]) + " x " + str(self.window.h_scale[self.window.res_index])
 
     def on_click_resolution_up(self, event) -> None:
         if self.window.fullscreen:
             return
-        self.window.index += 1
-        self.window.index %= 3
+        self.window.res_index += 1
+        self.window.res_index %= 3
+        self.window.set_size(self.window.w_scale[self.window.res_index],
+                             self.window.h_scale[self.window.res_index])
+        self.resolution_text.text = str(
+            self.window.w_scale[self.window.res_index]) + " x " + str(self.window.h_scale[self.window.res_index])
 
     def on_click_resolution_down(self, event) -> None:
-        pass
+        if self.window.fullscreen:
+            return
+        self.window.res_index -= 1
+        self.window.res_index %= 3
+        self.window.set_size(self.window.w_scale[self.window.res_index],
+                             self.window.h_scale[self.window.res_index])
+        self.resolution_text.text = str(
+            self.window.w_scale[self.window.res_index]) + " x " + str(self.window.h_scale[self.window.res_index])
 
 
 class GameView(FadingView):
