@@ -323,8 +323,11 @@ class StartView(FadingView):
 
         self.camera_sprites.move_to(position, CAMERA_SPEED)
 
-    def resize_camera(self) -> None:
-        pass
+    def resize_camera(self, width, height) -> None:
+        self.w = width
+        self.h = height
+        self.setup()
+        self.camera_sprites.resize(width, height)
 
     def on_click_start(self, event) -> None:
         print("Game Start")
@@ -346,7 +349,7 @@ class SelectionView(FadingView):
         self.update_fade(next_view=GameView)
 
 
-class OptionView(FadingView):
+class OptionView(arcade.View):
     """Optional menu."""
 
     def on_show_view(self) -> None:
@@ -485,6 +488,11 @@ class OptionView(FadingView):
             resolution_down_button.with_space_around(right=40))
         self.resolution_box.add(
             self.resolution_text.with_space_around(right=0))
+        if self.window.fullscreen:
+            self.resolution_text.text = "Fullscreen"
+        else:
+            self.resolution_text.text = str(
+            self.window.w_scale[self.window.res_index]) + " x " + str(self.window.h_scale[self.window.res_index])
         self.resolution_box.add(
             resolution_up_button.with_space_around(right=0))
         resolution_up_button.on_click = self.on_click_resolution_up
@@ -499,6 +507,8 @@ class OptionView(FadingView):
         )
         self.rest_box.add(back_button.with_space_around(right=100))
         self.rest_box.add(start_view_button.with_space_around(right=0))
+        back_button.on_click = self.on_click_back
+        start_view_button.on_click = self.on_click_start_menu
 
         # Add box layouts
         self.manager.add(
@@ -539,6 +549,8 @@ class OptionView(FadingView):
     def on_click_fullscreen(self, event) -> None:
         self.window.set_fullscreen(not self.window.fullscreen)
         self.fullscreen_text.text = str(self.window.fullscreen)
+        width, height = self.window.get_size()
+        self.window.set_viewport(0, width, 0, height)
         if self.window.fullscreen:
             self.resolution_text.text = "Fullscreen"
         else:
@@ -549,9 +561,11 @@ class OptionView(FadingView):
         if self.window.fullscreen:
             return
         self.window.res_index += 1
-        self.window.res_index %= 3
+        self.window.res_index %= 4
         self.window.set_size(self.window.w_scale[self.window.res_index],
                              self.window.h_scale[self.window.res_index])
+        width, height = self.window.get_size()
+        self.window.set_viewport(0, width, 0, height)
         self.resolution_text.text = str(
             self.window.w_scale[self.window.res_index]) + " x " + str(self.window.h_scale[self.window.res_index])
 
@@ -559,11 +573,23 @@ class OptionView(FadingView):
         if self.window.fullscreen:
             return
         self.window.res_index -= 1
-        self.window.res_index %= 3
+        self.window.res_index %= 4
         self.window.set_size(self.window.w_scale[self.window.res_index],
                              self.window.h_scale[self.window.res_index])
+        width, height = self.window.get_size()
+        self.window.set_viewport(0, width, 0, height)
         self.resolution_text.text = str(
             self.window.w_scale[self.window.res_index]) + " x " + str(self.window.h_scale[self.window.res_index])
+
+    def on_click_back(self, event) -> None:
+        self.last_view.resize_camera(self.window.width, self.window.height)
+        self.window.show_view(self.last_view)
+
+    def on_click_start_menu(self, event) -> None:
+        start_view = StartView()
+        start_view.setup()
+        start_view.resize_camera(self.window.width, self.window.height)
+        self.window.show_view(start_view)
 
 
 class GameView(FadingView):

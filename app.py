@@ -15,20 +15,9 @@ class BoxHead2d(arcade.Window):
         self.effect_volume = 2
         self.music_volume = 2
         self.state = 0 # game state
-        self.w_scale = [720, 1280, 1920]
-        self.h_scale = [480, 720, 1080]
+        self.w_scale = [1024, 1280, 1440, 1920]
+        self.h_scale = [600, 720, 900, 1080]
         self.res_index = 1
-
-    def on_key_press(self, key, modifiers):
-        """Called whenever a key is pressed. """
-        if key == arcade.key.F:
-            # User hits f. Flip between full and not full screen.
-            self.set_fullscreen(not self.fullscreen)
-
-            # Get the window coordinates. Match viewport to window coordinates
-            # so there is a one-to-one mapping.
-            width, height = self.get_size()
-            self.set_viewport(0, width, 0, height)
 
 
 def main():
