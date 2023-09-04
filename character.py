@@ -253,3 +253,12 @@ class Player(Character):
 
     def place(self) -> arcade.Sprite:
         return self.current_weapon.get_object()
+
+
+class Rambo(Player):
+    "Rambo character."
+
+    def __init__(self, x: float = 0, y: float = 0, 
+                 physics_engine: arcade.PymunkPhysicsEngine = None) -> None:
+        super().__init__(x, y, physics_engine)
+        self.body.texture = arcade.load_texture("graphics/Rambo.png")

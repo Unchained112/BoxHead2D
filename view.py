@@ -373,7 +373,9 @@ class StartView(FadingView):
         self.camera_sprites.resize(width, height)
 
     def on_click_start(self, event) -> None:
-        print("Game Start")
+        selection_view = SelectionView()
+        selection_view.setup()
+        self.window.show_view(selection_view)
 
     def on_click_option(self, event) -> None:
         option_view = OptionView()
@@ -390,6 +392,59 @@ class SelectionView(FadingView):
     def on_show_view(self) -> None:
         arcade.set_background_color(utils.Color.GROUND_WHITE)
 
+    def setup(self) -> None:
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+        self.selection_box = arcade.gui.UIBoxLayout(vertical=False)
+        self.rest_box = arcade.gui.UIBoxLayout(vertical=False)
+
+        # Selection buttons
+        character_left_button = arcade.gui.UIFlatButton(
+            text="<", width=60, style=utils.Style.BUTTON_DEFAULT
+        )
+        character_right_button = arcade.gui.UIFlatButton(
+            text=">", width=60, style=utils.Style.BUTTON_DEFAULT
+        )
+        map_left_button = arcade.gui.UIFlatButton(
+            text="<", width=80, style=utils.Style.BUTTON_DEFAULT
+        )
+        map_right_button = arcade.gui.UIFlatButton(
+            text=">", width=80, style=utils.Style.BUTTON_DEFAULT
+        )
+        self.selection_box.add(character_left_button.with_space_around(right=20))
+        self.selection_box.add(character_right_button.with_space_around(right=300))
+        self.selection_box.add(map_left_button.with_space_around(right=20))
+        self.selection_box.add(map_right_button.with_space_around(right=0))
+
+        # Rest buttons
+        back_button = arcade.gui.UIFlatButton(
+            text="Back", width=120, style=utils.Style.BUTTON_DEFAULT
+        )
+        next_button = arcade.gui.UIFlatButton(
+            text="Next", width=120, style=utils.Style.BUTTON_DEFAULT
+        )
+        self.rest_box.add(back_button.with_space_around(right=200))
+        self.rest_box.add(next_button.with_space_around(right=0))
+        back_button.on_click = self.on_click_back
+
+         # Add box layouts
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(
+                align_y=-100, child=self.selection_box)
+        )
+        self.manager.add(arcade.gui.UIAnchorWidget(
+            align_y=-200, child=self.rest_box))
+
+    def on_draw(self) -> None:
+        self.clear()
+        self.manager.draw()
+
+    def on_click_back(self, event) -> None:
+        start_view = StartView()
+        start_view.setup()
+        start_view.resize_camera(self.window.width, self.window.height)
+        self.window.show_view(start_view)
+        self.window.play_button_sound()
 
 class OptionView(arcade.View):
     """Optional menu."""
@@ -547,10 +602,15 @@ class OptionView(arcade.View):
         start_view_button = arcade.gui.UIFlatButton(
             text="Start Menu", width=180, style=utils.Style.BUTTON_DEFAULT
         )
+        quit_button = arcade.gui.UIFlatButton(
+            text="Quit", width=120, style=utils.Style.BUTTON_DEFAULT
+        )
         self.rest_box.add(back_button.with_space_around(right=100))
-        self.rest_box.add(start_view_button.with_space_around(right=0))
+        self.rest_box.add(start_view_button.with_space_around(right=100))
+        self.rest_box.add(quit_button.with_space_around(right=0))
         back_button.on_click = self.on_click_back
         start_view_button.on_click = self.on_click_start_menu
+        quit_button.on_click = self.on_click_quit
 
         # Add box layouts
         self.manager.add(
@@ -642,9 +702,19 @@ class OptionView(arcade.View):
         self.window.show_view(start_view)
         self.window.play_button_sound()
 
+    def on_click_quit(self, event) -> None:
+        self.window.play_button_sound()
+        arcade.exit()
 
 class GameView(FadingView):
     """Main game view."""
+
+    def __init__(self):
+        super().__init__()
+
+
+class GameOverView(arcade.View):
+    """Game over view."""
 
     def __init__(self):
         super().__init__()
