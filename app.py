@@ -18,7 +18,10 @@ class BoxHead2d(arcade.Window):
         self.w_scale = [1024, 1280, 1440, 1920]
         self.h_scale = [600, 720, 900, 1080]
         self.res_index = 1
+        self.button_sound = arcade.Sound("audio/ui_click.mp3")
 
+    def play_button_sound(self) -> None:
+        self.button_sound.play(volume=self.effect_volume/10)
 
 def main():
     """ Main function """

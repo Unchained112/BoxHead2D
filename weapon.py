@@ -130,6 +130,7 @@ class Weapon(arcade.Sprite):
             image_width=20,
             image_height=10,
         )
+        self.sound = arcade.Sound("audio/wpn_fire_usp45.mp3")
         self.bullet = Bullet
 
     def update(self) -> None:
@@ -165,6 +166,8 @@ class Weapon(arcade.Sprite):
         bullets.append(bullet)
         return bullets
 
+    def play_sound(self, effect_volume: int) -> None:
+        self.sound.play(volume=effect_volume / 10)
 
 class Shotgun(Weapon):
     """Shotgun class."""

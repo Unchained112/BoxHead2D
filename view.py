@@ -149,6 +149,7 @@ class StartView(FadingView):
         room_w = utils.Utils.round_to_multiple(self.w, 30)
         room_h = utils.Utils.round_to_multiple(self.h, 30)
         self.room = room.StartRoom(room_w, room_h)
+        self.wall_list = self.room.walls
 
         # Set up the player
         self.player = character.Player(
@@ -261,8 +262,42 @@ class StartView(FadingView):
 
         self.physics_engine.step()
         self.player.update()
+        self.update_player_attack()
+        self.process_player_bullet()
 
         self.scroll_to_player()
+
+    def update_player_attack(self) -> None:
+        if self.player.is_attack:
+            if self.player.cd == self.player.cd_max:
+                self.player.cd = 0
+
+            if self.player.cd == 0 and self.player.energy - self.player.current_weapon.cost >= 0:
+                self.player.energy = max(
+                    0, self.player.energy - self.player.current_weapon.cost)
+                bullets = self.player.attack()
+                self.player.current_weapon.play_sound(self.window.effect_volume)
+                for bullet in bullets:
+                    bullet.change_x = bullet.aim.x
+                    bullet.change_y = bullet.aim.y
+                    self.player_bullet_list.append(bullet)
+
+        self.player.cd = min(self.player.cd + 1, self.player.cd_max)
+
+    def process_player_bullet(self) -> None:
+        self.player_bullet_list.update()
+
+        for bullet in self.player_bullet_list:
+            bullet.life_span -= 1
+
+            hit_list = arcade.check_for_collision_with_list(
+                bullet, self.wall_list)
+
+            if len(hit_list) > 0:
+                bullet.remove_from_sprite_lists()
+
+            if bullet.life_span <= 0:
+                bullet.remove_from_sprite_lists()
 
     def on_key_press(self, key, modifiers) -> None:
         """Called whenever a key is pressed."""
@@ -299,6 +334,14 @@ class StartView(FadingView):
         self.mouse_sprite.center_y = self.mouse_y
         self.player.aim(self.mouse_pos)
 
+    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int) -> None:
+        if button == arcade.MOUSE_BUTTON_LEFT:
+            self.player.is_attack = True
+
+    def on_mouse_release(self, x: int, y: int, button: int, modifiers: int) -> None:
+        if button == arcade.MOUSE_BUTTON_LEFT:
+            self.player.is_attack = False
+
     def scroll_to_player(self) -> None:
         """
         Scroll the window to the player.
@@ -333,7 +376,6 @@ class StartView(FadingView):
         print("Game Start")
 
     def on_click_option(self, event) -> None:
-        print("Option Menu")
         option_view = OptionView()
         option_view.setup(self)
         self.window.show_view(option_view)
@@ -345,8 +387,8 @@ class StartView(FadingView):
 class SelectionView(FadingView):
     """Character and map selection."""
 
-    def on_update(self, dt):
-        self.update_fade(next_view=GameView)
+    def on_show_view(self) -> None:
+        arcade.set_background_color(utils.Color.GROUND_WHITE)
 
 
 class OptionView(arcade.View):
@@ -533,18 +575,22 @@ class OptionView(arcade.View):
     def on_click_effect_volume_up(self, event) -> None:
         self.window.effect_volume = min(10, self.window.effect_volume + 1)
         self.effect_volume_text.text = str(self.window.effect_volume)
+        self.window.play_button_sound()
 
     def on_click_effect_volume_down(self, event) -> None:
         self.window.effect_volume = max(0, self.window.effect_volume - 1)
         self.effect_volume_text.text = str(self.window.effect_volume)
+        self.window.play_button_sound()
 
     def on_click_music_volume_up(self, event) -> None:
         self.window.music_volume = min(10, self.window.music_volume + 1)
         self.music_volume_text.text = str(self.window.music_volume)
+        self.window.play_button_sound()
 
     def on_click_music_volume_down(self, event) -> None:
         self.window.music_volume = max(0, self.window.music_volume - 1)
         self.music_volume_text.text = str(self.window.music_volume)
+        self.window.play_button_sound()
 
     def on_click_fullscreen(self, event) -> None:
         self.window.set_fullscreen(not self.window.fullscreen)
@@ -556,6 +602,7 @@ class OptionView(arcade.View):
         else:
             self.resolution_text.text = str(
             self.window.w_scale[self.window.res_index]) + " x " + str(self.window.h_scale[self.window.res_index])
+        self.window.play_button_sound()
 
     def on_click_resolution_up(self, event) -> None:
         if self.window.fullscreen:
@@ -568,6 +615,7 @@ class OptionView(arcade.View):
         self.window.set_viewport(0, width, 0, height)
         self.resolution_text.text = str(
             self.window.w_scale[self.window.res_index]) + " x " + str(self.window.h_scale[self.window.res_index])
+        self.window.play_button_sound()
 
     def on_click_resolution_down(self, event) -> None:
         if self.window.fullscreen:
@@ -580,16 +628,19 @@ class OptionView(arcade.View):
         self.window.set_viewport(0, width, 0, height)
         self.resolution_text.text = str(
             self.window.w_scale[self.window.res_index]) + " x " + str(self.window.h_scale[self.window.res_index])
+        self.window.play_button_sound()
 
     def on_click_back(self, event) -> None:
         self.last_view.resize_camera(self.window.width, self.window.height)
         self.window.show_view(self.last_view)
+        self.window.play_button_sound()
 
     def on_click_start_menu(self, event) -> None:
         start_view = StartView()
         start_view.setup()
         start_view.resize_camera(self.window.width, self.window.height)
         self.window.show_view(start_view)
+        self.window.play_button_sound()
 
 
 class GameView(FadingView):
