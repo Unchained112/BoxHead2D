@@ -276,7 +276,8 @@ class StartView(FadingView):
                 self.player.energy = max(
                     0, self.player.energy - self.player.current_weapon.cost)
                 bullets = self.player.attack()
-                self.player.current_weapon.play_sound(self.window.effect_volume)
+                self.player.current_weapon.play_sound(
+                    self.window.effect_volume)
                 for bullet in bullets:
                     bullet.change_x = bullet.aim.x
                     bullet.change_y = bullet.aim.y
@@ -398,6 +399,26 @@ class SelectionView(FadingView):
         self.selection_box = arcade.gui.UIBoxLayout(vertical=False)
         self.rest_box = arcade.gui.UIBoxLayout(vertical=False)
 
+        # Characters
+        self.char_sprites = arcade.SpriteList()
+        self.char_list = [
+            "graphics/Player.png",
+            "graphics/Rambo.png"
+        ]
+        self.cur_char_idx = 0
+        self.cur_char = character.Character(float(self.w/2 - 240), float(self.h/2))
+        self.set_character()
+
+        # Maps
+        self.map_list = [
+            room.GameRoom0,
+            room.GameRoom1
+        ]
+        self.cur_map_idx = 0
+        self.cur_map = self.map_list[self.cur_map_idx]
+        self.cur_map_sprite = arcade.Sprite()
+        self.set_maps()
+
         # Selection buttons
         character_left_button = arcade.gui.UIFlatButton(
             text="<", width=60, style=utils.Style.BUTTON_DEFAULT
@@ -411,10 +432,16 @@ class SelectionView(FadingView):
         map_right_button = arcade.gui.UIFlatButton(
             text=">", width=80, style=utils.Style.BUTTON_DEFAULT
         )
-        self.selection_box.add(character_left_button.with_space_around(right=20))
-        self.selection_box.add(character_right_button.with_space_around(right=300))
+        self.selection_box.add(
+            character_left_button.with_space_around(right=20))
+        self.selection_box.add(
+            character_right_button.with_space_around(right=300))
         self.selection_box.add(map_left_button.with_space_around(right=20))
         self.selection_box.add(map_right_button.with_space_around(right=0))
+        character_left_button.on_click = self.on_click_last_char
+        character_right_button.on_click = self.on_click_next_char
+        map_left_button.on_click = self.on_click_last_map
+        map_right_button.on_click = self.on_click_next_map
 
         # Rest buttons
         back_button = arcade.gui.UIFlatButton(
@@ -427,7 +454,7 @@ class SelectionView(FadingView):
         self.rest_box.add(next_button.with_space_around(right=0))
         back_button.on_click = self.on_click_back
 
-         # Add box layouts
+        # Add box layouts
         self.manager.add(
             arcade.gui.UIAnchorWidget(
                 align_y=-100, child=self.selection_box)
@@ -435,9 +462,29 @@ class SelectionView(FadingView):
         self.manager.add(arcade.gui.UIAnchorWidget(
             align_y=-200, child=self.rest_box))
 
-    def on_draw(self) -> None:
+    def set_character(self, idx: int = 0) -> None:
+        self.cur_char_idx += idx
+        self.cur_char_idx %= len(self.char_list)
+        self.char_sprites.clear()
+        self.cur_char.body.texture = arcade.load_texture(self.char_list[self.cur_char_idx])
+        self.char_sprites.extend(self.cur_char.parts)
+
+    def set_maps(self, idx: int = 0) -> None:
+        self.cur_map_idx += idx
+        self.cur_map_idx %= len(self.map_list)
+        self.cur_map = self.map_list[self.cur_map_idx]
+        self.cur_map_sprite = self.cur_map.layout_sprite
+        self.cur_map_sprite.center_x = float(self.w/2 + 220)
+        self.cur_map_sprite.center_y =  float(self.h/2 + 20)
+
+    def on_draw(self):
         self.clear()
         self.manager.draw()
+        self.char_sprites.draw()
+        self.cur_map_sprite.draw()
+
+    def on_update(self, delta_time: float):
+        self.cur_char.update()
 
     def on_click_back(self, event) -> None:
         start_view = StartView()
@@ -445,6 +492,23 @@ class SelectionView(FadingView):
         start_view.resize_camera(self.window.width, self.window.height)
         self.window.show_view(start_view)
         self.window.play_button_sound()
+
+    def on_click_last_char(self, event) -> None:
+        self.set_character(-1)
+        self.window.play_button_sound()
+
+    def on_click_next_char(self, event) -> None:
+        self.set_character(1)
+        self.window.play_button_sound()
+
+    def on_click_last_map(self, event) -> None:
+        self.set_maps(-1)
+        self.window.play_button_sound()
+
+    def on_click_next_map(self, event) -> None:
+        self.set_maps(1)
+        self.window.play_button_sound()
+
 
 class OptionView(arcade.View):
     """Optional menu."""
@@ -589,7 +653,7 @@ class OptionView(arcade.View):
             self.resolution_text.text = "Fullscreen"
         else:
             self.resolution_text.text = str(
-            self.window.w_scale[self.window.res_index]) + " x " + str(self.window.h_scale[self.window.res_index])
+                self.window.w_scale[self.window.res_index]) + " x " + str(self.window.h_scale[self.window.res_index])
         self.resolution_box.add(
             resolution_up_button.with_space_around(right=0))
         resolution_up_button.on_click = self.on_click_resolution_up
@@ -661,7 +725,7 @@ class OptionView(arcade.View):
             self.resolution_text.text = "Fullscreen"
         else:
             self.resolution_text.text = str(
-            self.window.w_scale[self.window.res_index]) + " x " + str(self.window.h_scale[self.window.res_index])
+                self.window.w_scale[self.window.res_index]) + " x " + str(self.window.h_scale[self.window.res_index])
         self.window.play_button_sound()
 
     def on_click_resolution_up(self, event) -> None:
@@ -705,6 +769,7 @@ class OptionView(arcade.View):
     def on_click_quit(self, event) -> None:
         self.window.play_button_sound()
         arcade.exit()
+
 
 class GameView(FadingView):
     """Main game view."""

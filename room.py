@@ -111,7 +111,7 @@ class StartRoom(Room):
     def __init__(self, width: float = 2100, height: float = 1200) -> None:
         super().__init__(width, height)
 
-        # set boundary corner walls
+        # Set boundary corner walls
         self.walls = arcade.SpriteList()
         self.walls.append(WallCorner(HALF_WALL_SIZE, HALF_WALL_SIZE))
         self.walls.append(WallCorner(
@@ -121,15 +121,101 @@ class StartRoom(Room):
         self.walls.append(WallCorner(
             self.width - HALF_WALL_SIZE, self.height - HALF_WALL_SIZE))
 
-        # set bottom and top walls
+        # Set bottom and top walls
         for i in range(1, self.grid_w - 1):
             self.walls.append(WallSideHorizontal(
                 HALF_WALL_SIZE + i * WALL_SIZE, HALF_WALL_SIZE))
             self.walls.append(WallSideHorizontal(
                 HALF_WALL_SIZE + i * WALL_SIZE, self.height - HALF_WALL_SIZE))
 
-        # set left and right walls
+        # Set left and right walls
         for i in range(1, self.grid_h - 1):
+            self.walls.append(WallSideVertical(
+                HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+            self.walls.append(WallSideVertical(
+                self.width - HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+
+    def draw_ground(self) -> None:
+        arcade.draw_rectangle_filled(
+            self.pos.x, self.pos.y, self.width, self.height, utils.Color.GROUND_WHITE
+        )
+
+    def draw_walls(self) -> None:
+        self.walls.draw()
+
+
+class GameRoom0(Room):
+    """Game room No. 0"""
+
+    layout_sprite = arcade.Sprite("graphics/GameRoom0.png")
+
+    def __init__(self, width: float = 2100, height: float = 1200) -> None:
+        super().__init__(width, height)
+
+        # Set boundary corner walls
+        self.walls = arcade.SpriteList()
+        self.walls.append(WallCorner(HALF_WALL_SIZE, HALF_WALL_SIZE))
+        self.walls.append(WallCorner(
+            HALF_WALL_SIZE, self.height - HALF_WALL_SIZE))
+        self.walls.append(WallCorner(
+            self.width - HALF_WALL_SIZE, HALF_WALL_SIZE))
+        self.walls.append(WallCorner(
+            self.width - HALF_WALL_SIZE, self.height - HALF_WALL_SIZE))
+
+        # Set bottom and top walls
+        for i in range(1, self.grid_w - 1):
+
+            self.walls.append(WallSideHorizontal(
+                HALF_WALL_SIZE + i * WALL_SIZE, HALF_WALL_SIZE))
+            self.walls.append(WallSideHorizontal(
+                HALF_WALL_SIZE + i * WALL_SIZE, self.height - HALF_WALL_SIZE))
+
+        # Set left and right walls
+        for i in range(1, self.grid_h - 1):
+
+            self.walls.append(WallSideVertical(
+                HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+            self.walls.append(WallSideVertical(
+                self.width - HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+
+    def draw_ground(self) -> None:
+        arcade.draw_rectangle_filled(
+            self.pos.x, self.pos.y, self.width, self.height, utils.Color.GROUND_WHITE
+        )
+
+    def draw_walls(self) -> None:
+        self.walls.draw()
+
+
+class GameRoom1(Room):
+    """Game room No. 1"""
+
+    layout_sprite = arcade.Sprite("graphics/GameRoom1.png")
+
+    def __init__(self, width: float = 2100, height: float = 1200) -> None:
+        super().__init__(width, height)
+
+        # Set boundary corner walls
+        self.walls = arcade.SpriteList()
+        self.walls.append(WallCorner(HALF_WALL_SIZE, HALF_WALL_SIZE))
+        self.walls.append(WallCorner(
+            HALF_WALL_SIZE, self.height - HALF_WALL_SIZE))
+        self.walls.append(WallCorner(
+            self.width - HALF_WALL_SIZE, HALF_WALL_SIZE))
+        self.walls.append(WallCorner(
+            self.width - HALF_WALL_SIZE, self.height - HALF_WALL_SIZE))
+
+        # Set bottom and top walls
+        for i in range(1, self.grid_w - 1):
+
+            self.walls.append(WallSideHorizontal(
+                HALF_WALL_SIZE + i * WALL_SIZE, HALF_WALL_SIZE))
+            self.walls.append(WallSideHorizontal(
+                HALF_WALL_SIZE + i * WALL_SIZE, self.height - HALF_WALL_SIZE))
+
+        # Set left and right walls
+        for i in range(1, self.grid_h - 1):
+
             self.walls.append(WallSideVertical(
                 HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
             self.walls.append(WallSideVertical(
