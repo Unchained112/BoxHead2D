@@ -157,6 +157,8 @@ class Character(arcade.Sprite):
 class Player(Character):
     """Player game object."""
 
+    body_texture = arcade.load_texture("graphics/Player.png")
+
     def __init__(self, x: float = 0, y: float = 0,
                  physics_engine: arcade.PymunkPhysicsEngine = None) -> None:
         super().__init__(x, y, physics_engine)
@@ -175,7 +177,7 @@ class Player(Character):
         #     image_height=24,
         #     scale=1,
         # )
-        self.body.texture = arcade.load_texture("graphics/Player.png")
+        self.body.texture = self.body_texture
 
         # Track the player movement input
         self.move_left = False
@@ -258,7 +260,4 @@ class Player(Character):
 class Rambo(Player):
     "Rambo character."
 
-    def __init__(self, x: float = 0, y: float = 0, 
-                 physics_engine: arcade.PymunkPhysicsEngine = None) -> None:
-        super().__init__(x, y, physics_engine)
-        self.body.texture = arcade.load_texture("graphics/Rambo.png")
+    body_texture = arcade.load_texture("graphics/Rambo.png")

@@ -97,12 +97,23 @@ class Room:
                      for j in range(self.grid_h)}
 
         self.walls = []
+        self.spawn_pos = []
 
     def draw_ground(self) -> None:
-        pass
+        arcade.draw_rectangle_filled(
+            self.pos.x, self.pos.y, self.width, self.height, utils.Color.GROUND_WHITE
+        )
 
     def draw_walls(self) -> None:
-        pass
+        self.walls.draw()
+
+    def setup_grid(self) -> None:
+        for wall in self.walls:
+            if (wall.grid_idx[0] < self.grid_w and wall.grid_idx[1] < self.grid_h
+                    and wall.grid_idx[0] >= 0 and wall.grid_idx[1] >= 0):
+                x = wall.grid_idx[0]
+                y = wall.grid_idx[1]
+                self.grid[x, y] = 1
 
 
 class StartRoom(Room):
@@ -135,14 +146,6 @@ class StartRoom(Room):
             self.walls.append(WallSideVertical(
                 self.width - HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
 
-    def draw_ground(self) -> None:
-        arcade.draw_rectangle_filled(
-            self.pos.x, self.pos.y, self.width, self.height, utils.Color.GROUND_WHITE
-        )
-
-    def draw_walls(self) -> None:
-        self.walls.draw()
-
 
 class GameRoom0(Room):
     """Game room No. 0"""
@@ -164,7 +167,10 @@ class GameRoom0(Room):
 
         # Set bottom and top walls
         for i in range(1, self.grid_w - 1):
-
+            if i >= math.floor(self.grid_w/2) - 1 and i <= math.floor(self.grid_w/2) + 1:
+                self.spawn_pos.append(Vec2(HALF_WALL_SIZE + i * WALL_SIZE, HALF_WALL_SIZE))
+                self.spawn_pos.append(Vec2(HALF_WALL_SIZE + i * WALL_SIZE, self.height - HALF_WALL_SIZE))
+                continue
             self.walls.append(WallSideHorizontal(
                 HALF_WALL_SIZE + i * WALL_SIZE, HALF_WALL_SIZE))
             self.walls.append(WallSideHorizontal(
@@ -172,20 +178,16 @@ class GameRoom0(Room):
 
         # Set left and right walls
         for i in range(1, self.grid_h - 1):
-
+            if i >= math.floor(self.grid_h/2) - 1 and i <= math.floor(self.grid_h/2) + 1:
+                self.spawn_pos.append(Vec2(HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+                self.spawn_pos.append(Vec2(self.width - HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+                continue
             self.walls.append(WallSideVertical(
                 HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
             self.walls.append(WallSideVertical(
                 self.width - HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
 
-    def draw_ground(self) -> None:
-        arcade.draw_rectangle_filled(
-            self.pos.x, self.pos.y, self.width, self.height, utils.Color.GROUND_WHITE
-        )
-
-    def draw_walls(self) -> None:
-        self.walls.draw()
-
+        self.setup_grid()
 
 class GameRoom1(Room):
     """Game room No. 1"""
@@ -207,7 +209,10 @@ class GameRoom1(Room):
 
         # Set bottom and top walls
         for i in range(1, self.grid_w - 1):
-
+            if i >= math.floor(self.grid_w/2) - 1 and i <= math.floor(self.grid_w/2) + 1:
+                self.spawn_pos.append(Vec2(HALF_WALL_SIZE + i * WALL_SIZE, HALF_WALL_SIZE))
+                self.spawn_pos.append(Vec2(HALF_WALL_SIZE + i * WALL_SIZE, self.height - HALF_WALL_SIZE))
+                continue
             self.walls.append(WallSideHorizontal(
                 HALF_WALL_SIZE + i * WALL_SIZE, HALF_WALL_SIZE))
             self.walls.append(WallSideHorizontal(
@@ -215,16 +220,13 @@ class GameRoom1(Room):
 
         # Set left and right walls
         for i in range(1, self.grid_h - 1):
-
+            if i >= math.floor(self.grid_h/2) - 1 and i <= math.floor(self.grid_h/2) + 1:
+                self.spawn_pos.append(Vec2(HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+                self.spawn_pos.append(Vec2(self.width - HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+                continue
             self.walls.append(WallSideVertical(
                 HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
             self.walls.append(WallSideVertical(
                 self.width - HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
 
-    def draw_ground(self) -> None:
-        arcade.draw_rectangle_filled(
-            self.pos.x, self.pos.y, self.width, self.height, utils.Color.GROUND_WHITE
-        )
-
-    def draw_walls(self) -> None:
-        self.walls.draw()
+        self.setup_grid()

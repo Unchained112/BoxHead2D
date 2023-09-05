@@ -402,8 +402,8 @@ class SelectionView(FadingView):
         # Characters
         self.char_sprites = arcade.SpriteList()
         self.char_list = [
-            "graphics/Player.png",
-            "graphics/Rambo.png"
+            character.Player,
+            character.Rambo
         ]
         self.cur_char_idx = 0
         self.cur_char = character.Character(float(self.w/2 - 240), float(self.h/2))
@@ -466,7 +466,7 @@ class SelectionView(FadingView):
         self.cur_char_idx += idx
         self.cur_char_idx %= len(self.char_list)
         self.char_sprites.clear()
-        self.cur_char.body.texture = arcade.load_texture(self.char_list[self.cur_char_idx])
+        self.cur_char.body.texture = self.char_list[self.cur_char_idx].body_texture
         self.char_sprites.extend(self.cur_char.parts)
 
     def set_maps(self, idx: int = 0) -> None:
@@ -774,7 +774,7 @@ class OptionView(arcade.View):
 class GameView(FadingView):
     """Main game view."""
 
-    def __init__(self):
+    def __init__(self, player: character.Player, map: room.Room):
         super().__init__()
 
 
