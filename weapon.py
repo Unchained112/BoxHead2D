@@ -7,6 +7,7 @@ from pyglet.math import Vec2
 Bullets
 """
 
+
 class Bullet(arcade.Sprite):
     """Bullet base class."""
 
@@ -53,9 +54,11 @@ class ExplosionParticle(Bullet):
         self.height = 4
         self.width = 4
 
+
 """
 Objects
 """
+
 
 class Object(arcade.Sprite):
     """Base object class that can be placed by the player."""
@@ -101,9 +104,11 @@ class BarrelObject(Object):
         self.health = 0
         self.object_type = 1  # Barrel object
 
+
 """
 Weapons
 """
+
 
 class Weapon(arcade.Sprite):
     """Weapon base class."""
@@ -147,10 +152,12 @@ class Weapon(arcade.Sprite):
         self.aim_pos = aim_pos
         if aim_pos.x >= 0:
             self.is_right = True
-            rotate_angle = math.degrees(math.asin(utils.Utils.get_sin(aim_pos)))
+            rotate_angle = math.degrees(
+                math.asin(utils.Utils.get_sin(aim_pos)))
         else:
             self.is_right = False
-            rotate_angle = -math.degrees(math.asin(utils.Utils.get_sin(aim_pos)))
+            rotate_angle = - \
+                math.degrees(math.asin(utils.Utils.get_sin(aim_pos)))
 
         self.angle = rotate_angle
 
@@ -168,6 +175,7 @@ class Weapon(arcade.Sprite):
 
     def play_sound(self, effect_volume: int) -> None:
         self.sound.play(volume=effect_volume / 10)
+
 
 class Shotgun(Weapon):
     """Shotgun class."""

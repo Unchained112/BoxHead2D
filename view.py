@@ -3,11 +3,13 @@ import arcade.gui
 import utils
 import room
 import character
+import math
+import random
 from pyglet.math import Vec2
 from arcade.pymunk_physics_engine import PymunkPhysicsEngine
 
 FADE_RATE = 8
-CAMERA_SPEED = 0.6
+CAMERA_SPEED = 1
 
 
 class FadingView(arcade.View):
@@ -116,7 +118,6 @@ class StartView(FadingView):
         self.mouse_x = None
         self.mouse_y = None
         self.mouse_pos = Vec2(0, 0)
-        self.mouse_sprite = arcade.Sprite("graphics/Cursor.png")
 
         # Sprite lists
         self.wall_list = None
@@ -331,8 +332,6 @@ class StartView(FadingView):
         self.mouse_y = y
         self.mouse_pos.x = self.mouse_x + self.camera_sprites.position.x
         self.mouse_pos.y = self.mouse_y + self.camera_sprites.position.y
-        self.mouse_sprite.center_x = self.mouse_x
-        self.mouse_sprite.center_y = self.mouse_y
         self.player.aim(self.mouse_pos)
 
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int) -> None:
@@ -406,7 +405,8 @@ class SelectionView(FadingView):
             character.Rambo
         ]
         self.cur_char_idx = 0
-        self.cur_char = character.Character(float(self.w/2 - 240), float(self.h/2))
+        self.cur_char = character.Character(
+            float(self.w/2 - 240), float(self.h/2))
         self.set_character()
 
         # Maps
@@ -453,6 +453,7 @@ class SelectionView(FadingView):
         self.rest_box.add(back_button.with_space_around(right=200))
         self.rest_box.add(next_button.with_space_around(right=0))
         back_button.on_click = self.on_click_back
+        next_button.on_click = self.on_click_next
 
         # Add box layouts
         self.manager.add(
@@ -475,7 +476,7 @@ class SelectionView(FadingView):
         self.cur_map = self.map_list[self.cur_map_idx]
         self.cur_map_sprite = self.cur_map.layout_sprite
         self.cur_map_sprite.center_x = float(self.w/2 + 220)
-        self.cur_map_sprite.center_y =  float(self.h/2 + 20)
+        self.cur_map_sprite.center_y = float(self.h/2 + 20)
 
     def on_draw(self):
         self.clear()
@@ -507,6 +508,12 @@ class SelectionView(FadingView):
 
     def on_click_next_map(self, event) -> None:
         self.set_maps(1)
+        self.window.play_button_sound()
+
+    def on_click_next(self, event) -> None:
+        game_view = GameView()
+        game_view.setup(self.char_list[self.cur_char_idx], self.cur_map)
+        self.window.show_view(game_view)
         self.window.play_button_sound()
 
 
@@ -774,8 +781,264 @@ class OptionView(arcade.View):
 class GameView(FadingView):
     """Main game view."""
 
-    def __init__(self, player: character.Player, map: room.Room):
+    def __init__(self):
         super().__init__()
+        self.mouse_x = None
+        self.mouse_y = None
+        self.mouse_pos = Vec2(0, 0)
+        self.mouse_sprite = arcade.Sprite("graphics/Cursor.png")
+        self.physics_engine = None
+
+        # Sprite lists
+        self.wall_list = None
+        self.player = None
+        self.player_bullet_list = None
+        self.enemy_white_list = None
+        self.enemy_red_list = None
+        self.enemy_bullet_list = None
+        self.explosions_list = None
+        self.blood_list = None
+
+        # Track the current state of what key is pressed
+        self.left_pressed = False
+        self.right_pressed = False
+        self.up_pressed = False
+        self.down_pressed = False
+
+        self.camera_sprites = arcade.Camera(self.w, self.h)
+        self.camera_gui = arcade.Camera(self.w, self.h)
+
+    def setup(self, player: character.Player, map: room.Room) -> None:
+        """Set up the game and initialize the variables."""
+
+        # Gameplay set up
+        self.round = 0
+        self.score = 0
+        self.weapon_check = 0
+        self.window.set_mouse_visible(False)
+
+        # UI set up
+        # self.health_sprite = arcade.Sprite(
+        #     filename="graphics/Health.png",
+        #     center_x=40,
+        #     center_y=SCREEN_HEIGHT - 40,
+        #     image_width=25,
+        #     image_height=25,
+        #     scale=1,
+        # )
+        # self.energy_sprite = arcade.Sprite(
+        #     filename="graphics/Energy.png",
+        #     center_x=40,
+        #     center_y=SCREEN_HEIGHT - 70,
+        #     image_width=25,
+        #     image_height=25,
+        #     scale=1,
+        # )
+        # self.weapon_slot_sprite = arcade.Sprite(
+        #     filename="graphics/WeaponSlot.png",
+        #     center_x=150,
+        #     center_y=SCREEN_HEIGHT - 120,
+        #     image_width=80,
+        #     image_height=40,
+        #     scale=1,
+        # )
+        
+        # Set up the enemy
+        self.spawn_enemy_cd = 0
+
+        # GameObject lists
+        self.wall_list = arcade.SpriteList()
+        self.enemy_white_list = arcade.SpriteList()
+        self.enemy_red_list = arcade.SpriteList()
+        self.player_bullet_list = arcade.SpriteList()
+        self.player_object_list = arcade.SpriteList()
+        self.player_sprites = arcade.SpriteList()
+        self.enemy_bullet_list = arcade.SpriteList()
+        self.explosions_list = arcade.SpriteList()
+        self.blood_list = arcade.SpriteList()
+
+        # Create the physics engine
+        damping = 0.01
+        gravity = (0, 0)
+        self.physics_engine = PymunkPhysicsEngine(gravity, damping)
+
+        self.room = map()
+        self.wall_list = self.room.walls
+
+        # Set up the player
+        self.player = player(
+            float(self.w / 2), float(self.h / 2), self.physics_engine)
+        
+        self.player_sprites.extend(self.player.parts)
+
+        self.physics_engine.add_sprite(
+            self.player,
+            friction=0,
+            moment_of_inertia=PymunkPhysicsEngine.MOMENT_INF,
+            damping=0.001,
+            collision_type="player",
+            elasticity=0.1,
+            max_velocity=400,
+        )
+        self.physics_engine.add_sprite_list(
+            self.room.walls,
+            friction=0,
+            collision_type="wall",
+            body_type=PymunkPhysicsEngine.STATIC,
+        )
+
+    def on_draw(self) -> None:
+        self.clear()
+        self.camera_sprites.use()
+
+        self.room.draw_ground()
+        self.blood_list.draw()
+        self.room.draw_walls()
+        self.player_sprites.draw()
+        self.player.draw()
+
+        # self.player_bullet_list.draw()
+        # self.player_object_list.draw()
+        # self.enemy_bullet_list.draw()
+        # self.explosions_list.draw()
+
+        # Select the (un-scrolled) camera for our GUI
+        self.camera_gui.use()
+
+        # Mouse cursor
+        if self.mouse_x and self.mouse_y:
+            self.mouse_sprite.draw()
+
+        # Render the GUI
+        # self.draw_ui_player()
+        # self.draw_ui_game()
+
+    def on_update(self, delta_time) -> None:
+        self.physics_engine.step()
+
+        # Update player
+        self.player.update()
+        # self.update_player_attack()
+        # self.process_player_bullet()
+        # self.update_player_weapon()
+
+        # # update enemy
+        # if len(self.enemy_white_list) == 0 and len(self.enemy_red_list) == 0:
+        #     self.round += 1
+        #     # TODO: change this value when refining the numbers
+        #     self.spawn_enemy_cd = 0
+
+        # self.spawn_enemy()
+        # for enemy in self.enemy_white_list:
+        #     enemy.update(self.physics_engine)
+        #     enemy.follow_sprite(self.player, self.physics_engine)
+
+        # for enemy in self.enemy_red_list:
+        #     enemy.update(self.physics_engine)
+        #     enemy.follow_sprite(self.player, self.physics_engine)
+        # self.update_enemy_attack()
+        # self.process_enemy_bullet()
+
+        # self.explosions_list.update()
+        # self.blood_list.update()
+
+        self.scroll_to_player()
+
+    def on_key_press(self, key, modifiers) -> None:
+        """Called whenever a key is pressed."""
+
+        if key == arcade.key.W:
+            self.player.move_up = True
+        elif key == arcade.key.S:
+            self.player.move_down = True
+        elif key == arcade.key.A:
+            self.player.move_left = True
+        elif key == arcade.key.D:
+            self.player.move_right = True
+
+        # Change weapon
+        # if key == arcade.key.Q:
+        #     self.player.change_weapon(-1)
+        # if key == arcade.key.E:
+        #     self.player.change_weapon(1)
+
+        # Pause game
+        # if key == arcade.key.ESCAPE:
+        #     # pass self, the current view, to preserve this view's state
+        #     pause = BoxHeadPause(self)
+        #     self.window.show_view(pause)
+
+    def on_key_release(self, key, modifiers) -> None:
+
+        if key == arcade.key.W:
+            self.player.move_up = False
+        elif key == arcade.key.S:
+            self.player.move_down = False
+        elif key == arcade.key.A:
+            self.player.move_left = False
+        elif key == arcade.key.D:
+            self.player.move_right = False
+
+    def on_mouse_motion(self, x, y, dx, dy) -> None:
+        """Mouse movement."""
+
+        self.mouse_x = x
+        self.mouse_y = y
+        self.mouse_pos.x = self.mouse_x + self.camera_sprites.position.x
+        self.mouse_pos.y = self.mouse_y + self.camera_sprites.position.y
+        self.mouse_sprite.center_x = self.mouse_x
+        self.mouse_sprite.center_y = self.mouse_y
+        self.player.aim(self.mouse_pos)
+
+    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int) -> None:
+        if button == arcade.MOUSE_BUTTON_LEFT:
+            self.player.is_attack = True
+
+    def on_mouse_release(self, x: int, y: int, button: int, modifiers: int) -> None:
+        if button == arcade.MOUSE_BUTTON_LEFT:
+            self.player.is_attack = False
+
+    def scroll_to_player(self) -> None:
+        position = Vec2(self.camera_sprites.position.x,
+                        self.camera_sprites.position.y)
+        # limit the camera position within the room
+        if (
+            self.player.pos.x > float(self.w / 2) - 5
+            and self.room.width - self.player.pos.x > float(self.w / 2) - 5
+        ):
+            position.x = self.player.pos.x - float(self.w / 2)
+        if (
+            self.player.pos.y > float(self.h / 2) - 5
+            and self.room.height - self.player.pos.y > float(self.h / 2) - 5
+        ):
+            position.y = self.player.pos.y - float(self.h / 2)
+
+        self.camera_sprites.move_to(position, CAMERA_SPEED)
+
+    def shake_camera(self) -> None:
+        # Pick a random direction
+        shake_direction = random.random() * 2 * math.pi
+        # How 'far' to shake
+        shake_amplitude = 6
+        # Calculate a vector based on that
+        shake_vector = Vec2(
+            math.cos(shake_direction) * shake_amplitude,
+            math.sin(shake_direction) * shake_amplitude
+        )
+        # Frequency of the shake
+        shake_speed = 1.6
+        # How fast to damp the shake
+        shake_damping = 0.9
+        # Do the shake
+        self.camera_sprites.shake(shake_vector,
+                                  speed=shake_speed,
+                                  damping=shake_damping)
+
+    def resize_camera(self, width, height) -> None:
+        self.w = width
+        self.h = height
+        self.setup()
+        self.camera_sprites.resize(width, height)
 
 
 class GameOverView(arcade.View):

@@ -167,9 +167,17 @@ class GameRoom0(Room):
 
         # Set bottom and top walls
         for i in range(1, self.grid_w - 1):
+            if i == math.floor(self.grid_w/2) - 2 or i == math.floor(self.grid_w/2) + 2:
+                self.walls.append(WallCorner(
+                    HALF_WALL_SIZE + i * WALL_SIZE, HALF_WALL_SIZE))
+                self.walls.append(WallCorner(
+                    HALF_WALL_SIZE + i * WALL_SIZE, self.height - HALF_WALL_SIZE))
+                continue
             if i >= math.floor(self.grid_w/2) - 1 and i <= math.floor(self.grid_w/2) + 1:
-                self.spawn_pos.append(Vec2(HALF_WALL_SIZE + i * WALL_SIZE, HALF_WALL_SIZE))
-                self.spawn_pos.append(Vec2(HALF_WALL_SIZE + i * WALL_SIZE, self.height - HALF_WALL_SIZE))
+                self.spawn_pos.append(
+                    Vec2(HALF_WALL_SIZE + i * WALL_SIZE, HALF_WALL_SIZE))
+                self.spawn_pos.append(
+                    Vec2(HALF_WALL_SIZE + i * WALL_SIZE, self.height - HALF_WALL_SIZE))
                 continue
             self.walls.append(WallSideHorizontal(
                 HALF_WALL_SIZE + i * WALL_SIZE, HALF_WALL_SIZE))
@@ -178,9 +186,17 @@ class GameRoom0(Room):
 
         # Set left and right walls
         for i in range(1, self.grid_h - 1):
+            if i == math.floor(self.grid_h/2) - 2 or i == math.floor(self.grid_h/2) + 2:
+                self.walls.append(WallCorner(
+                    HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+                self.walls.append(WallCorner(
+                    self.width - HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+                continue
             if i >= math.floor(self.grid_h/2) - 1 and i <= math.floor(self.grid_h/2) + 1:
-                self.spawn_pos.append(Vec2(HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
-                self.spawn_pos.append(Vec2(self.width - HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+                self.spawn_pos.append(
+                    Vec2(HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+                self.spawn_pos.append(
+                    Vec2(self.width - HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
                 continue
             self.walls.append(WallSideVertical(
                 HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
@@ -188,6 +204,7 @@ class GameRoom0(Room):
                 self.width - HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
 
         self.setup_grid()
+
 
 class GameRoom1(Room):
     """Game room No. 1"""
@@ -209,9 +226,17 @@ class GameRoom1(Room):
 
         # Set bottom and top walls
         for i in range(1, self.grid_w - 1):
+            if i == math.floor(self.grid_w/2) - 2 or i == math.floor(self.grid_w/2) + 2:
+                self.walls.append(WallCorner(
+                    HALF_WALL_SIZE + i * WALL_SIZE, HALF_WALL_SIZE))
+                self.walls.append(WallCorner(
+                    HALF_WALL_SIZE + i * WALL_SIZE, self.height - HALF_WALL_SIZE))
+                continue
             if i >= math.floor(self.grid_w/2) - 1 and i <= math.floor(self.grid_w/2) + 1:
-                self.spawn_pos.append(Vec2(HALF_WALL_SIZE + i * WALL_SIZE, HALF_WALL_SIZE))
-                self.spawn_pos.append(Vec2(HALF_WALL_SIZE + i * WALL_SIZE, self.height - HALF_WALL_SIZE))
+                self.spawn_pos.append(
+                    Vec2(HALF_WALL_SIZE + i * WALL_SIZE, HALF_WALL_SIZE))
+                self.spawn_pos.append(
+                    Vec2(HALF_WALL_SIZE + i * WALL_SIZE, self.height - HALF_WALL_SIZE))
                 continue
             self.walls.append(WallSideHorizontal(
                 HALF_WALL_SIZE + i * WALL_SIZE, HALF_WALL_SIZE))
@@ -220,13 +245,27 @@ class GameRoom1(Room):
 
         # Set left and right walls
         for i in range(1, self.grid_h - 1):
+            if i == math.floor(self.grid_h/2) - 2 or i == math.floor(self.grid_h/2) + 2:
+                self.walls.append(WallCorner(
+                    HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+                self.walls.append(WallCorner(
+                    self.width - HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+                continue
             if i >= math.floor(self.grid_h/2) - 1 and i <= math.floor(self.grid_h/2) + 1:
-                self.spawn_pos.append(Vec2(HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
-                self.spawn_pos.append(Vec2(self.width - HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+                self.spawn_pos.append(
+                    Vec2(HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+                self.spawn_pos.append(
+                    Vec2(self.width - HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
                 continue
             self.walls.append(WallSideVertical(
                 HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
             self.walls.append(WallSideVertical(
                 self.width - HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+
+        # Set some walls in the middle
+        for i in range(math.floor(self.grid_w/2) - 1, math.floor(self.grid_w/2) + 1):
+            for j in range(math.floor(self.grid_h/2) - 1, math.floor(self.grid_h/2) + 1):
+                self.walls.append(WallCorner(
+                    HALF_WALL_SIZE + i * WALL_SIZE, HALF_WALL_SIZE + j * WALL_SIZE))
 
         self.setup_grid()
