@@ -350,21 +350,19 @@ class StartView(FadingView):
         Anything between 0 and 1 will have the camera move to the location with a smoother
         pan.
         """
-        position = Vec2(self.camera_sprites.position.x,
-                        self.camera_sprites.position.y)
-        # limit the camera position within the room
-        if (
-            self.player.pos.x > float(self.w / 2) - 5
-            and self.room.width - self.player.pos.x > float(self.w / 2) - 5
-        ):
-            position.x = self.player.pos.x - float(self.w / 2)
-        if (
-            self.player.pos.y > float(self.h / 2) - 5
-            and self.room.height - self.player.pos.y > float(self.h / 2) - 5
-        ):
-            position.y = self.player.pos.y - float(self.h / 2)
+        x = self.player.pos.x - float(self.w / 2)
+        if self.player.pos.x < float(self.w / 2):
+            x = 0
+        elif self.player.pos.x > float(self.room.width - self.w / 2):
+            x = float(self.room.width - self.w) 
 
-        self.camera_sprites.move_to(position, CAMERA_SPEED)
+        y = self.player.pos.y - float(self.h / 2)
+        if self.player.pos.y < float(self.h / 2):
+            y = 0
+        elif self.player.pos.y > float(self.room.height - self.h / 2):
+            y = float(self.room.height - self.h) 
+
+        self.camera_sprites.move_to((x, y), CAMERA_SPEED)
 
     def resize_camera(self, width, height) -> None:
         self.w = width
@@ -522,6 +520,7 @@ class OptionView(arcade.View):
 
     def on_show_view(self) -> None:
         arcade.set_background_color(utils.Color.GROUND_WHITE)
+        self.window.set_mouse_visible(True)
 
     def setup(self, last_view) -> None:
         self.last_view = last_view
@@ -842,7 +841,7 @@ class GameView(FadingView):
         #     image_height=40,
         #     scale=1,
         # )
-        
+
         # Set up the enemy
         self.spawn_enemy_cd = 0
 
@@ -868,7 +867,6 @@ class GameView(FadingView):
         # Set up the player
         self.player = player(
             float(self.w / 2), float(self.h / 2), self.physics_engine)
-        
         self.player_sprites.extend(self.player.parts)
 
         self.physics_engine.add_sprite(
@@ -944,6 +942,9 @@ class GameView(FadingView):
 
         self.scroll_to_player()
 
+    def on_show_view(self) -> None:
+        self.window.set_mouse_visible(False)
+
     def on_key_press(self, key, modifiers) -> None:
         """Called whenever a key is pressed."""
 
@@ -963,10 +964,11 @@ class GameView(FadingView):
         #     self.player.change_weapon(1)
 
         # Pause game
-        # if key == arcade.key.ESCAPE:
-        #     # pass self, the current view, to preserve this view's state
-        #     pause = BoxHeadPause(self)
-        #     self.window.show_view(pause)
+        if key == arcade.key.ESCAPE:
+            # pass self, the current view, to preserve this view's state
+            pause_view = OptionView()
+            pause_view.setup(self)
+            self.window.show_view(pause_view)
 
     def on_key_release(self, key, modifiers) -> None:
 
@@ -999,21 +1001,19 @@ class GameView(FadingView):
             self.player.is_attack = False
 
     def scroll_to_player(self) -> None:
-        position = Vec2(self.camera_sprites.position.x,
-                        self.camera_sprites.position.y)
-        # limit the camera position within the room
-        if (
-            self.player.pos.x > float(self.w / 2) - 5
-            and self.room.width - self.player.pos.x > float(self.w / 2) - 5
-        ):
-            position.x = self.player.pos.x - float(self.w / 2)
-        if (
-            self.player.pos.y > float(self.h / 2) - 5
-            and self.room.height - self.player.pos.y > float(self.h / 2) - 5
-        ):
-            position.y = self.player.pos.y - float(self.h / 2)
+        x = self.player.pos.x - float(self.w / 2)
+        if self.player.pos.x < float(self.w / 2):
+            x = 0
+        elif self.player.pos.x > float(self.room.width - self.w / 2):
+            x = float(self.room.width - self.w) 
 
-        self.camera_sprites.move_to(position, CAMERA_SPEED)
+        y = self.player.pos.y - float(self.h / 2)
+        if self.player.pos.y < float(self.h / 2):
+            y = 0
+        elif self.player.pos.y > float(self.room.height - self.h / 2):
+            y = float(self.room.height - self.h) 
+
+        self.camera_sprites.move_to((x, y), CAMERA_SPEED)
 
     def shake_camera(self) -> None:
         # Pick a random direction
@@ -1037,8 +1037,8 @@ class GameView(FadingView):
     def resize_camera(self, width, height) -> None:
         self.w = width
         self.h = height
-        self.setup()
         self.camera_sprites.resize(width, height)
+        self.camera_gui.resize(width, height)
 
 
 class GameOverView(arcade.View):
