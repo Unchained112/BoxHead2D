@@ -5,7 +5,7 @@ SPRITE_SCALING = 0.5
 
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
-SCREEN_TITLE = "Box Head 2D: Invincible"
+SCREEN_TITLE = "Box Head 2D: Survivor"
 
 
 class BoxHead2d(arcade.Window):

@@ -241,8 +241,9 @@ class Player(Character):
 
     def change_weapon(self, index_change: int) -> None:
         self.weapon_index += index_change
-        self.weapon_index = max(0, self.weapon_index)
-        self.weapon_index = min(len(self.weapons) - 1, self.weapon_index)
+        # self.weapon_index = max(0, self.weapon_index)
+        # self.weapon_index = min(len(self.weapons) - 1, self.weapon_index)
+        self.weapon_index = self.weapon_index % len(self.weapons)
         self.current_weapon = self.weapons[self.weapon_index]
         self.cd_max = self.current_weapon.cd_max
 
