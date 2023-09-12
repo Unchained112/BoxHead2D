@@ -32,9 +32,9 @@ class FadingView(arcade.View):
                 and self.fade_out > 255
                 and self.next_view is not None
             ):
-                view = self.next_view()
-                view.setup()
-                self.window.show_view(view)
+                self.window.start_view = self.next_view()
+                self.window.start_view.setup()
+                self.window.show_view(self.window.start_view)
 
         if self.fade_in is not None:
             self.fade_in -= FADE_RATE
@@ -369,14 +369,15 @@ class StartView(FadingView):
         self.camera_sprites.resize(width, height)
 
     def on_click_start(self, event) -> None:
-        selection_view = SelectionView()
-        selection_view.setup()
-        self.window.show_view(selection_view)
+        utils.Utils.clear_ui_manager(self.manager)
+        self.manager.debug()
+        self.window.select_view.setup()
+        self.window.show_view(self.window.select_view)
 
     def on_click_option(self, event) -> None:
-        option_view = OptionView()
-        option_view.setup(self)
-        self.window.show_view(option_view)
+        utils.Utils.clear_ui_manager(self.manager)
+        self.window.option_view.setup(self)
+        self.window.show_view(self.window.option_view)
 
     def on_click_quit(self, event) -> None:
         arcade.exit()
@@ -484,10 +485,10 @@ class SelectionView(FadingView):
         self.cur_char.update()
 
     def on_click_back(self, event) -> None:
-        start_view = StartView()
-        start_view.setup()
-        start_view.resize_camera(self.window.width, self.window.height)
-        self.window.show_view(start_view)
+        utils.Utils.clear_ui_manager(self.manager)
+        self.window.start_view.setup()
+        self.window.start_view.resize_camera(self.window.width, self.window.height)
+        self.window.show_view(self.window.start_view)
         self.window.play_button_sound()
 
     def on_click_last_char(self, event) -> None:
@@ -507,14 +508,21 @@ class SelectionView(FadingView):
         self.window.play_button_sound()
 
     def on_click_next(self, event) -> None:
-        game_view = GameView()
-        game_view.setup(self.char_list[self.cur_char_idx], self.cur_map)
-        self.window.show_view(game_view)
+        # self.manager.debug()
+        utils.Utils.clear_ui_manager(self.manager)
+        self.window.game_view = GameView()
+        self.window.game_view.setup(self.char_list[self.cur_char_idx], self.cur_map)
+        self.window.show_view(self.window.game_view)
         self.window.play_button_sound()
 
 
 class OptionView(arcade.View):
     """Optional menu."""
+
+    def __init__(self):
+        super().__init__()
+        self.manager = None
+        self.last_view = None
 
     def on_show_view(self) -> None:
         arcade.set_background_color(utils.Color.GROUND_WHITE)
@@ -759,15 +767,19 @@ class OptionView(arcade.View):
         self.window.play_button_sound()
 
     def on_click_back(self, event) -> None:
+        utils.Utils.clear_ui_manager(self.manager)
+        if type(self.last_view) == StartView:
+            self.last_view.setup()
         self.last_view.resize_camera(self.window.width, self.window.height)
         self.window.show_view(self.last_view)
         self.window.play_button_sound()
 
     def on_click_start_menu(self, event) -> None:
-        start_view = StartView()
-        start_view.setup()
-        start_view.resize_camera(self.window.width, self.window.height)
-        self.window.show_view(start_view)
+        self.last_view = None
+        utils.Utils.clear_ui_manager(self.manager)
+        self.window.start_view.setup()
+        self.window.start_view.resize_camera(self.window.width, self.window.height)
+        self.window.show_view(self.window.start_view)
         self.window.play_button_sound()
 
     def on_click_quit(self, event) -> None:
@@ -785,6 +797,7 @@ class GameView(FadingView):
         self.mouse_pos = Vec2(0, 0)
         self.mouse_sprite = arcade.Sprite("graphics/Cursor.png")
         self.physics_engine = None
+        self.manager = None
 
         # Sprite lists
         self.wall_list = None
@@ -888,6 +901,12 @@ class GameView(FadingView):
         self.player.add_weapon(shotgun)
         uzi = weapon.Uzi()
         self.player.add_weapon(uzi)
+        rocket = weapon.Rocket()
+        self.player.add_weapon(rocket)
+        placed_wall = weapon.PlacedWall()
+        self.player.add_weapon(placed_wall)
+        barrel = weapon.Barrel()
+        self.player.add_weapon(barrel)
 
     def on_draw(self) -> None:
         self.clear()
@@ -899,7 +918,7 @@ class GameView(FadingView):
         self.player.draw()
 
         self.player_bullet_list.draw()
-        # self.player_object_list.draw()
+        self.player_object_list.draw()
         # self.enemy_bullet_list.draw()
         # self.explosions_list.draw()
 
@@ -939,13 +958,14 @@ class GameView(FadingView):
         # self.update_enemy_attack()
         # self.process_enemy_bullet()
 
-        # self.explosions_list.update()
+        self.explosions_list.update()
         # self.blood_list.update()
 
         self.scroll_to_player()
 
     def on_show_view(self) -> None:
         self.window.set_mouse_visible(False)
+        self.manager = None
 
     def on_key_press(self, key, modifiers) -> None:
         """Called whenever a key is pressed."""
@@ -968,9 +988,8 @@ class GameView(FadingView):
         # Pause game
         if key == arcade.key.ESCAPE:
             # pass self, the current view, to preserve this view's state
-            pause_view = OptionView()
-            pause_view.setup(self)
-            self.window.show_view(pause_view)
+            self.window.option_view.setup(self)
+            self.window.show_view(self.window.option_view)
 
     def on_key_release(self, key, modifiers) -> None:
 

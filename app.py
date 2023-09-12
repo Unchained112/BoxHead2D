@@ -19,7 +19,16 @@ class BoxHead2d(arcade.Window):
         self.w_scale = [1024, 1280, 1440, 1920]
         self.h_scale = [600, 720, 900, 1080]
         self.res_index = 1
-        self.button_sound = arcade.Sound("audio/ui_click.mp3")
+        self.button_sound = arcade.Sound("audio/ui_click.wav")
+
+        self.start_view = None
+        self.option_view = None
+        self.select_view = None
+        self.game_view = None
+
+    def set_up(self) -> None:
+        self.option_view = view.OptionView()
+        self.select_view = view.SelectionView()
 
     def play_button_sound(self) -> None:
         self.button_sound.play(volume=self.effect_volume/10)
@@ -30,6 +39,7 @@ def main():
     arcade.load_font("fonts/FFFFORWA.ttf")
     arcade.load_font("fonts/Minercraftory.ttf")
     game = BoxHead2d(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    game.set_up()
     default = view.DefaultView()
     default.setup()
     game.show_view(default)

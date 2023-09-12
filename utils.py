@@ -1,5 +1,6 @@
 
 from pyglet.math import Vec2
+import arcade.gui
 
 
 class Color:
@@ -37,6 +38,11 @@ class Utils:
         """Round n to the nearest multiple of m."""
         quotient = round(number / multiple)
         return quotient * multiple
+
+    @staticmethod
+    def clear_ui_manager(manager: arcade.gui.UIManager):
+        for _ in range(0, len(manager.children[0])):
+            manager.clear()
 
 
 class Style:

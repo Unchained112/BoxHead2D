@@ -135,7 +135,7 @@ class Weapon(arcade.Sprite):
             image_width=20,
             image_height=10,
         )
-        self.sound = arcade.Sound("audio/wpn_fire_usp45.mp3")
+        self.sound = arcade.Sound("audio/wpn_fire_usp45.wav")
         self.bullet = Bullet
 
     def update(self) -> None:
@@ -186,7 +186,7 @@ class Shotgun(Weapon):
         self.cost = 8
         self.damage = 40
         self.bullet = EnergyBullet
-        self.sound = arcade.Sound("audio/wpn_fire_m1014.mp3")
+        self.sound = arcade.Sound("audio/wpn_fire_m1014.wav")
 
     def get_bullet(self) -> arcade.SpriteList:
         bullets = arcade.SpriteList()
@@ -212,7 +212,7 @@ class Uzi(Weapon):
         self.cost = 2
         self.damage = 30
         self.bullet = EnergyBullet
-        self.sound = arcade.Sound("audio/wpn_fire_p90.mp3")
+        self.sound = arcade.Sound("audio/wpn_fire_p90.wav")
 
     def get_bullet(self) -> arcade.SpriteList:
         bullets = arcade.SpriteList()
@@ -227,10 +227,10 @@ class Uzi(Weapon):
         return bullets
 
 
-class Rocekt(Weapon):
+class Rocket(Weapon):
 
-    def __init__(self, weapon_name: str = "graphics/Pistol.png", x: float = 0, y: float = 0) -> None:
-        super().__init__(weapon_name, x, y)
+    def __init__(self, x: float = 0, y: float = 0) -> None:
+        super().__init__("graphics/Rocket.png", x, y)
 
 
 class PlacedWall(Weapon):
