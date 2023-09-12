@@ -192,7 +192,7 @@ class Shotgun(Weapon):
         bullets = arcade.SpriteList()
         for angle in [-0.05, 0, 0.05]:
             bullet = self.bullet()
-            bullet.life_span = 15
+            bullet.life_span = 10
             bullet.center_x = self.center_x
             bullet.center_y = self.center_y
             bullet.speed = self.bullet_speed

@@ -146,6 +146,7 @@ class Character(arcade.Sprite):
         self.get_damage_len -= 1
 
     def draw(self, *, filter=None, pixelated=None, blend_function=None) -> None:
+        self.parts.draw()
         if self.get_damage_len > 0:
             self.draw_get_damage()
 
@@ -167,7 +168,8 @@ class Player(Character):
         # self.energy = 0
         self.health = 100
         self.kill_recover = 1
-        
+        self.explosion_damage = 20
+
         # For testing
         self.energy = 100000
 
@@ -187,6 +189,8 @@ class Player(Character):
         self.move_right = False
         self.move_up = False
         self.move_down = False
+        self.change_weapon_left = False
+        self.change_weapon_right = False
 
         # Weapon
         self.weapon_pos = Vec2(16, -2)
@@ -232,11 +236,18 @@ class Player(Character):
             self.current_weapon.draw()
 
     def update(self) -> None:
+        if self.change_weapon_left:
+            self.change_weapon(-1)
+        if self.change_weapon_right:
+            self.change_weapon(1)
+
         super().update()
+
         if self.current_weapon.is_right:
             self.weapon_pos = Vec2(16, -2)
         else:
             self.weapon_pos = Vec2(9, -2)
+
         self.current_weapon.update()
 
     def add_weapon(self, weapon: arcade.Sprite) -> None:
@@ -244,11 +255,11 @@ class Player(Character):
 
     def change_weapon(self, index_change: int) -> None:
         self.weapon_index += index_change
-        # self.weapon_index = max(0, self.weapon_index)
-        # self.weapon_index = min(len(self.weapons) - 1, self.weapon_index)
         self.weapon_index = self.weapon_index % len(self.weapons)
         self.current_weapon = self.weapons[self.weapon_index]
         self.cd_max = self.current_weapon.cd_max
+        self.change_weapon_left = False
+        self.change_weapon_right = False
 
     def aim(self, mouse_pos: Vec2) -> None:
         aim_pos = mouse_pos - self.pos

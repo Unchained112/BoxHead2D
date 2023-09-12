@@ -4,6 +4,7 @@ import utils
 import room
 import character
 import weapon
+import effect
 import math
 import random
 from pyglet.math import Vec2
@@ -124,7 +125,6 @@ class StartView(FadingView):
         self.wall_list = None
         self.player = None
         self.player_bullet_list = None
-        self.character_sprites = None
 
         # Physics engine so we don't run into walls.
         self.physics_engine = None
@@ -157,8 +157,6 @@ class StartView(FadingView):
         self.player = character.Player(
             float(self.w / 2), float(self.h / 2) + 20, self.physics_engine
         )
-        self.character_sprites = arcade.SpriteList()
-        self.character_sprites.extend(self.player.parts)
 
         # Set the most basic background color
         arcade.set_background_color(utils.Color.BLACK)
@@ -254,7 +252,6 @@ class StartView(FadingView):
         self.room.draw_ground()
         self.room.draw_walls()
         self.start_sprite_list.draw()
-        self.character_sprites.draw()
         self.player.draw()
         self.player_bullet_list.draw()
         self.manager.draw()
@@ -355,13 +352,13 @@ class StartView(FadingView):
         if self.player.pos.x < float(self.w / 2):
             x = 0
         elif self.player.pos.x > float(self.room.width - self.w / 2):
-            x = float(self.room.width - self.w) 
+            x = float(self.room.width - self.w)
 
         y = self.player.pos.y - float(self.h / 2)
         if self.player.pos.y < float(self.h / 2):
             y = 0
         elif self.player.pos.y > float(self.room.height - self.h / 2):
-            y = float(self.room.height - self.h) 
+            y = float(self.room.height - self.h)
 
         self.camera_sprites.move_to((x, y), CAMERA_SPEED)
 
@@ -856,9 +853,6 @@ class GameView(FadingView):
         self.enemy_bullet_list = arcade.SpriteList()
         self.explosions_list = arcade.SpriteList()
         self.blood_list = arcade.SpriteList()
-        
-        # List for rendering
-        self.player_sprites = arcade.SpriteList()
         self.enemy_sprite_list = arcade.SpriteList()
 
         # Create the physics engine
@@ -872,7 +866,6 @@ class GameView(FadingView):
         # Set up the player
         self.player = player(
             float(self.w / 2), float(self.h / 2), self.physics_engine)
-        self.player_sprites.extend(self.player.parts)
 
         self.physics_engine.add_sprite(
             self.player,
@@ -903,7 +896,6 @@ class GameView(FadingView):
         self.room.draw_ground()
         self.blood_list.draw()
         self.room.draw_walls()
-        self.player_sprites.draw()
         self.player.draw()
 
         self.player_bullet_list.draw()
@@ -929,7 +921,6 @@ class GameView(FadingView):
         self.player.update()
         self.update_player_attack()
         self.process_player_bullet()
-        # self.update_player_weapon()
 
         # # update enemy
         # if len(self.enemy_white_list) == 0 and len(self.enemy_red_list) == 0:
@@ -970,9 +961,9 @@ class GameView(FadingView):
 
         # Change weapon
         if key == arcade.key.Q:
-            self.player.change_weapon(-1)
+            self.player.change_weapon_left = True
         if key == arcade.key.E:
-            self.player.change_weapon(1)
+            self.player.change_weapon_right = True
 
         # Pause game
         if key == arcade.key.ESCAPE:
@@ -1016,13 +1007,13 @@ class GameView(FadingView):
         if self.player.pos.x < float(self.w / 2):
             x = 0
         elif self.player.pos.x > float(self.room.width - self.w / 2):
-            x = float(self.room.width - self.w) 
+            x = float(self.room.width - self.w)
 
         y = self.player.pos.y - float(self.h / 2)
         if self.player.pos.y < float(self.h / 2):
             y = 0
         elif self.player.pos.y > float(self.room.height - self.h / 2):
-            y = float(self.room.height - self.h) 
+            y = float(self.room.height - self.h)
 
         self.camera_sprites.move_to((x, y), CAMERA_SPEED)
 
@@ -1073,16 +1064,18 @@ class GameView(FadingView):
                         self.player.current_weapon.aim_pos.normalize().scale(30)
                     grid_x = math.floor(place_point.x / 30)
                     grid_y = math.floor(place_point.y / 30)
-                    if self.game_room.grid[grid_x, grid_y] != 1:
-                        object.center_x = grid_x * 30 + float(utils.Utils.HALF_WALL_SIZE)
-                        object.center_y = grid_y * 30 + float(utils.Utils.HALF_WALL_SIZE)
+                    if self.room.grid[grid_x, grid_y] != 1:
+                        object.center_x = grid_x * 30 + \
+                            float(utils.Utils.HALF_WALL_SIZE)
+                        object.center_y = grid_y * 30 + \
+                            float(utils.Utils.HALF_WALL_SIZE)
                         object.grid_idx = (grid_x, grid_y)
                         self.player_object_list.append(object)
                         self.physics_engine.add_sprite(object,
                                                        friction=0,
                                                        collision_type="object",
                                                        body_type=PymunkPhysicsEngine.STATIC)
-                        self.game_room.grid[grid_x, grid_y] = 1
+                        self.room.grid[grid_x, grid_y] = 1
 
                         # Consume energy only when object is placed
                         self.player.energy = max(
@@ -1130,14 +1123,14 @@ class GameView(FadingView):
                 if object.object_type == 0:  # Wall object
                     object.health -= bullet.damage
                     if object.health <= 0:
-                        self.game_room.grid[object.grid_idx[0],
+                        self.room.grid[object.grid_idx[0],
                                             object.grid_idx[1]] = 0
                         object.remove_from_sprite_lists()
                 if object.object_type == 1:  # Barrel object
                     object.health -= bullet.damage
                     if object.health <= 0:
                         self.set_explosion(object.position)
-                        self.game_room.grid[object.grid_idx[0],
+                        self.room.grid[object.grid_idx[0],
                                             object.grid_idx[1]] = 0
                         object.remove_from_sprite_lists()
 
@@ -1153,10 +1146,31 @@ class GameView(FadingView):
 
             if bullet.life_span <= 0:
                 bullet.remove_from_sprite_lists()
-    
+
+    def set_explosion(self, position: arcade.Point) -> None:
+        for i in range(24):
+            particle = effect.Particle(self.explosions_list)
+            particle.position = position
+            self.explosions_list.append(particle)
+
+            bullet = weapon.ExplosionParticle()
+            bullet.position = position
+            bullet.life_span = 8
+            bullet.change_x = particle.change_x
+            bullet.change_y = particle.change_y
+            bullet.damage = self.player.explosion_damage
+            self.player_bullet_list.append(bullet)
+
+        smoke = effect.Smoke(20)
+        smoke.position = position
+        self.explosions_list.append(smoke)
+
+        self.shake_camera()
+
     def manage_level(self) -> None:
         # Place holder function
         pass
+
 
 class GameOverView(arcade.View):
     """Game over view."""

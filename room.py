@@ -205,6 +205,18 @@ class GameRoom0(Room):
 
         self.setup_grid()
 
+        # Set boundary walls
+        for i in range(math.floor(self.grid_w/2) - 2, math.floor(self.grid_w/2) + 2):
+            self.walls.append(WallCorner(
+                HALF_WALL_SIZE + i * WALL_SIZE, -HALF_WALL_SIZE))
+            self.walls.append(WallCorner(
+                HALF_WALL_SIZE + i * WALL_SIZE, self.height + HALF_WALL_SIZE))
+        for i in range(math.floor(self.grid_h/2) - 2, math.floor(self.grid_h/2) + 2):
+            self.walls.append(WallCorner(
+                -HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+            self.walls.append(WallCorner(
+                self.width + HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+
 
 class GameRoom1(Room):
     """Game room No. 1"""
@@ -269,3 +281,15 @@ class GameRoom1(Room):
                     HALF_WALL_SIZE + i * WALL_SIZE, HALF_WALL_SIZE + j * WALL_SIZE))
 
         self.setup_grid()
+
+        # Set boundary walls
+        for i in range(math.floor(self.grid_w/2) - 2, math.floor(self.grid_w/2) + 2):
+            self.walls.append(WallCorner(
+                HALF_WALL_SIZE + i * WALL_SIZE, -HALF_WALL_SIZE))
+            self.walls.append(WallCorner(
+                HALF_WALL_SIZE + i * WALL_SIZE, self.height + HALF_WALL_SIZE))
+        for i in range(math.floor(self.grid_h/2) - 2, math.floor(self.grid_h/2) + 2):
+            self.walls.append(WallCorner(
+                -HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+            self.walls.append(WallCorner(
+                self.width + HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
