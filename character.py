@@ -164,9 +164,12 @@ class Player(Character):
         super().__init__(x, y, physics_engine)
         self.speed = 2000
         self.is_attack = False
-        self.energy = 0
-        self.energy_max = 200
-        self.player_health_max = 100
+        # self.energy = 0
+        self.health = 100
+        self.kill_recover = 1
+        
+        # For testing
+        self.energy = 100000
 
         # Player body sprite
         # self.body = arcade.Sprite(

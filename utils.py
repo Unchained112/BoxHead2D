@@ -21,6 +21,12 @@ class Color:
 class Utils:
     """Utility functions."""
 
+    BULLET_FORCE = 1000
+    ENEMY_FORCE = 4000
+    GET_DAMAGE_LEN = 8
+    WALL_SIZE = 30
+    HALF_WALL_SIZE = 15
+
     @staticmethod
     def get_sin(v: Vec2) -> float:
         """Get sine value of a given vector."""

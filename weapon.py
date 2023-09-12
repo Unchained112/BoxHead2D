@@ -186,6 +186,7 @@ class Shotgun(Weapon):
         self.cost = 8
         self.damage = 40
         self.bullet = EnergyBullet
+        self.sound = arcade.Sound("audio/wpn_fire_m1014.mp3")
 
     def get_bullet(self) -> arcade.SpriteList:
         bullets = arcade.SpriteList()
@@ -211,6 +212,7 @@ class Uzi(Weapon):
         self.cost = 2
         self.damage = 30
         self.bullet = EnergyBullet
+        self.sound = arcade.Sound("audio/wpn_fire_p90.mp3")
 
     def get_bullet(self) -> arcade.SpriteList:
         bullets = arcade.SpriteList()
@@ -223,3 +225,66 @@ class Uzi(Weapon):
         bullet.damage = self.damage
         bullets.append(bullet)
         return bullets
+
+
+class Rocekt(Weapon):
+
+    def __init__(self, weapon_name: str = "graphics/Pistol.png", x: float = 0, y: float = 0) -> None:
+        super().__init__(weapon_name, x, y)
+
+
+class PlacedWall(Weapon):
+
+    def __init__(self, x: float = 0, y: float = 0) -> None:
+        super().__init__()
+        self.is_gun = False
+        self.damage = 30
+        self.cd_max = int(10)  # 1/6 s
+        self.pos = Vec2(x, y)
+        self.aim_pos = Vec2(0, 0)
+        self.bullet_speed = 25
+        self.cost = 6
+        self.is_right = True
+        self.texture_list = [
+            arcade.load_texture("graphics/PlacedWall0.png"),
+        ]
+
+    def update(self) -> None:
+        self.center_x = self.pos.x
+        self.center_y = self.pos.y
+
+    def draw(self) -> None:
+        pass
+
+    def get_object(self) -> arcade.Sprite:
+        placed_wall = PlacedWallObject()
+        return placed_wall
+
+
+class Barrel(Weapon):
+    """Barrel class (as a weapon)."""
+
+    def __init__(self, x: float = 0, y: float = 0) -> None:
+        super().__init__()
+        self.is_gun = False
+        self.damage = 30
+        self.cd_max = int(10)  # 1/6 s
+        self.pos = Vec2(x, y)
+        self.aim_pos = Vec2(0, 0)
+        self.bullet_speed = 25
+        self.cost = 9
+        self.is_right = True
+        self.texture_list = [
+            arcade.load_texture("graphics/Barrel.png"),
+        ]
+
+    def update(self) -> None:
+        self.center_x = self.pos.x
+        self.center_y = self.pos.y
+
+    def draw(self) -> None:
+        pass
+
+    def get_object(self) -> arcade.Sprite:
+        barrel = BarrelObject()
+        return barrel
