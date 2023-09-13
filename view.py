@@ -370,7 +370,6 @@ class StartView(FadingView):
 
     def on_click_start(self, event) -> None:
         utils.Utils.clear_ui_manager(self.manager)
-        self.manager.debug()
         self.window.select_view.setup()
         self.window.show_view(self.window.select_view)
 
@@ -390,6 +389,9 @@ class SelectionView(FadingView):
         arcade.set_background_color(utils.Color.GROUND_WHITE)
 
     def setup(self) -> None:
+        self.w = self.window.width
+        self.h = self.window.height
+
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
         self.selection_box = arcade.gui.UIBoxLayout(vertical=False)
@@ -508,7 +510,6 @@ class SelectionView(FadingView):
         self.window.play_button_sound()
 
     def on_click_next(self, event) -> None:
-        # self.manager.debug()
         utils.Utils.clear_ui_manager(self.manager)
         self.window.game_view = GameView()
         self.window.game_view.setup(self.char_list[self.cur_char_idx], self.cur_map)
@@ -920,7 +921,7 @@ class GameView(FadingView):
         self.player_bullet_list.draw()
         self.player_object_list.draw()
         # self.enemy_bullet_list.draw()
-        # self.explosions_list.draw()
+        self.explosions_list.draw()
 
         # Select the (un-scrolled) camera for our GUI
         self.camera_gui.use()
