@@ -20,6 +20,7 @@ class BoxHead2d(arcade.Window):
         self.h_scale = [600, 720, 900, 1080]
         self.res_index = 1
         self.button_sound = arcade.Sound("audio/ui_click.wav")
+        self.explosion_sound = arcade.Sound("audio/explosion_2.wav")
 
         self.start_view = None
         self.option_view = None
@@ -31,7 +32,10 @@ class BoxHead2d(arcade.Window):
         self.select_view = view.SelectionView()
 
     def play_button_sound(self) -> None:
-        self.button_sound.play(volume=self.effect_volume/10)
+        self.button_sound.play(volume=self.effect_volume/20)
+
+    def play_explosion_sound(self) -> None:
+        self.explosion_sound.play(volume=self.effect_volume/20)
 
 
 def main():

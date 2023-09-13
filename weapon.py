@@ -77,20 +77,21 @@ class Object(arcade.Sprite):
 class PlacedWallObject(Object):
     """Wall that can be placed by the player."""
 
-    def __init__(self) -> None:
+    def __init__(self, health_max: int = 200) -> None:
         super().__init__()
         self.texture = arcade.load_texture("graphics/PlacedWall0.png")
-        self.health = 100
         self.object_type = 0  # Wall object
         self.textures = [
             arcade.load_texture("graphics/PlacedWall1.png"),
             arcade.load_texture("graphics/PlacedWall2.png")
         ]
+        self.health_max = health_max
+        self.health = health_max
 
     def update(self) -> None:
-        if self.health <= 70 and self.health > 40:
+        if self.health <= self.health_max * 0.8 and self.health > self.health_max * 0.4:
             self.texture = self.textures[0]
-        elif self.health <= 40:
+        elif self.health <= self.health_max * 0.4:
             self.texture = self.textures[1]
         super().update()
 
@@ -174,7 +175,7 @@ class Weapon(arcade.Sprite):
         return bullets
 
     def play_sound(self, effect_volume: int) -> None:
-        self.sound.play(volume=effect_volume / 10)
+        self.sound.play(volume=effect_volume/20)
 
 
 class Shotgun(Weapon):
@@ -238,16 +239,16 @@ class PlacedWall(Weapon):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__()
         self.is_gun = False
-        self.damage = 30
         self.cd_max = int(10)  # 1/6 s
         self.pos = Vec2(x, y)
         self.aim_pos = Vec2(0, 0)
-        self.bullet_speed = 25
-        self.cost = 6
+        self.cost = 5
         self.is_right = True
         self.texture_list = [
             arcade.load_texture("graphics/PlacedWall0.png"),
         ]
+        self.sound = arcade.Sound("audio/wall_placed.wav")
+        self.health_max = 200
 
     def update(self) -> None:
         self.center_x = self.pos.x
@@ -257,7 +258,7 @@ class PlacedWall(Weapon):
         pass
 
     def get_object(self) -> arcade.Sprite:
-        placed_wall = PlacedWallObject()
+        placed_wall = PlacedWallObject(self.health_max)
         return placed_wall
 
 
@@ -271,12 +272,12 @@ class Barrel(Weapon):
         self.cd_max = int(10)  # 1/6 s
         self.pos = Vec2(x, y)
         self.aim_pos = Vec2(0, 0)
-        self.bullet_speed = 25
-        self.cost = 9
+        self.cost = 20
         self.is_right = True
         self.texture_list = [
             arcade.load_texture("graphics/Barrel.png"),
         ]
+        self.sound = arcade.Sound("audio/physics_place_object.wav")
 
     def update(self) -> None:
         self.center_x = self.pos.x

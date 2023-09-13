@@ -489,7 +489,8 @@ class SelectionView(FadingView):
     def on_click_back(self, event) -> None:
         utils.Utils.clear_ui_manager(self.manager)
         self.window.start_view.setup()
-        self.window.start_view.resize_camera(self.window.width, self.window.height)
+        self.window.start_view.resize_camera(
+            self.window.width, self.window.height)
         self.window.show_view(self.window.start_view)
         self.window.play_button_sound()
 
@@ -512,7 +513,8 @@ class SelectionView(FadingView):
     def on_click_next(self, event) -> None:
         utils.Utils.clear_ui_manager(self.manager)
         self.window.game_view = GameView()
-        self.window.game_view.setup(self.char_list[self.cur_char_idx], self.cur_map)
+        self.window.game_view.setup(
+            self.char_list[self.cur_char_idx], self.cur_map)
         self.window.show_view(self.window.game_view)
         self.window.play_button_sound()
 
@@ -710,7 +712,7 @@ class OptionView(arcade.View):
         self.manager.draw()
 
     def on_click_effect_volume_up(self, event) -> None:
-        self.window.effect_volume = min(10, self.window.effect_volume + 1)
+        self.window.effect_volume = min(20, self.window.effect_volume + 1)
         self.effect_volume_text.text = str(self.window.effect_volume)
         self.window.play_button_sound()
 
@@ -720,7 +722,7 @@ class OptionView(arcade.View):
         self.window.play_button_sound()
 
     def on_click_music_volume_up(self, event) -> None:
-        self.window.music_volume = min(10, self.window.music_volume + 1)
+        self.window.music_volume = min(20, self.window.music_volume + 1)
         self.music_volume_text.text = str(self.window.music_volume)
         self.window.play_button_sound()
 
@@ -779,7 +781,8 @@ class OptionView(arcade.View):
         self.last_view = None
         utils.Utils.clear_ui_manager(self.manager)
         self.window.start_view.setup()
-        self.window.start_view.resize_camera(self.window.width, self.window.height)
+        self.window.start_view.resize_camera(
+            self.window.width, self.window.height)
         self.window.show_view(self.window.start_view)
         self.window.play_button_sound()
 
@@ -830,30 +833,49 @@ class GameView(FadingView):
         self.window.set_mouse_visible(False)
 
         # UI set up
-        # self.health_sprite = arcade.Sprite(
-        #     filename="graphics/Health.png",
-        #     center_x=40,
-        #     center_y=SCREEN_HEIGHT - 40,
-        #     image_width=25,
-        #     image_height=25,
-        #     scale=1,
-        # )
-        # self.energy_sprite = arcade.Sprite(
-        #     filename="graphics/Energy.png",
-        #     center_x=40,
-        #     center_y=SCREEN_HEIGHT - 70,
-        #     image_width=25,
-        #     image_height=25,
-        #     scale=1,
-        # )
-        # self.weapon_slot_sprite = arcade.Sprite(
-        #     filename="graphics/WeaponSlot.png",
-        #     center_x=150,
-        #     center_y=SCREEN_HEIGHT - 120,
-        #     image_width=80,
-        #     image_height=40,
-        #     scale=1,
-        # )
+        self.ui_sprite_list = arcade.SpriteList()
+        self.health_sprite = arcade.Sprite(
+            filename="graphics/Health.png",
+            center_x=72,
+            center_y=self.h - 40,
+            image_width=25,
+            image_height=25,
+            scale=1,
+        )
+        self.energy_sprite = arcade.Sprite(
+            filename="graphics/Energy.png",
+            center_x=72,
+            center_y=self.h - 70,
+            image_width=25,
+            image_height=25,
+            scale=1,
+        )
+        self.weapon_slot_sprite = arcade.Sprite(
+            filename="graphics/WeaponSlot.png",
+            center_x=150,
+            center_y=self.h - 120,
+            image_width=80,
+            image_height=40,
+            scale=1,
+        )
+        self.ui_sprite_list.append(self.health_sprite)
+        self.ui_sprite_list.append(self.energy_sprite)
+        self.ui_sprite_list.append(self.weapon_slot_sprite)
+
+        self.cur_weapon_sprite = arcade.Sprite()
+        self.cur_weapon_sprite.center_x = 150
+        self.cur_weapon_sprite.center_y = self.h - 120
+        self.last_weapon_sprite = arcade.Sprite()
+        self.last_weapon_sprite.center_x = 70
+        self.last_weapon_sprite.center_y = self.h - 120
+        self.last_weapon_sprite.color = (255, 255, 255, 100)
+        self.next_weapon_sprite = arcade.Sprite()
+        self.next_weapon_sprite.center_x = 230
+        self.next_weapon_sprite.center_y = self.h - 120
+        self.next_weapon_sprite.color = (255, 255, 255, 100)
+        self.ui_sprite_list.append(self.cur_weapon_sprite)
+        self.ui_sprite_list.append(self.last_weapon_sprite)
+        self.ui_sprite_list.append(self.next_weapon_sprite)
 
         # Set up the enemy
         self.spawn_enemy_cd = 0
@@ -931,7 +953,7 @@ class GameView(FadingView):
             self.mouse_sprite.draw()
 
         # Render the GUI
-        # self.draw_ui_player()
+        self.draw_player_ui()
         # self.draw_ui_game()
 
     def on_update(self, delta_time) -> None:
@@ -1062,6 +1084,53 @@ class GameView(FadingView):
         self.camera_sprites.resize(width, height)
         self.camera_gui.resize(width, height)
 
+        # update ui sprites position
+        self.health_sprite.center_y = self.h - 40
+        self.energy_sprite.center_y = self.h - 70
+        self.weapon_slot_sprite.center_y = self.h - 120
+
+    def draw_player_ui(self) -> None:
+        # Health
+        arcade.draw_text(text=self.player.health,
+                         start_x=100,
+                         start_y=self.h - 50,
+                         color=utils.Color.HEALTH_RED,
+                         font_size=12,
+                         width=2,
+                         align="left",
+                         font_name="FFF Forward")
+
+        # Energy
+        arcade.draw_text(text=self.player.energy,
+                         start_x=100,
+                         start_y=self.h - 80,
+                         color=utils.Color.ENERGY_BLUE,
+                         font_size=12,
+                         width=2,
+                         align="left",
+                         font_name="FFF Forward")
+
+        # Weapon slot
+        self.cur_weapon_sprite.texture = self.player.current_weapon.texture_list[0]
+        if self.player.current_weapon.is_gun:
+            self.cur_weapon_sprite.scale = 2
+        else:
+            self.cur_weapon_sprite.scale = 0.8
+        last_index = (self.player.weapon_index - 1) % len(self.player.weapons)
+        self.last_weapon_sprite.texture = self.player.weapons[last_index].texture_list[0]
+        if self.player.weapons[last_index].is_gun:
+            self.last_weapon_sprite.scale = 2
+        else:
+            self.last_weapon_sprite.scale = 0.8
+        next_index = (self.player.weapon_index + 1) % len(self.player.weapons)
+        self.next_weapon_sprite.texture = self.player.weapons[next_index].texture_list[0]
+        if self.player.weapons[next_index].is_gun:
+            self.next_weapon_sprite.scale = 2
+        else:
+            self.next_weapon_sprite.scale = 0.8
+
+        self.ui_sprite_list.draw()
+
     def update_player_attack(self) -> None:
         if self.player.is_attack:
             if self.player.cd == self.player.cd_max:
@@ -1096,7 +1165,8 @@ class GameView(FadingView):
                                                        collision_type="object",
                                                        body_type=PymunkPhysicsEngine.STATIC)
                         self.room.grid[grid_x, grid_y] = 1
-
+                        self.player.current_weapon.play_sound(
+                            self.window.effect_volume)
                         # Consume energy only when object is placed
                         self.player.energy = max(
                             0, self.player.energy - self.player.current_weapon.cost)
@@ -1144,14 +1214,14 @@ class GameView(FadingView):
                     object.health -= bullet.damage
                     if object.health <= 0:
                         self.room.grid[object.grid_idx[0],
-                                            object.grid_idx[1]] = 0
+                                       object.grid_idx[1]] = 0
                         object.remove_from_sprite_lists()
                 if object.object_type == 1:  # Barrel object
                     object.health -= bullet.damage
                     if object.health <= 0:
                         self.set_explosion(object.position)
                         self.room.grid[object.grid_idx[0],
-                                            object.grid_idx[1]] = 0
+                                       object.grid_idx[1]] = 0
                         object.remove_from_sprite_lists()
 
             if len(hit_list) > 0:
@@ -1168,7 +1238,7 @@ class GameView(FadingView):
                 bullet.remove_from_sprite_lists()
 
     def set_explosion(self, position: arcade.Point) -> None:
-        for i in range(24):
+        for _ in range(24):
             particle = effect.Particle(self.explosions_list)
             particle.position = position
             self.explosions_list.append(particle)
@@ -1186,6 +1256,7 @@ class GameView(FadingView):
         self.explosions_list.append(smoke)
 
         self.shake_camera()
+        self.window.play_explosion_sound()
 
     def manage_level(self) -> None:
         # Place holder function
