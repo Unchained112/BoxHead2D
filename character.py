@@ -282,7 +282,8 @@ class EnemyWhite(Character):
     """EnemyWhite class."""
 
     def __init__(self, x: float = 0, y: float = 0,
-                 physics_engine: arcade.PymunkPhysicsEngine = None) -> None:
+                 physics_engine: arcade.PymunkPhysicsEngine = None,
+                 player: Player = None) -> None:
         super().__init__(x, y, physics_engine)
         self.health_max = int(100)
         self.is_walking = True
@@ -291,19 +292,22 @@ class EnemyWhite(Character):
         self.body.texture = arcade.load_texture("graphics/EnemyWhite.png")
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
         self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
+        self.player = player
+        self.physics_engines.clear()
 
-    def follow_sprite(self, player_sprite: arcade.Sprite) -> None:
+    def update(self) -> None:
         current_pos = Vec2(self.center_x, self.center_y)
-        player_pos = Vec2(player_sprite.center_x, player_sprite.center_y)
+        player_pos = Vec2(self.player.center_x, self.player.center_y)
         force = player_pos - current_pos
+        tmp = Vec2(0, 0)
 
-        # if random.randrange(0, 100) < 20:  # add some randomization
-        #     tmp = Vec2(random.gauss(0, 0.2), random.gauss(0, 0.2))
+        # if random.randrange(0, 10) < 2:  # add some randomization
+        #     tmp = Vec2(2*random.random() - 1,
+        #                2*random.random() - 1)
         #     force = tmp.normalize().scale(self.speed)
         #     return
 
         if self.last_force.distance(force) < 0.1:
-            tmp = Vec2(0, 0)
             if abs(self.last_force.x - force.x) < 0.1:
                 tmp.x = self.l_or_r
             if abs(self.last_force.y - force.y) < 0.1:
@@ -315,3 +319,4 @@ class EnemyWhite(Character):
 
         self.physics_engines[0].apply_force(self, (force.x, force.y))
 
+        super().update()

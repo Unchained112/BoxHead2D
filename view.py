@@ -939,10 +939,11 @@ class GameView(FadingView):
         self.blood_list.draw()
         self.room.draw_walls()
         self.player.draw()
+        self.enemy_sprite_list.draw()
 
         self.player_bullet_list.draw()
         self.player_object_list.draw()
-        # self.enemy_bullet_list.draw()
+        self.enemy_bullet_list.draw()
         self.explosions_list.draw()
 
         # Select the (un-scrolled) camera for our GUI
@@ -953,7 +954,7 @@ class GameView(FadingView):
             self.mouse_sprite.draw()
 
         # Render the GUI
-        self.draw_player_ui()
+        self.draw_ui()
         # self.draw_ui_game()
 
     def on_update(self, delta_time) -> None:
@@ -967,6 +968,7 @@ class GameView(FadingView):
 
         # Update level
         self.manage_level()
+        self.enemy_sprite_list.update()
         # if len(self.enemy_white_list) == 0 and len(self.enemy_red_list) == 0:
         #     self.round += 1
         #     # TODO: change this value when refining the numbers
@@ -984,7 +986,7 @@ class GameView(FadingView):
         # self.process_enemy_bullet()
 
         self.explosions_list.update()
-        # self.blood_list.update()
+        self.blood_list.update()
 
         self.scroll_to_player()
 
@@ -1090,8 +1092,11 @@ class GameView(FadingView):
         self.health_sprite.center_y = self.h - 40
         self.energy_sprite.center_y = self.h - 70
         self.weapon_slot_sprite.center_y = self.h - 120
+        self.cur_weapon_sprite.center_y = self.h - 120
+        self.last_weapon_sprite.center_y = self.h - 120
+        self.next_weapon_sprite.center_y = self.h - 120
 
-    def draw_player_ui(self) -> None:
+    def draw_ui(self) -> None:
         # Health
         arcade.draw_text(text=self.player.health,
                          start_x=100,
@@ -1137,7 +1142,7 @@ class GameView(FadingView):
         arcade.draw_text(self.round, self.w / 2,
                          self.h - 50, utils.Color.BLACK,
                          20, 2, "left", "FFF Forward")
-        
+
         # Score
         arcade.draw_text(self.score, self.w - 150,
                          self.h - 50, utils.Color.BLACK,
@@ -1204,13 +1209,12 @@ class GameView(FadingView):
             for enemy in hit_list:
                 enemy.health -= bullet.damage
                 self.set_blood(enemy.position)
-                self.player.energy = min(self.player.energy + (bullet.damage/10),
-                                         self.player.energy_max)
+                self.player.energy += (bullet.damage/10)
                 self.physics_engine.apply_force(
                     enemy, (bullet.aim.x * utils.Utils.BULLET_FORCE, bullet.aim.y * utils.Utils.BULLET_FORCE))
                 enemy.get_damage_len = utils.Utils.GET_DAMAGE_LEN
                 if enemy.health <= 0:
-                    enemy.remove_from_sprite_lists()
+                    self.remove_enemy(enemy)
                     self.player.health += self.player.kill_recover
                     self.score += enemy.health_max
 
@@ -1248,6 +1252,14 @@ class GameView(FadingView):
 
             if bullet.life_span <= 0:
                 bullet.remove_from_sprite_lists()
+    
+    def remove_enemy(self, enemy: character.Character) -> None:
+        enemy.physics_engines.clear() # to avoid key error
+        for part in enemy.parts:
+            self.enemy_sprite_list.remove(part)
+        self.physics_engine.remove_sprite(enemy)
+        enemy.parts.clear()
+        enemy.remove_from_sprite_lists()
 
     def set_explosion(self, position: arcade.Point) -> None:
         for _ in range(24):
@@ -1270,16 +1282,42 @@ class GameView(FadingView):
         self.shake_camera()
         self.window.play_explosion_sound()
 
+    def set_blood(self, position: arcade.Point) -> None:
+        for _ in range(12):
+            blood = effect.Blood()
+            blood.position = position
+            self.blood_list.append(blood)
+
     def manage_level(self) -> None:
+        # Round
         seconds = int(self.total_time) % 60
+        seconds_100s = int((self.total_time - seconds) * 100)
         if seconds == 0:
             self.round = "3"
         if seconds == 1:
             self.round = "2"
-        if seconds == 3:
+        if seconds == 2:
             self.round = "1"
-        if seconds == 4:
-            self.round = "Start !"
+        if seconds == 3:
+            self.round = "Start !!!"
+        if self.total_time > 3.5 and self.total_time < 4:
+            self.round = "Round: 1"
+
+        # Score multiplier
+
+        # Spawn enemy
+        if len(self.enemy_white_list) == 0:
+            for pos in self.room.spawn_pos:
+                enemy = character.EnemyWhite(pos.x, pos.y, self.physics_engine, self.player)
+                self.enemy_white_list.append(enemy)
+                self.enemy_sprite_list.extend(enemy.parts)
+                self.physics_engine.add_sprite(enemy,
+                                               friction=0,
+                                               moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+                                               damping=0.001,
+                                               collision_type="enemy")
+
+        self.enemy_white_list.update()
 
 
 class GameOverView(arcade.View):

@@ -17,6 +17,7 @@ class Color:
     RED_TRANSPARENT = (160, 100, 100, 120)
     HEALTH_RED = (205, 24, 24)
     ENERGY_BLUE = (77, 166, 255)
+    DARK_GREEN = (65, 100, 74)
 
 
 class Utils:

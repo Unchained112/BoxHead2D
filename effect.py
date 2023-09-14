@@ -94,7 +94,6 @@ class Blood(arcade.SpriteSolidColor):
     """Bleeding effect particle. """
 
     def __init__(self) -> None:
-        color = (65, 100, 74)  # Dark green
         super().__init__(random.randint(4, 12), random.randint(4, 12), utils.Color.DARK_RED)
         self.my_alpha = 255
         # Set direction/speed
@@ -105,7 +104,7 @@ class Blood(arcade.SpriteSolidColor):
 
     def update(self):
         if self.my_alpha > 200:  # alpha threshold
-            self.my_alpha -= 20  # blood particle fade rate
+            self.my_alpha -= 40  # blood particle fade rate
             self.alpha = self.my_alpha
             self.center_x += self.change_x
             self.center_y += self.change_y
