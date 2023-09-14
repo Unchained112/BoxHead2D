@@ -832,6 +832,9 @@ class GameView(FadingView):
         self.weapon_check = 0
         self.window.set_mouse_visible(False)
 
+        # Set up the timer
+        self.total_time = 0
+
         # UI set up
         self.ui_sprite_list = arcade.SpriteList()
         self.health_sprite = arcade.Sprite(
@@ -876,9 +879,6 @@ class GameView(FadingView):
         self.ui_sprite_list.append(self.cur_weapon_sprite)
         self.ui_sprite_list.append(self.last_weapon_sprite)
         self.ui_sprite_list.append(self.next_weapon_sprite)
-
-        # Set up the enemy
-        self.spawn_enemy_cd = 0
 
         # GameObject lists
         self.wall_list = arcade.SpriteList()
@@ -958,13 +958,15 @@ class GameView(FadingView):
 
     def on_update(self, delta_time) -> None:
         self.physics_engine.step()
+        self.total_time += delta_time
 
         # Update player
         self.player.update()
         self.update_player_attack()
         self.process_player_bullet()
 
-        # # update enemy
+        # Update level
+        self.manage_level()
         # if len(self.enemy_white_list) == 0 and len(self.enemy_red_list) == 0:
         #     self.round += 1
         #     # TODO: change this value when refining the numbers
@@ -1131,6 +1133,16 @@ class GameView(FadingView):
 
         self.ui_sprite_list.draw()
 
+        # Round
+        arcade.draw_text(self.round, self.w / 2,
+                         self.h - 50, utils.Color.BLACK,
+                         20, 2, "left", "FFF Forward")
+        
+        # Score
+        arcade.draw_text(self.score, self.w - 150,
+                         self.h - 50, utils.Color.BLACK,
+                         20, 2, "left", "FFF Forward")
+
     def update_player_attack(self) -> None:
         if self.player.is_attack:
             if self.player.cd == self.player.cd_max:
@@ -1259,11 +1271,32 @@ class GameView(FadingView):
         self.window.play_explosion_sound()
 
     def manage_level(self) -> None:
-        # Place holder function
-        pass
+        seconds = int(self.total_time) % 60
+        if seconds == 0:
+            self.round = "3"
+        if seconds == 1:
+            self.round = "2"
+        if seconds == 3:
+            self.round = "1"
+        if seconds == 4:
+            self.round = "Start !"
 
 
 class GameOverView(arcade.View):
+    """Game over view."""
+
+    def __init__(self):
+        super().__init__()
+
+
+class GameWinView(arcade.View):
+    """Game win view."""
+
+    def __init__(self):
+        super().__init__()
+
+
+class ShopView(arcade.View):
     """Game over view."""
 
     def __init__(self):

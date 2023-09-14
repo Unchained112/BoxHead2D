@@ -1,5 +1,6 @@
 import arcade
 import utils
+import random
 from weapon import Weapon
 from pyglet.math import Vec2
 
@@ -155,6 +156,9 @@ class Character(arcade.Sprite):
                                      20, 24, utils.Color.RED_TRANSPARENT)
 
 
+"""Play characters"""
+
+
 class Player(Character):
     """Player game object."""
 
@@ -166,22 +170,15 @@ class Player(Character):
         self.speed = 2000
         self.is_attack = False
         # self.energy = 0
-        self.health = 100
+        # self.health = 100
         self.kill_recover = 1
         self.explosion_damage = 20
 
         # For testing
+        self.health = 100000
         self.energy = 100000
 
         # Player body sprite
-        # self.body = arcade.Sprite(
-        #     filename="graphics/Player.png",
-        #     center_x=self.body_pos.x + self.pos.x,
-        #     center_y=self.body_pos.y + self.pos.y,
-        #     image_width=20,
-        #     image_height=24,
-        #     scale=1,
-        # )
         self.body.texture = self.body_texture
 
         # Track the player movement input
@@ -276,3 +273,45 @@ class Rambo(Player):
     "Rambo character."
 
     body_texture = arcade.load_texture("graphics/Rambo.png")
+
+
+"""Enemy characters"""
+
+
+class EnemyWhite(Character):
+    """EnemyWhite class."""
+
+    def __init__(self, x: float = 0, y: float = 0,
+                 physics_engine: arcade.PymunkPhysicsEngine = None) -> None:
+        super().__init__(x, y, physics_engine)
+        self.health_max = int(100)
+        self.is_walking = True
+        self.last_force = Vec2(0, 0)
+        self.hit_damage = int(20)
+        self.body.texture = arcade.load_texture("graphics/EnemyWhite.png")
+        self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
+        self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
+
+    def follow_sprite(self, player_sprite: arcade.Sprite) -> None:
+        current_pos = Vec2(self.center_x, self.center_y)
+        player_pos = Vec2(player_sprite.center_x, player_sprite.center_y)
+        force = player_pos - current_pos
+
+        # if random.randrange(0, 100) < 20:  # add some randomization
+        #     tmp = Vec2(random.gauss(0, 0.2), random.gauss(0, 0.2))
+        #     force = tmp.normalize().scale(self.speed)
+        #     return
+
+        if self.last_force.distance(force) < 0.1:
+            tmp = Vec2(0, 0)
+            if abs(self.last_force.x - force.x) < 0.1:
+                tmp.x = self.l_or_r
+            if abs(self.last_force.y - force.y) < 0.1:
+                tmp.y = self.u_or_d
+            force = tmp.scale(2 * self.speed)  # get rid of the barrier
+        else:
+            self.last_force = force
+            force = force.normalize().scale(self.speed)
+
+        self.physics_engines[0].apply_force(self, (force.x, force.y))
+
