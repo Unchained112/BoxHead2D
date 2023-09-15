@@ -272,8 +272,7 @@ class StartView(FadingView):
                 self.player.cd = 0
 
             if self.player.cd == 0 and self.player.energy - self.player.current_weapon.cost >= 0:
-                self.player.energy = max(
-                    0, self.player.energy - self.player.current_weapon.cost)
+                self.player.energy -= self.player.current_weapon.cost
                 bullets = self.player.attack()
                 self.player.current_weapon.play_sound(
                     self.window.effect_volume)
@@ -827,13 +826,14 @@ class GameView(FadingView):
         """Set up the game and initialize the variables."""
 
         # Gameplay set up
-        self.round = 0
-        self.score = 0
+        self.round_text = ""
+        self.round: int = 0
+        self.multiplier: int = 1
+        self.score: int = 0
         self.weapon_check = 0
         self.window.set_mouse_visible(False)
-
-        # Set up the timer
         self.total_time = 0
+        self.last_kill_time = 0
 
         # UI set up
         self.ui_sprite_list = arcade.SpriteList()
@@ -955,7 +955,6 @@ class GameView(FadingView):
 
         # Render the GUI
         self.draw_ui()
-        # self.draw_ui_game()
 
     def on_update(self, delta_time) -> None:
         self.physics_engine.step()
@@ -982,7 +981,7 @@ class GameView(FadingView):
         # for enemy in self.enemy_red_list:
         #     enemy.update(self.physics_engine)
         #     enemy.follow_sprite(self.player, self.physics_engine)
-        # self.update_enemy_attack()
+        self.update_enemy_attack()
         # self.process_enemy_bullet()
 
         self.explosions_list.update()
@@ -1139,7 +1138,7 @@ class GameView(FadingView):
         self.ui_sprite_list.draw()
 
         # Round
-        arcade.draw_text(self.round, self.w / 2,
+        arcade.draw_text(self.round_text, self.w / 2,
                          self.h - 50, utils.Color.BLACK,
                          20, 2, "left", "FFF Forward")
 
@@ -1252,7 +1251,36 @@ class GameView(FadingView):
 
             if bullet.life_span <= 0:
                 bullet.remove_from_sprite_lists()
-    
+
+    def update_enemy_attack(self) -> None:
+        for enemy in self.enemy_white_list:
+            if arcade.check_for_collision(enemy, self.player):
+                self.player.health = max(
+                    self.player.health - enemy.hit_damage, 0)
+                push = enemy.last_force.normalize().scale(utils.Utils.ENEMY_FORCE)
+                self.physics_engine.apply_force(self.player, (push.x, push.y))
+                self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
+
+        # for enemy in self.enemy_red_list:
+        #     if arcade.check_for_collision(enemy, self.player):
+        #         self.player.health = max(
+        #             self.player.health - enemy.hit_damage, 0)
+        #         push = enemy.last_force.normalize().scale(ENEMY_FORCE)
+        #         self.physics_engine.apply_force(self.player, (push.x, push.y))
+        #         self.player.get_damage_len = GET_DAMAGE_LEN
+
+        #     if enemy.is_walking == False:
+        #         if enemy.cd == enemy.cd_max:
+        #             enemy.cd = 0
+
+        #         if enemy.cd == 0:
+        #             bullet = enemy.attack(self.player)
+        #             bullet.change_x = bullet.aim.x
+        #             bullet.change_y = bullet.aim.y
+        #             self.enemy_bullet_list.append(bullet)
+
+            enemy.cd = min(enemy.cd + 1, enemy.cd_max)
+
     def remove_enemy(self, enemy: character.Character) -> None:
         enemy.physics_engines.clear() # to avoid key error
         for part in enemy.parts:
@@ -1293,20 +1321,20 @@ class GameView(FadingView):
         seconds = int(self.total_time) % 60
         seconds_100s = int((self.total_time - seconds) * 100)
         if seconds == 0:
-            self.round = "3"
+            self.round_text = "3"
         if seconds == 1:
-            self.round = "2"
+            self.round_text = "2"
         if seconds == 2:
-            self.round = "1"
+            self.round_text = "1"
         if seconds == 3:
-            self.round = "Start !!!"
+            self.round_text = "Start !!!"
         if self.total_time > 3.5 and self.total_time < 4:
-            self.round = "Round: 1"
+            self.round_text = "Round: 1"
 
         # Score multiplier
 
         # Spawn enemy
-        if len(self.enemy_white_list) == 0:
+        if len(self.enemy_white_list) == 0 or seconds_100s == 0:
             for pos in self.room.spawn_pos:
                 enemy = character.EnemyWhite(pos.x, pos.y, self.physics_engine, self.player)
                 self.enemy_white_list.append(enemy)

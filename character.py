@@ -90,6 +90,10 @@ class Character(arcade.Sprite):
         )
         self.shadow.texture = arcade.make_soft_square_texture(
             22, utils.Color.LIGHT_BLACK, 160, 100)
+        # Get damage sprite
+        self.damage_sprite = arcade.SpriteSolidColor(20, 24, 
+            utils.Color.RED_TRANSPARENT)
+        self.damage_sprite.alpha = 0
 
         # Body parts list for rendering
         self.parts = arcade.SpriteList()
@@ -97,6 +101,7 @@ class Character(arcade.Sprite):
         self.parts.append(self.body)
         self.parts.append(self.foot_l)
         self.parts.append(self.foot_r)
+        self.parts.append(self.damage_sprite)
 
     def move(self) -> None:
         """Move all the body parts"""
@@ -113,6 +118,9 @@ class Character(arcade.Sprite):
 
         self.shadow.center_x = self.pos.x + self.shadow_pos.x
         self.shadow.center_y = self.pos.y + self.shadow_pos.y
+
+        self.damage_sprite.center_x = self.center_x
+        self.damage_sprite.center_y = self.center_y
 
     def update(self) -> None:
         self.move()
@@ -146,14 +154,13 @@ class Character(arcade.Sprite):
 
         self.get_damage_len -= 1
 
+        if self.get_damage_len > 0:
+            self.damage_sprite.alpha = 120
+        else:
+            self.damage_sprite.alpha = 0
+
     def draw(self, *, filter=None, pixelated=None, blend_function=None) -> None:
         self.parts.draw()
-        if self.get_damage_len > 0:
-            self.draw_get_damage()
-
-    def draw_get_damage(self) -> None:
-        arcade.draw_rectangle_filled(self.center_x, self.center_y,
-                                     20, 24, utils.Color.RED_TRANSPARENT)
 
 
 """Play characters"""
@@ -175,8 +182,8 @@ class Player(Character):
         self.explosion_damage = 20
 
         # For testing
-        self.health = 100000
-        self.energy = 100000
+        self.health = int(100000)
+        self.energy = int(100000)
 
         # Player body sprite
         self.body.texture = self.body_texture
@@ -301,11 +308,7 @@ class EnemyWhite(Character):
         force = player_pos - current_pos
         tmp = Vec2(0, 0)
 
-        # if random.randrange(0, 10) < 2:  # add some randomization
-        #     tmp = Vec2(2*random.random() - 1,
-        #                2*random.random() - 1)
-        #     force = tmp.normalize().scale(self.speed)
-        #     return
+        # TODO: Add some randomization
 
         if self.last_force.distance(force) < 0.1:
             if abs(self.last_force.x - force.x) < 0.1:
