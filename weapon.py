@@ -121,10 +121,10 @@ class Weapon(arcade.Sprite):
         self.pos = Vec2(x, y)
         self.aim_pos = Vec2(0, 0)
         self.is_right = True
-        self.damage = 30
+        self.damage = int(30)
         self.cd_max = int(20)  # 1/3 s
         self.bullet_speed = 25
-        self.cost = 0
+        self.cost = int(0)
         self.texture_list = [
             arcade.load_texture(weapon_name),
             arcade.load_texture(weapon_name, flipped_horizontally=True),
@@ -239,7 +239,7 @@ class PlacedWall(Weapon):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__()
         self.is_gun = False
-        self.cd_max = int(10)  # 1/6 s
+        self.cd_max = int(0)  # 1/6 s
         self.pos = Vec2(x, y)
         self.aim_pos = Vec2(0, 0)
         self.cost = 5
@@ -269,7 +269,7 @@ class Barrel(Weapon):
         super().__init__()
         self.is_gun = False
         self.damage = 30
-        self.cd_max = int(10)  # 1/6 s
+        self.cd_max = int(0)  # 1/6 s
         self.pos = Vec2(x, y)
         self.aim_pos = Vec2(0, 0)
         self.cost = 20

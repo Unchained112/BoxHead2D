@@ -1,7 +1,7 @@
 import arcade
 import utils
 import random
-from weapon import Weapon
+import weapon
 from pyglet.math import Vec2
 
 BODY_ANIM = [-1, -1, -1, -1, -1, -1, 0,
@@ -91,8 +91,8 @@ class Character(arcade.Sprite):
         self.shadow.texture = arcade.make_soft_square_texture(
             22, utils.Color.LIGHT_BLACK, 160, 100)
         # Get damage sprite
-        self.damage_sprite = arcade.SpriteSolidColor(20, 24, 
-            utils.Color.RED_TRANSPARENT)
+        self.damage_sprite = arcade.SpriteSolidColor(20, 24,
+                                                     utils.Color.RED_TRANSPARENT)
         self.damage_sprite.alpha = 0
 
         # Body parts list for rendering
@@ -200,7 +200,7 @@ class Player(Character):
         self.weapon_pos = Vec2(16, -2)
         self.weapons = []
         self.weapon_index = 0
-        pistol = Weapon(x=self.pos.x + self.weapon_pos.x,
+        pistol = weapon.Weapon(x=self.pos.x + self.weapon_pos.x,
                         y=self.pos.y + self.weapon_pos.y)
         self.add_weapon(pistol)
         self.current_weapon = self.weapons[self.weapon_index]
@@ -300,9 +300,9 @@ class EnemyWhite(Character):
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
         self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
-        self.physics_engines.clear()
 
     def update(self) -> None:
+        super().update()
         current_pos = Vec2(self.center_x, self.center_y)
         player_pos = Vec2(self.player.center_x, self.player.center_y)
         force = player_pos - current_pos
@@ -322,4 +322,65 @@ class EnemyWhite(Character):
 
         self.physics_engines[0].apply_force(self, (force.x, force.y))
 
+
+class EnemyRed(Character):
+    """EnemyRed class."""
+
+    def __init__(self, x: float = 0, y: float = 0,
+                 physics_engine: arcade.PymunkPhysicsEngine = None,
+                 player: Player = None) -> None:
+        super().__init__(x, y, physics_engine)
+        self.health = int(200)
+        self.health_max = int(220)
+        self.is_walking = True
+        self.hit_damage = int(20)
+        self.last_force = Vec2(0, 0)
+        self.shoot_range = 280
+        self.cd_max = int(60)
+        self.bullet = weapon.FireBall
+        self.body.texture = arcade.load_texture("graphics/EnemyRed.png")
+        self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
+        self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
+        self.player = player
+
+    def update(self) -> None:
         super().update()
+        current_pos = Vec2(self.center_x, self.center_y)
+        player_pos = Vec2(self.player.center_x, self.player.center_y)
+        force = player_pos - current_pos
+        tmp = Vec2(0, 0)
+
+        # TODO: Add some randomization
+
+        if current_pos.distance(player_pos) < self.shoot_range:
+            self.is_walking = False
+            return
+        else:
+            self.is_walking = True
+
+        if self.last_force.distance(force) < 0.1:
+            if abs(self.last_force.x - force.x) < 0.1:
+                tmp.x = self.l_or_r
+            if abs(self.last_force.y - force.y) < 0.1:
+                tmp.y = self.u_or_d
+            force = tmp.scale(2 * self.speed)  # get rid of the barrier
+        else:
+            self.last_force = force
+            force = force.normalize().scale(self.speed)
+
+        self.physics_engines[0].apply_force(self, (force.x, force.y))
+
+
+    def attack(self) -> weapon.FireBall:
+        # Enemy red attack property
+        bullet_speed = 6
+        damage = 30
+        aim_pos = Vec2(self.player.center_x - self.center_x,
+                       self.player.center_y - self.center_y)
+        bullet = self.bullet()
+        bullet.center_x = self.center_x
+        bullet.center_y = self.center_y
+        bullet.speed = bullet_speed
+        bullet.aim = aim_pos.normalize().scale(bullet.speed)
+        bullet.damage = damage
+        return bullet

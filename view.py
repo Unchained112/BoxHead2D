@@ -826,10 +826,19 @@ class GameView(FadingView):
         """Set up the game and initialize the variables."""
 
         # Gameplay set up
-        self.round_text = ""
         self.round: int = 0
         self.multiplier: int = 1
         self.score: int = 0
+        self.round_text = arcade.Text("", self.w / 2,
+                                      self.h - 50, utils.Color.BLACK,
+                                      15, 2, "left", "FFF Forward")
+        self.multiplier_text = arcade.Text("", self.w - 200,
+                                           self.h - 140, utils.Color.MUL_GREEN,
+                                           30, 2, "left", "FFF Forward")
+        self.score_text = arcade.Text("Score: " + str(self.score), self.w - 240,
+                                      self.h - 50, utils.Color.BLACK,
+                                      15, 2, "left", "FFF Forward")
+
         self.weapon_check = 0
         self.window.set_mouse_visible(False)
         self.total_time = 0
@@ -896,6 +905,7 @@ class GameView(FadingView):
         gravity = (0, 0)
         self.physics_engine = PymunkPhysicsEngine(gravity, damping)
 
+        # Game room setup
         self.room = map()
         self.wall_list = self.room.walls
 
@@ -968,21 +978,8 @@ class GameView(FadingView):
         # Update level
         self.manage_level()
         self.enemy_sprite_list.update()
-        # if len(self.enemy_white_list) == 0 and len(self.enemy_red_list) == 0:
-        #     self.round += 1
-        #     # TODO: change this value when refining the numbers
-        #     self.spawn_enemy_cd = 0
-
-        # self.spawn_enemy()
-        # for enemy in self.enemy_white_list:
-        #     enemy.update(self.physics_engine)
-        #     enemy.follow_sprite(self.player, self.physics_engine)
-
-        # for enemy in self.enemy_red_list:
-        #     enemy.update(self.physics_engine)
-        #     enemy.follow_sprite(self.player, self.physics_engine)
         self.update_enemy_attack()
-        # self.process_enemy_bullet()
+        self.process_enemy_bullet()
 
         self.explosions_list.update()
         self.blood_list.update()
@@ -1097,7 +1094,7 @@ class GameView(FadingView):
 
     def draw_ui(self) -> None:
         # Health
-        arcade.draw_text(text=self.player.health,
+        arcade.draw_text(text=int(self.player.health),
                          start_x=100,
                          start_y=self.h - 50,
                          color=utils.Color.HEALTH_RED,
@@ -1107,7 +1104,7 @@ class GameView(FadingView):
                          font_name="FFF Forward")
 
         # Energy
-        arcade.draw_text(text=self.player.energy,
+        arcade.draw_text(text=int(self.player.energy),
                          start_x=100,
                          start_y=self.h - 80,
                          color=utils.Color.ENERGY_BLUE,
@@ -1138,14 +1135,11 @@ class GameView(FadingView):
         self.ui_sprite_list.draw()
 
         # Round
-        arcade.draw_text(self.round_text, self.w / 2,
-                         self.h - 50, utils.Color.BLACK,
-                         20, 2, "left", "FFF Forward")
+        self.round_text.draw()
 
         # Score
-        arcade.draw_text(self.score, self.w - 150,
-                         self.h - 50, utils.Color.BLACK,
-                         20, 2, "left", "FFF Forward")
+        self.score_text.draw()
+        self.multiplier_text.draw()
 
     def update_player_attack(self) -> None:
         if self.player.is_attack:
@@ -1213,9 +1207,9 @@ class GameView(FadingView):
                     enemy, (bullet.aim.x * utils.Utils.BULLET_FORCE, bullet.aim.y * utils.Utils.BULLET_FORCE))
                 enemy.get_damage_len = utils.Utils.GET_DAMAGE_LEN
                 if enemy.health <= 0:
-                    self.remove_enemy(enemy)
                     self.player.health += self.player.kill_recover
-                    self.score += enemy.health_max
+                    
+                    self.remove_enemy(enemy)
 
             if len(hit_list) > 0:
                 bullet.remove_from_sprite_lists()
@@ -1261,33 +1255,118 @@ class GameView(FadingView):
                 self.physics_engine.apply_force(self.player, (push.x, push.y))
                 self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
 
-        # for enemy in self.enemy_red_list:
-        #     if arcade.check_for_collision(enemy, self.player):
-        #         self.player.health = max(
-        #             self.player.health - enemy.hit_damage, 0)
-        #         push = enemy.last_force.normalize().scale(ENEMY_FORCE)
-        #         self.physics_engine.apply_force(self.player, (push.x, push.y))
-        #         self.player.get_damage_len = GET_DAMAGE_LEN
+        for enemy in self.enemy_red_list:
+            if arcade.check_for_collision(enemy, self.player):
+                self.player.health = max(
+                    self.player.health - enemy.hit_damage, 0)
+                push = enemy.last_force.normalize().scale(utils.Utils.ENEMY_FORCE)
+                self.physics_engine.apply_force(self.player, (push.x, push.y))
+                self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
 
-        #     if enemy.is_walking == False:
-        #         if enemy.cd == enemy.cd_max:
-        #             enemy.cd = 0
+            if enemy.is_walking == False:
+                if enemy.cd == enemy.cd_max:
+                    enemy.cd = 0
 
-        #         if enemy.cd == 0:
-        #             bullet = enemy.attack(self.player)
-        #             bullet.change_x = bullet.aim.x
-        #             bullet.change_y = bullet.aim.y
-        #             self.enemy_bullet_list.append(bullet)
+                if enemy.cd == 0:
+                    bullet = enemy.attack()
+                    bullet.change_x = bullet.aim.x
+                    bullet.change_y = bullet.aim.y
+                    self.enemy_bullet_list.append(bullet)
 
             enemy.cd = min(enemy.cd + 1, enemy.cd_max)
 
+    def process_enemy_bullet(self) -> None:
+        self.enemy_bullet_list.update()
+
+        for bullet in self.enemy_bullet_list:
+            bullet.life_span -= 1
+
+            # TODO: decide whether to allow enemy shoot at each other
+            # hit_list = arcade.check_for_collision_with_list(
+            #     bullet, self.enemy_white_list)
+
+            # for enemy in hit_list:
+            #     enemy.health -= bullet.damage
+            #     self.physics_engine.apply_force(
+            #         enemy, (bullet.aim.x * BULLET_FORCE, bullet.aim.y * BULLET_FORCE))
+            #     enemy.get_damage_len = GET_DAMAGE_LEN
+            #     if enemy.health <= 0:
+            #         enemy.remove_from_sprite_lists()
+
+            # check hit with player
+            if arcade.check_for_collision(bullet, self.player):
+                self.player.health = max(self.player.health - bullet.damage, 0)
+                bullet.remove_from_sprite_lists()
+                self.physics_engine.apply_force(
+                    self.player, (bullet.aim.x * utils.Utils.BULLET_FORCE,
+                                  bullet.aim.y * utils.Utils.BULLET_FORCE))
+                self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
+
+            # check hit with player objects
+            hit_list = arcade.check_for_collision_with_list(
+                bullet, self.player_object_list)
+
+            for object in hit_list:
+                if object.object_type == 0:  # Wall object
+                    object.health -= bullet.damage
+                    if object.health <= 0:
+                        self.room.grid[object.grid_idx[0],
+                                       object.grid_idx[1]] = 0
+                        object.remove_from_sprite_lists()
+                if object.object_type == 1:  # Barrel object
+                    object.health -= bullet.damage
+                    if object.health <= 0:
+                        self.set_explosion(object.position)
+                        self.room.grid[object.grid_idx[0],
+                                       object.grid_idx[1]] = 0
+                        object.remove_from_sprite_lists()
+
+            if len(hit_list) > 0:
+                bullet.remove_from_sprite_lists()
+
+             # check hit with room walls
+            hit_list = arcade.check_for_collision_with_list(
+                bullet, self.wall_list)
+
+            if len(hit_list) > 0:
+                bullet.remove_from_sprite_lists()
+
+            if bullet.life_span <= 0:
+                bullet.remove_from_sprite_lists()
+
     def remove_enemy(self, enemy: character.Character) -> None:
-        enemy.physics_engines.clear() # to avoid key error
+        enemy.physics_engines.clear()  # to avoid key error
         for part in enemy.parts:
             self.enemy_sprite_list.remove(part)
         self.physics_engine.remove_sprite(enemy)
         enemy.parts.clear()
         enemy.remove_from_sprite_lists()
+
+        # Update score
+        self.score += enemy.health_max * self.multiplier
+        self.score_text.text = "Score: " + str(self.score)
+
+        if self.last_kill_time == 0:
+            self.last_kill_time = self.total_time
+            return
+
+        # Update score multiplier
+        if self.total_time - self.last_kill_time < 1.0:
+            self.multiplier = min(9, self.multiplier + 1)
+
+        if self.multiplier > 1:
+            self.multiplier_text.text = "x " + str(self.multiplier)
+            self.multiplier_text.font_size = 30 + self.multiplier
+            if self.multiplier < 4:
+                self.multiplier_text.color = utils.Color.MUL_GREEN
+            elif self.multiplier >= 4 and self.multiplier < 6:
+                self.multiplier_text.color = utils.Color.MUL_YELLOW
+            elif self.multiplier >= 6 and self.multiplier < 8:
+                self.multiplier_text.color = utils.Color.MUL_ORANGE
+            else:
+                self.multiplier_text.color = utils.Color.MUL_RED
+
+        self.last_kill_time = self.total_time
 
     def set_explosion(self, position: arcade.Point) -> None:
         for _ in range(24):
@@ -1321,22 +1400,38 @@ class GameView(FadingView):
         seconds = int(self.total_time) % 60
         seconds_100s = int((self.total_time - seconds) * 100)
         if seconds == 0:
-            self.round_text = "3"
+            self.round_text.text = "3"
         if seconds == 1:
-            self.round_text = "2"
+            self.round_text.text = "2"
         if seconds == 2:
-            self.round_text = "1"
+            self.round_text.text = "1"
         if seconds == 3:
-            self.round_text = "Start !!!"
+            self.round_text.text = "Start !!!"
         if self.total_time > 3.5 and self.total_time < 4:
-            self.round_text = "Round: 1"
+            self.round_text.text = "Round: 1"
+            self.round = 1
 
         # Score multiplier
+        if self.total_time - self.last_kill_time > 1.0 and self.multiplier > 1:
+            self.multiplier = 1
+            self.multiplier_text.text = ""
+            self.multiplier_text.font_size = 30
+            self.multiplier_text.color = utils.Color.MUL_GREEN
 
+        if self.total_time - self.last_kill_time < 1.0:
+            if seconds_100s % 3 == 0:
+                self.multiplier_text.font_size -= 1
+
+        self.spawn_enemy()
+        self.enemy_white_list.update()
+        self.enemy_red_list.update()
+
+    def spawn_enemy(self) -> None:
         # Spawn enemy
-        if len(self.enemy_white_list) == 0 or seconds_100s == 0:
+        if len(self.enemy_white_list) == 0:
             for pos in self.room.spawn_pos:
-                enemy = character.EnemyWhite(pos.x, pos.y, self.physics_engine, self.player)
+                enemy = character.EnemyWhite(
+                    pos.x, pos.y, self.physics_engine, self.player)
                 self.enemy_white_list.append(enemy)
                 self.enemy_sprite_list.extend(enemy.parts)
                 self.physics_engine.add_sprite(enemy,
@@ -1345,7 +1440,18 @@ class GameView(FadingView):
                                                damping=0.001,
                                                collision_type="enemy")
 
-        self.enemy_white_list.update()
+        # if len(self.enemy_red_list) == 0:
+        #     for pos in self.room.spawn_pos:
+        #         enemy = character.EnemyRed(
+        #             pos.x, pos.y, self.physics_engine, self.player)
+        #         self.enemy_red_list.append(enemy)
+        #         self.enemy_sprite_list.extend(enemy.parts)
+        #         self.physics_engine.add_sprite(enemy,
+        #                                        friction=0,
+        #                                        moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+        #                                        damping=0.001,
+        #                                        collision_type="enemy")
+        pass
 
 
 class GameOverView(arcade.View):
