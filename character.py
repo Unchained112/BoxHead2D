@@ -503,3 +503,46 @@ class EnemyBigMouth(Character):
         bullets.append(bullet_up)
         bullets.append(bullet_down)
         return bullets
+
+
+class EnemyCrash(Character):
+    """EnemyCrash class."""
+
+    def __init__(self, x: float = 0, y: float = 0,
+                 physics_engine: arcade.PymunkPhysicsEngine = None,
+                 player: Player = None) -> None:
+        super().__init__(x, y, physics_engine)
+        self.speed = 1000
+        self.health_max = int(150)
+        self.is_walking = True
+        self.last_force = Vec2(0, 0)
+        self.hit_damage = int(40)
+        self.body.texture = arcade.load_texture("graphics/Crash.png")
+        self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
+        self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
+        self.player = player
+
+    def update(self) -> None:
+        super().update()
+        current_pos = Vec2(self.center_x, self.center_y)
+        player_pos = Vec2(self.player.center_x, self.player.center_y)
+        force = player_pos - current_pos
+        tmp = Vec2(0, 0)
+
+        # TODO: Add some randomization
+
+        if self.last_force.distance(force) < 0.1:
+            if abs(self.last_force.x - force.x) < 0.1:
+                tmp.x = self.l_or_r
+            if abs(self.last_force.y - force.y) < 0.1:
+                tmp.y = self.u_or_d
+            force = tmp.scale(2 * self.speed)  # get rid of the barrier
+        else:
+            self.last_force = force
+            force = force.normalize().scale(self.speed)
+
+        self.physics_engines[0].apply_force(self, (force.x, force.y))
+
+    def dash(self) -> None:
+        pass
+
