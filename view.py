@@ -1099,6 +1099,12 @@ class GameView(FadingView):
         self.cur_weapon_sprite.center_y = self.h - 120
         self.last_weapon_sprite.center_y = self.h - 120
         self.next_weapon_sprite.center_y = self.h - 120
+        self.round_text.x = self.w / 2
+        self.round_text.y = self.h - 50
+        self.multiplier_text.x = self.w - 200
+        self.multiplier_text.y = self.h - 140
+        self.score_text.x = self.w - 240
+        self.score_text.y = self.h - 50
 
     def draw_ui(self) -> None:
         # Health
@@ -1273,6 +1279,7 @@ class GameView(FadingView):
                 bullet.remove_from_sprite_lists()
 
     def update_enemy_attack(self) -> None:
+        # Enemy White
         for enemy in self.enemy_white_list:
             if arcade.check_for_collision(enemy, self.player):
                 self.player.health = max(
@@ -1281,6 +1288,7 @@ class GameView(FadingView):
                 self.physics_engine.apply_force(self.player, (push.x, push.y))
                 self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
 
+        # Enemy Red
         for enemy in self.enemy_red_list:
             if arcade.check_for_collision(enemy, self.player):
                 self.player.health = max(
@@ -1288,19 +1296,15 @@ class GameView(FadingView):
                 push = enemy.last_force.normalize().scale(utils.Utils.ENEMY_FORCE)
                 self.physics_engine.apply_force(self.player, (push.x, push.y))
                 self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
-
             if enemy.is_walking == False:
                 if enemy.cd == enemy.cd_max:
                     enemy.cd = 0
-
                 if enemy.cd == 0:
                     bullet = enemy.attack()
-                    bullet.change_x = bullet.aim.x
-                    bullet.change_y = bullet.aim.y
                     self.enemy_bullet_list.append(bullet)
-
             enemy.cd = min(enemy.cd + 1, enemy.cd_max)
 
+        # Enemy Crack
         for enemy in self.enemy_crack_list:
             if arcade.check_for_collision(enemy, self.player):
                 self.player.health = max(
@@ -1308,6 +1312,22 @@ class GameView(FadingView):
                 push = enemy.last_force.normalize().scale(utils.Utils.ENEMY_FORCE)
                 self.physics_engine.apply_force(self.player, (push.x, push.y))
                 self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
+
+        # Enemy Big Mouth
+        for enemy in self.enemy_big_mouth_list:
+            if arcade.check_for_collision(enemy, self.player):
+                self.player.health = max(
+                    self.player.health - enemy.hit_damage, 0)
+                push = enemy.last_force.normalize().scale(utils.Utils.ENEMY_FORCE)
+                self.physics_engine.apply_force(self.player, (push.x, push.y))
+                self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
+            if enemy.is_walking == False:
+                if enemy.cd == enemy.cd_max:
+                    enemy.cd = 0
+                if enemy.cd == 0:
+                    bullets = enemy.attack()
+                    self.enemy_bullet_list.extend(bullets)
+            enemy.cd = min(enemy.cd + 1, enemy.cd_max)
 
     def process_enemy_bullet(self) -> None:
         self.enemy_bullet_list.update()
@@ -1391,7 +1411,7 @@ class GameView(FadingView):
         self.last_kill_time = self.total_time
 
     def set_explosion(self, position: arcade.Point) -> None:
-        for _ in range(24):
+        for _ in range(12):
             particle = effect.Particle(self.explosions_list)
             particle.position = position
             self.explosions_list.append(particle)
@@ -1410,6 +1430,12 @@ class GameView(FadingView):
 
         self.shake_camera()
         self.window.play_explosion_sound()
+
+        # Set explosion traces
+        for _ in range(20):
+            blood = effect.ExplosionTrace()
+            blood.position = position
+            self.blood_list.append(blood)
 
     def set_blood(self, position: arcade.Point) -> None:
         for _ in range(12):
@@ -1454,6 +1480,7 @@ class GameView(FadingView):
 
     def spawn_enemy(self) -> None:
         # Spawn enemy
+        # Enemy white
         # if len(self.enemy_white_list) == 0:
         #     for pos in self.room.spawn_pos:
         #         enemy = character.EnemyWhite(
@@ -1466,6 +1493,7 @@ class GameView(FadingView):
         #                                        damping=0.001,
         #                                        collision_type="enemy")
 
+        # Enemy Red
         # if len(self.enemy_red_list) == 0:
         #     for pos in self.room.spawn_pos:
         #         enemy = character.EnemyRed(
@@ -1478,11 +1506,27 @@ class GameView(FadingView):
         #                                        damping=0.001,
         #                                        collision_type="enemy")
 
-        if len(self.enemy_crack_list) == 0:
+        # Enemy Crack
+        # if len(self.enemy_crack_list) == 0:
+        #     for _ in range(0, 16):
+        #         pos_x = random.randrange(60, self.room.width - 60)
+        #         pos_y = random.randrange(60, self.room.height - 60)
+        #         enemy = character.EnemyCrack(
+        #             pos_x, pos_y, self.physics_engine, self.player)
+        #         self.enemy_crack_list.append(enemy)
+        #         self.enemy_sprite_list.extend(enemy.parts)
+        #         self.physics_engine.add_sprite(enemy,
+        #                                        friction=0,
+        #                                        moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+        #                                        damping=0.001,
+        #                                        collision_type="enemy")
+
+        # Enemy Big Mouth
+        if len(self.enemy_big_mouth_list) == 0:
             for pos in self.room.spawn_pos:
-                enemy = character.EnemyCrack(
+                enemy = character.EnemyBigMouth(
                     pos.x, pos.y, self.physics_engine, self.player)
-                self.enemy_crack_list.append(enemy)
+                self.enemy_big_mouth_list.append(enemy)
                 self.enemy_sprite_list.extend(enemy.parts)
                 self.physics_engine.add_sprite(enemy,
                                                friction=0,

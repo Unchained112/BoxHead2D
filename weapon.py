@@ -175,7 +175,7 @@ class Weapon(arcade.Sprite):
         """Get the bullet list shot by the weapon."""
         bullets = arcade.SpriteList()
         bullet = self.bullet()
-        bullet.center_x = self.center_x
+        bullet.center_x = self.center_x - 10
         bullet.center_y = self.center_y
         bullet.speed = self.bullet_speed
         bullet.aim = self.aim_pos.normalize().scale(bullet.speed)
@@ -203,7 +203,7 @@ class Shotgun(Weapon):
         for angle in [-0.05, 0, 0.05]:
             bullet = self.bullet()
             bullet.life_span = 10
-            bullet.center_x = self.center_x
+            bullet.center_x = self.center_x - 10
             bullet.center_y = self.center_y
             bullet.speed = self.bullet_speed
             bullet.aim = self.aim_pos.rotate(angle)
@@ -228,7 +228,7 @@ class Uzi(Weapon):
         bullets = arcade.SpriteList()
         bullet = self.bullet()
         bullet.life_span = 25
-        bullet.center_x = self.center_x
+        bullet.center_x = self.center_x - 10
         bullet.center_y = self.center_y
         bullet.speed = self.bullet_speed
         bullet.aim = self.aim_pos.normalize().scale(bullet.speed)
@@ -252,7 +252,7 @@ class Rocket(Weapon):
         bullets = arcade.SpriteList()
         bullet = self.bullet()
         bullet.life_span = 15
-        bullet.center_x = self.center_x
+        bullet.center_x = self.center_x - 10
         bullet.center_y = self.center_y
         bullet.speed = self.bullet_speed
         bullet.aim = self.aim_pos.normalize().scale(bullet.speed)

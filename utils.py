@@ -37,7 +37,9 @@ class Utils:
     @staticmethod
     def get_sin(v: Vec2) -> float:
         """Get sine value of a given vector."""
-        return v.y / v.distance(Vec2(0, 0))
+        d = v.distance(Vec2(0, 0))
+        d = 0.001 if d == 0 else d
+        return v.y / d
 
     @staticmethod
     def round_to_multiple(number: int, multiple: int) -> int:

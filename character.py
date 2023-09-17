@@ -331,7 +331,7 @@ class EnemyRed(Character):
                  player: Player = None) -> None:
         super().__init__(x, y, physics_engine)
         self.health = int(200)
-        self.health_max = int(220)
+        self.health_max = int(200)
         self.is_walking = True
         self.hit_damage = int(20)
         self.last_force = Vec2(0, 0)
@@ -382,6 +382,8 @@ class EnemyRed(Character):
         bullet.speed = bullet_speed
         bullet.aim = aim_pos.normalize().scale(bullet.speed)
         bullet.damage = damage
+        bullet.change_x = bullet.aim.x
+        bullet.change_y = bullet.aim.y
         return bullet
 
 
@@ -396,7 +398,7 @@ class EnemyCrack(Character):
         self.health_max = int(150)
         self.is_walking = True
         self.last_force = Vec2(0, 0)
-        self.hit_damage = int(30)
+        self.hit_damage = int(40)
         self.body.texture = arcade.load_texture("graphics/Crack.png")
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
         self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
@@ -422,3 +424,82 @@ class EnemyCrack(Character):
             force = force.normalize().scale(self.speed)
 
         self.physics_engines[0].apply_force(self, (force.x, force.y))
+
+
+class EnemyBigMouth(Character):
+    """Enemy Big Mouth class."""
+
+    def __init__(self, x: float = 0, y: float = 0,
+                 physics_engine: arcade.PymunkPhysicsEngine = None,
+                 player: Player = None) -> None:
+        super().__init__(x, y, physics_engine)
+        self.health = int(150)
+        self.health_max = int(150)
+        self.is_walking = True
+        self.hit_damage = int(20)
+        self.last_force = Vec2(0, 0)
+        self.shoot_range = 500
+        self.cd_max = int(50)
+        self.bullet = weapon.FireBall
+        self.body.texture = arcade.load_texture("graphics/BigMouth.png")
+        self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
+        self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
+        self.player = player
+
+    def update(self) -> None:
+        super().update()
+        current_pos = Vec2(self.center_x, self.center_y)
+        player_pos = Vec2(self.player.center_x, self.player.center_y)
+        force = player_pos - current_pos
+        tmp = Vec2(0, 0)
+
+        # TODO: Add some randomization
+
+        if current_pos.distance(player_pos) < self.shoot_range:
+            self.is_walking = False
+            return
+        else:
+            self.is_walking = True
+
+        if self.last_force.distance(force) < 0.1:
+            if abs(self.last_force.x - force.x) < 0.1:
+                tmp.x = self.l_or_r
+            if abs(self.last_force.y - force.y) < 0.1:
+                tmp.y = self.u_or_d
+            force = tmp.scale(2 * self.speed)  # get rid of the barrier
+        else:
+            self.last_force = force
+            force = force.normalize().scale(self.speed)
+
+        self.physics_engines[0].apply_force(self, (force.x, force.y))
+
+    def attack(self) -> arcade.SpriteList():
+        bullets = arcade.SpriteList()
+        bullet_speed = 7
+        damage = 50
+        aim_pos = Vec2(self.player.center_x - self.center_x,
+                       self.player.center_y - self.center_y)
+
+        bullet_up = self.bullet()
+        bullet_up.life_span = int(120)
+        bullet_up.center_x = self.center_x
+        bullet_up.center_y = self.center_y + 10
+        bullet_up.speed = bullet_speed
+        bullet_up.damage = damage
+        bullet_up.aim = aim_pos.normalize().scale(bullet_up.speed)
+        bullet_up.change_x = bullet_up.aim.x
+        bullet_up.change_y = bullet_up.aim.y
+
+        bullet_down = self.bullet()
+        bullet_down.life_span = int(120)
+        bullet_down.center_x = self.center_x
+        bullet_down.center_y = self.center_y - 10
+        bullet_down.speed = bullet_speed
+        bullet_down.damage = damage
+        bullet_down.aim = bullet_up.aim.rotate(-0.05)
+        bullet_down.change_x = bullet_down.aim.x
+        bullet_down.change_y = bullet_down.aim.y
+
+        bullets.append(bullet_up)
+        bullets.append(bullet_down)
+        return bullets

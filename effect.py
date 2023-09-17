@@ -108,3 +108,23 @@ class Blood(arcade.SpriteSolidColor):
             self.alpha = self.my_alpha
             self.center_x += self.change_x
             self.center_y += self.change_y
+
+
+class ExplosionTrace(arcade.SpriteSolidColor):
+    """Explosion traces particle. """
+
+    def __init__(self) -> None:
+        super().__init__(random.randint(6, 12), random.randint(6, 12), utils.Color.BLACK)
+        self.my_alpha = 255
+        # Set direction/speed
+        speed = random.random() * 12
+        direction = random.randrange(360)
+        self.change_x = math.sin(math.radians(direction)) * speed
+        self.change_y = math.cos(math.radians(direction)) * speed
+
+    def update(self):
+        if self.my_alpha > 200:  # alpha threshold
+            self.my_alpha -= 50  # blood particle fade rate
+            self.alpha = self.my_alpha
+            self.center_x += self.change_x
+            self.center_y += self.change_y
