@@ -11,12 +11,15 @@ Bullets
 class Bullet(arcade.Sprite):
     """Bullet base class."""
 
-    def __init__(self) -> None:
+    def __init__(self, filename="graphics/Bullet.png",
+                 width=6,
+                 height=6,
+                 scale=1) -> None:
         super().__init__(
-            filename="graphics/Bullet.png",
-            image_width=6,
-            image_height=6,
-            scale=1,
+            filename=filename,
+            image_width=width,
+            image_height=height,
+            scale=scale,
         )
         self.aim = Vec2(0, 0)
         self.speed = float(0)
@@ -36,12 +39,18 @@ class EnergyBullet(Bullet):
         self.texture = arcade.load_texture("graphics/EnergyBullet.png")
 
 
+class Missile(Bullet):
+    """Missile from the Rocket."""
+
+    def __init__(self) -> None:
+        super().__init__("graphics/Missile.png", 15, 15)
+
+
 class FireBall(Bullet):
     """FireBall class for enemy red."""
 
     def __init__(self) -> None:
-        super().__init__()
-        self.texture = arcade.load_texture("graphics/FireBall.png")
+        super().__init__("graphics/FireBall.png", 20, 20)
         self.life_span = int(60)
 
 
@@ -232,6 +241,24 @@ class Rocket(Weapon):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__("graphics/Rocket.png", x, y)
+        self.cd_max = int(30)  # 1/6 s
+        self.cost = 20
+        self.damage = 0
+        self.bullet = Missile
+        self.bullet_speed = 32
+        self.sound = arcade.Sound("audio/wpn_fire_rocket.wav")
+
+    def get_bullet(self) -> arcade.SpriteList:
+        bullets = arcade.SpriteList()
+        bullet = self.bullet()
+        bullet.life_span = 15
+        bullet.center_x = self.center_x
+        bullet.center_y = self.center_y
+        bullet.speed = self.bullet_speed
+        bullet.aim = self.aim_pos.normalize().scale(bullet.speed)
+        bullet.damage = self.damage
+        bullets.append(bullet)
+        return bullets
 
 
 class PlacedWall(Weapon):

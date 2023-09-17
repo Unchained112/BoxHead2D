@@ -808,6 +808,10 @@ class GameView(FadingView):
         self.player_bullet_list = None
         self.enemy_white_list = None
         self.enemy_red_list = None
+        self.enemy_crack_list = None
+        self.enemy_big_mouth_list = None
+        self.enemy_crash_list = None
+        self.enemy_tank_list = None
         self.enemy_sprite_list = None
         self.enemy_bullet_list = None
         self.explosions_list = None
@@ -892,6 +896,10 @@ class GameView(FadingView):
         # GameObject lists
         self.wall_list = arcade.SpriteList()
         self.enemy_white_list = arcade.SpriteList()
+        self.enemy_crack_list = arcade.SpriteList()
+        self.enemy_big_mouth_list = arcade.SpriteList()
+        self.enemy_crash_list = arcade.SpriteList()
+        self.enemy_tank_list = arcade.SpriteList()
         self.enemy_red_list = arcade.SpriteList()
         self.player_bullet_list = arcade.SpriteList()
         self.player_object_list = arcade.SpriteList()
@@ -1193,11 +1201,21 @@ class GameView(FadingView):
             # Check hit with enemy
             hit_list = arcade.check_for_collision_with_list(
                 bullet, self.enemy_white_list)
-
             hit_list_red = arcade.check_for_collision_with_list(
                 bullet, self.enemy_red_list)
-
+            hit_list_crack = arcade.check_for_collision_with_list(
+                bullet, self.enemy_crack_list)
+            hit_list_big_mouth = arcade.check_for_collision_with_list(
+                bullet, self.enemy_big_mouth_list)
+            hit_list_crash = arcade.check_for_collision_with_list(
+                bullet, self.enemy_crash_list)
+            hit_list_tank = arcade.check_for_collision_with_list(
+                bullet, self.enemy_tank_list)
             hit_list.extend(hit_list_red)
+            hit_list.extend(hit_list_crack)
+            hit_list.extend(hit_list_big_mouth)
+            hit_list.extend(hit_list_crash)
+            hit_list.extend(hit_list_tank)
 
             for enemy in hit_list:
                 enemy.health -= bullet.damage
@@ -1208,11 +1226,13 @@ class GameView(FadingView):
                 enemy.get_damage_len = utils.Utils.GET_DAMAGE_LEN
                 if enemy.health <= 0:
                     self.player.health += self.player.kill_recover
-                    
                     self.remove_enemy(enemy)
 
             if len(hit_list) > 0:
+                if type(bullet) == weapon.Missile:
+                    self.set_explosion(bullet.position)
                 bullet.remove_from_sprite_lists()
+                continue
 
             # Check hit with player objects
             hit_list = arcade.check_for_collision_with_list(
@@ -1234,14 +1254,20 @@ class GameView(FadingView):
                         object.remove_from_sprite_lists()
 
             if len(hit_list) > 0:
+                if type(bullet) == weapon.Missile:
+                    self.set_explosion(bullet.position)
                 bullet.remove_from_sprite_lists()
+                continue
 
             # Check hit with room walls
             hit_list = arcade.check_for_collision_with_list(
                 bullet, self.wall_list)
 
             if len(hit_list) > 0:
+                if type(bullet) == weapon.Missile:
+                    self.set_explosion(bullet.position)
                 bullet.remove_from_sprite_lists()
+                continue
 
             if bullet.life_span <= 0:
                 bullet.remove_from_sprite_lists()
@@ -1275,23 +1301,19 @@ class GameView(FadingView):
 
             enemy.cd = min(enemy.cd + 1, enemy.cd_max)
 
+        for enemy in self.enemy_crack_list:
+            if arcade.check_for_collision(enemy, self.player):
+                self.player.health = max(
+                    self.player.health - enemy.hit_damage, 0)
+                push = enemy.last_force.normalize().scale(utils.Utils.ENEMY_FORCE)
+                self.physics_engine.apply_force(self.player, (push.x, push.y))
+                self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
+
     def process_enemy_bullet(self) -> None:
         self.enemy_bullet_list.update()
 
         for bullet in self.enemy_bullet_list:
             bullet.life_span -= 1
-
-            # TODO: decide whether to allow enemy shoot at each other
-            # hit_list = arcade.check_for_collision_with_list(
-            #     bullet, self.enemy_white_list)
-
-            # for enemy in hit_list:
-            #     enemy.health -= bullet.damage
-            #     self.physics_engine.apply_force(
-            #         enemy, (bullet.aim.x * BULLET_FORCE, bullet.aim.y * BULLET_FORCE))
-            #     enemy.get_damage_len = GET_DAMAGE_LEN
-            #     if enemy.health <= 0:
-            #         enemy.remove_from_sprite_lists()
 
             # check hit with player
             if arcade.check_for_collision(bullet, self.player):
@@ -1425,20 +1447,24 @@ class GameView(FadingView):
         self.spawn_enemy()
         self.enemy_white_list.update()
         self.enemy_red_list.update()
+        self.enemy_crack_list.update()
+        self.enemy_big_mouth_list.update()
+        self.enemy_crash_list.update()
+        self.enemy_tank_list.update()
 
     def spawn_enemy(self) -> None:
         # Spawn enemy
-        if len(self.enemy_white_list) == 0:
-            for pos in self.room.spawn_pos:
-                enemy = character.EnemyWhite(
-                    pos.x, pos.y, self.physics_engine, self.player)
-                self.enemy_white_list.append(enemy)
-                self.enemy_sprite_list.extend(enemy.parts)
-                self.physics_engine.add_sprite(enemy,
-                                               friction=0,
-                                               moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
-                                               damping=0.001,
-                                               collision_type="enemy")
+        # if len(self.enemy_white_list) == 0:
+        #     for pos in self.room.spawn_pos:
+        #         enemy = character.EnemyWhite(
+        #             pos.x, pos.y, self.physics_engine, self.player)
+        #         self.enemy_white_list.append(enemy)
+        #         self.enemy_sprite_list.extend(enemy.parts)
+        #         self.physics_engine.add_sprite(enemy,
+        #                                        friction=0,
+        #                                        moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+        #                                        damping=0.001,
+        #                                        collision_type="enemy")
 
         # if len(self.enemy_red_list) == 0:
         #     for pos in self.room.spawn_pos:
@@ -1451,7 +1477,18 @@ class GameView(FadingView):
         #                                        moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
         #                                        damping=0.001,
         #                                        collision_type="enemy")
-        pass
+
+        if len(self.enemy_crack_list) == 0:
+            for pos in self.room.spawn_pos:
+                enemy = character.EnemyCrack(
+                    pos.x, pos.y, self.physics_engine, self.player)
+                self.enemy_crack_list.append(enemy)
+                self.enemy_sprite_list.extend(enemy.parts)
+                self.physics_engine.add_sprite(enemy,
+                                               friction=0,
+                                               moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+                                               damping=0.001,
+                                               collision_type="enemy")
 
 
 class GameOverView(arcade.View):
