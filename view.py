@@ -1338,6 +1338,21 @@ class GameView(FadingView):
             if enemy.is_walking == False:
                 if enemy.cd == enemy.cd_max:
                     enemy.cd = 0
+                if enemy.cd < enemy.cd_max * 2 / 3:
+                    enemy.dash()
+            enemy.cd = min(enemy.cd + 1, enemy.cd_max)
+        
+        # Enemy Tank
+        for enemy in self.enemy_tank_list:
+            if arcade.check_for_collision(enemy, self.player):
+                self.player.health = max(
+                    self.player.health - enemy.hit_damage, 0)
+                push = enemy.last_force.normalize().scale(utils.Utils.ENEMY_FORCE)
+                self.physics_engine.apply_force(self.player, (push.x, push.y))
+                self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
+            if enemy.is_walking == False:
+                if enemy.cd == enemy.cd_max:
+                    enemy.cd = 0
                 if enemy.cd < enemy.cd_max / 2:
                     enemy.dash()
             enemy.cd = min(enemy.cd + 1, enemy.cd_max)
@@ -1557,9 +1572,21 @@ class GameView(FadingView):
                 self.physics_engine.add_sprite(enemy,
                                                friction=0,
                                                moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
-                                               damping=0.001,
+                                               damping=0.05,
                                                collision_type="enemy")
 
+        # Enemy Tank
+        if len(self.enemy_tank_list) == 0:
+            for pos in self.room.spawn_pos:
+                enemy = character.EnemyTank(
+                    pos.x, pos.y, self.physics_engine, self.player)
+                self.enemy_tank_list.append(enemy)
+                self.enemy_sprite_list.extend(enemy.parts)
+                self.physics_engine.add_sprite(enemy,
+                                               friction=0,
+                                               moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+                                               damping=0.001,
+                                               collision_type="enemy")
 
 
 class GameOverView(arcade.View):

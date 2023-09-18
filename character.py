@@ -330,8 +330,8 @@ class EnemyRed(Character):
                  physics_engine: arcade.PymunkPhysicsEngine = None,
                  player: Player = None) -> None:
         super().__init__(x, y, physics_engine)
-        self.health = int(200)
-        self.health_max = int(200)
+        self.health = int(300)
+        self.health_max = int(300)
         self.is_walking = True
         self.hit_damage = int(20)
         self.last_force = Vec2(0, 0)
@@ -395,7 +395,8 @@ class EnemyCrack(Character):
                  player: Player = None) -> None:
         super().__init__(x, y, physics_engine)
         self.speed = 1000
-        self.health_max = int(150)
+        self.health = int(200)
+        self.health_max = int(200)
         self.is_walking = True
         self.last_force = Vec2(0, 0)
         self.hit_damage = int(40)
@@ -513,7 +514,8 @@ class EnemyCrash(Character):
                  player: Player = None) -> None:
         super().__init__(x, y, physics_engine)
         self.speed = 1000
-        self.health_max = int(150)
+        self.health = int(100)
+        self.health_max = int(100)
         self.is_walking = True
         self.last_force = Vec2(0, 0)
         self.hit_damage = int(40)
@@ -557,3 +559,56 @@ class EnemyCrash(Character):
         force = self.dash_force.scale(3)
         self.physics_engines[0].apply_force(self, (force.x, force.y))
 
+
+class EnemyTank(Character):
+    """EnemyTank class."""
+
+    def __init__(self, x: float = 0, y: float = 0,
+                 physics_engine: arcade.PymunkPhysicsEngine = None,
+                 player: Player = None) -> None:
+        super().__init__(x, y, physics_engine)
+        self.speed = 600
+        self.health = int(500)
+        self.health_max = int(500)
+        self.is_walking = True
+        self.last_force = Vec2(0, 0)
+        self.hit_damage = int(40)
+        self.body.texture = arcade.load_texture("graphics/Tank.png")
+        self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
+        self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
+        self.player = player
+        self.cd_max = int(120)
+        self.shoot_range = 200
+        self.dash_force = Vec2(0, 0)
+
+    def update(self) -> None:
+        super().update()
+        current_pos = Vec2(self.center_x, self.center_y)
+        player_pos = Vec2(self.player.center_x, self.player.center_y)
+        force = player_pos - current_pos
+        tmp = Vec2(0, 0)
+
+        # TODO: Add some randomization
+
+        if current_pos.distance(player_pos) < self.shoot_range:
+            self.is_walking = False
+            return
+        else:
+            self.is_walking = True
+
+        if self.last_force.distance(force) < 0.1:
+            if abs(self.last_force.x - force.x) < 0.1:
+                tmp.x = self.l_or_r
+            if abs(self.last_force.y - force.y) < 0.1:
+                tmp.y = self.u_or_d
+            force = tmp.scale(2 * self.speed)  # get rid of the barrier
+        else:
+            self.last_force = force
+            force = force.normalize().scale(self.speed)
+            self.dash_force = force
+
+        self.physics_engines[0].apply_force(self, (force.x, force.y))
+
+    def dash(self) -> None:
+        force = self.dash_force.scale(5)
+        self.physics_engines[0].apply_force(self, (force.x, force.y))
