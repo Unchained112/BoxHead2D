@@ -556,7 +556,7 @@ class EnemyCrash(Character):
         self.physics_engines[0].apply_force(self, (force.x, force.y))
 
     def dash(self) -> None:
-        force = self.dash_force.scale(3)
+        force = self.dash_force.scale(2)
         self.physics_engines[0].apply_force(self, (force.x, force.y))
 
 

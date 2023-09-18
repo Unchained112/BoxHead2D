@@ -115,6 +115,16 @@ class BarrelObject(Object):
         self.object_type = 1  # Barrel object
 
 
+class MineObject(Object):
+    """Mine object class (placed by the player). """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.texture = arcade.load_texture("graphics/Mine.png")
+        self.health = 0
+        self.object_type = 2  # Mine object
+
+
 """
 Weapons
 """
@@ -238,6 +248,7 @@ class Uzi(Weapon):
 
 
 class Rocket(Weapon):
+    """Rocket class."""
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__("graphics/Rocket.png", x, y)
@@ -262,6 +273,7 @@ class Rocket(Weapon):
 
 
 class PlacedWall(Weapon):
+    """Wall class (as a weapon)."""
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__()
@@ -315,4 +327,33 @@ class Barrel(Weapon):
 
     def get_object(self) -> arcade.Sprite:
         barrel = BarrelObject()
+        return barrel
+
+
+class Mine(Weapon):
+    """Mine class (as a weapon)."""
+
+    def __init__(self, x: float = 0, y: float = 0) -> None:
+        super().__init__()
+        self.is_gun = False
+        self.damage = 30
+        self.cd_max = int(0)  # 1/6 s
+        self.pos = Vec2(x, y)
+        self.aim_pos = Vec2(0, 0)
+        self.cost = 20
+        self.is_right = True
+        self.texture_list = [
+            arcade.load_texture("graphics/Mine.png"),
+        ]
+        self.sound = arcade.Sound("audio/physics_place_object.wav")
+
+    def update(self) -> None:
+        self.center_x = self.pos.x
+        self.center_y = self.pos.y
+
+    def draw(self) -> None:
+        pass
+
+    def get_object(self) -> arcade.Sprite:
+        barrel = MineObject()
         return barrel

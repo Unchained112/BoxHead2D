@@ -902,6 +902,7 @@ class GameView(FadingView):
         self.enemy_red_list = arcade.SpriteList()
         self.player_bullet_list = arcade.SpriteList()
         self.player_object_list = arcade.SpriteList()
+        self.player_mine_list = arcade.SpriteList()
         self.enemy_bullet_list = arcade.SpriteList()
         self.explosions_list = arcade.SpriteList()
         self.blood_list = arcade.SpriteList()
@@ -946,6 +947,8 @@ class GameView(FadingView):
         self.player.add_weapon(placed_wall)
         barrel = weapon.Barrel()
         self.player.add_weapon(barrel)
+        mine = weapon.Mine()
+        self.player.add_weapon(mine)
 
     def on_draw(self) -> None:
         self.clear()
@@ -959,6 +962,7 @@ class GameView(FadingView):
 
         self.player_bullet_list.draw()
         self.player_object_list.draw()
+        self.player_mine_list.draw()
         self.enemy_bullet_list.draw()
         self.explosions_list.draw()
 
@@ -1181,11 +1185,14 @@ class GameView(FadingView):
                         object.center_y = grid_y * 30 + \
                             float(utils.Utils.HALF_WALL_SIZE)
                         object.grid_idx = (grid_x, grid_y)
-                        self.player_object_list.append(object)
-                        self.physics_engine.add_sprite(object,
-                                                       friction=0,
-                                                       collision_type="object",
-                                                       body_type=PymunkPhysicsEngine.STATIC)
+                        if object.object_type != 2:
+                            self.player_object_list.append(object)
+                            self.physics_engine.add_sprite(object,
+                                                           friction=0,
+                                                           collision_type="object",
+                                                           body_type=PymunkPhysicsEngine.STATIC)
+                        else:
+                            self.player_mine_list.append(object)
                         self.room.grid[grid_x, grid_y] = 1
                         self.player.current_weapon.play_sound(
                             self.window.effect_volume)
@@ -1198,28 +1205,23 @@ class GameView(FadingView):
     def process_player_bullet(self) -> None:
         self.player_bullet_list.update()
         self.player_object_list.update()
+        self.player_mine_list.update()
 
         for bullet in self.player_bullet_list:
             bullet.life_span -= 1
 
             # Check hit with enemy
-            hit_list = arcade.check_for_collision_with_list(
-                bullet, self.enemy_white_list)
-            hit_list_red = arcade.check_for_collision_with_list(
-                bullet, self.enemy_red_list)
-            hit_list_crack = arcade.check_for_collision_with_list(
-                bullet, self.enemy_crack_list)
-            hit_list_big_mouth = arcade.check_for_collision_with_list(
-                bullet, self.enemy_big_mouth_list)
-            hit_list_crash = arcade.check_for_collision_with_list(
-                bullet, self.enemy_crash_list)
-            hit_list_tank = arcade.check_for_collision_with_list(
-                bullet, self.enemy_tank_list)
-            hit_list.extend(hit_list_red)
-            hit_list.extend(hit_list_crack)
-            hit_list.extend(hit_list_big_mouth)
-            hit_list.extend(hit_list_crash)
-            hit_list.extend(hit_list_tank)
+            hit_list = arcade.check_for_collision_with_lists(
+                bullet,
+                [
+                    self.enemy_white_list,
+                    self.enemy_red_list,
+                    self.enemy_crack_list,
+                    self.enemy_big_mouth_list,
+                    self.enemy_crash_list,
+                    self.enemy_tank_list,
+                ],
+            )
 
             for enemy in hit_list:
                 enemy.health -= bullet.damage
@@ -1279,21 +1281,13 @@ class GameView(FadingView):
     def update_enemy_attack(self) -> None:
         # Enemy White
         for enemy in self.enemy_white_list:
-            if arcade.check_for_collision(enemy, self.player):
-                self.player.health = max(
-                    self.player.health - enemy.hit_damage, 0)
-                push = enemy.last_force.normalize().scale(utils.Utils.ENEMY_FORCE)
-                self.physics_engine.apply_force(self.player, (push.x, push.y))
-                self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
+            self.check_hit_player(enemy)
+            self.check_trigger_mine(enemy)
 
         # Enemy Red
         for enemy in self.enemy_red_list:
-            if arcade.check_for_collision(enemy, self.player):
-                self.player.health = max(
-                    self.player.health - enemy.hit_damage, 0)
-                push = enemy.last_force.normalize().scale(utils.Utils.ENEMY_FORCE)
-                self.physics_engine.apply_force(self.player, (push.x, push.y))
-                self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
+            self.check_hit_player(enemy)
+            self.check_trigger_mine(enemy)
             if enemy.is_walking == False:
                 if enemy.cd == enemy.cd_max:
                     enemy.cd = 0
@@ -1304,21 +1298,13 @@ class GameView(FadingView):
 
         # Enemy Crack
         for enemy in self.enemy_crack_list:
-            if arcade.check_for_collision(enemy, self.player):
-                self.player.health = max(
-                    self.player.health - enemy.hit_damage, 0)
-                push = enemy.last_force.normalize().scale(utils.Utils.ENEMY_FORCE)
-                self.physics_engine.apply_force(self.player, (push.x, push.y))
-                self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
+            self.check_hit_player(enemy)
+            self.check_trigger_mine(enemy)
 
         # Enemy Big Mouth
         for enemy in self.enemy_big_mouth_list:
-            if arcade.check_for_collision(enemy, self.player):
-                self.player.health = max(
-                    self.player.health - enemy.hit_damage, 0)
-                push = enemy.last_force.normalize().scale(utils.Utils.ENEMY_FORCE)
-                self.physics_engine.apply_force(self.player, (push.x, push.y))
-                self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
+            self.check_hit_player(enemy)
+            self.check_trigger_mine(enemy)
             if enemy.is_walking == False:
                 if enemy.cd == enemy.cd_max:
                     enemy.cd = 0
@@ -1329,31 +1315,23 @@ class GameView(FadingView):
 
         # Enemy Crash
         for enemy in self.enemy_crash_list:
-            if arcade.check_for_collision(enemy, self.player):
-                self.player.health = max(
-                    self.player.health - enemy.hit_damage, 0)
-                push = enemy.last_force.normalize().scale(utils.Utils.ENEMY_FORCE)
-                self.physics_engine.apply_force(self.player, (push.x, push.y))
-                self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
-            if enemy.is_walking == False:
-                if enemy.cd == enemy.cd_max:
-                    enemy.cd = 0
-                if enemy.cd < enemy.cd_max * 2 / 3:
-                    enemy.dash()
-            enemy.cd = min(enemy.cd + 1, enemy.cd_max)
-        
-        # Enemy Tank
-        for enemy in self.enemy_tank_list:
-            if arcade.check_for_collision(enemy, self.player):
-                self.player.health = max(
-                    self.player.health - enemy.hit_damage, 0)
-                push = enemy.last_force.normalize().scale(utils.Utils.ENEMY_FORCE)
-                self.physics_engine.apply_force(self.player, (push.x, push.y))
-                self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
+            self.check_hit_player(enemy)
+            self.check_trigger_mine(enemy)
             if enemy.is_walking == False:
                 if enemy.cd == enemy.cd_max:
                     enemy.cd = 0
                 if enemy.cd < enemy.cd_max / 2:
+                    enemy.dash()
+            enemy.cd = min(enemy.cd + 1, enemy.cd_max)
+
+        # Enemy Tank
+        for enemy in self.enemy_tank_list:
+            self.check_hit_player(enemy)
+            self.check_trigger_mine(enemy)
+            if enemy.is_walking == False:
+                if enemy.cd == enemy.cd_max:
+                    enemy.cd = 0
+                if enemy.cd < enemy.cd_max * 2 / 3:
                     enemy.dash()
             enemy.cd = min(enemy.cd + 1, enemy.cd_max)
 
@@ -1437,6 +1415,21 @@ class GameView(FadingView):
                 self.multiplier_text.color = utils.Color.MUL_RED
 
         self.last_kill_time = self.total_time
+
+    def check_hit_player(self, enemy: character.Character) -> None:
+        if arcade.check_for_collision(enemy, self.player):
+            self.player.health = max(
+                self.player.health - enemy.hit_damage, 0)
+            push = enemy.last_force.normalize().scale(utils.Utils.ENEMY_FORCE)
+            self.physics_engine.apply_force(self.player, (push.x, push.y))
+            self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
+
+    def check_trigger_mine(self, enemy: character.Character) -> None:
+        hit_list = arcade.check_for_collision_with_list(
+            enemy, self.player_mine_list)
+        for mine in hit_list:
+            self.set_explosion(mine.position)
+            mine.remove_from_sprite_lists()
 
     def set_explosion(self, position: arcade.Point) -> None:
         for _ in range(12):
