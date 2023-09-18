@@ -155,7 +155,7 @@ class Character(arcade.Sprite):
         self.get_damage_len -= 1
 
         if self.get_damage_len > 0:
-            self.damage_sprite.alpha = 120
+            self.damage_sprite.alpha = 150
         else:
             self.damage_sprite.alpha = 0
 
@@ -521,6 +521,9 @@ class EnemyCrash(Character):
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
         self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
+        self.cd_max = int(120)
+        self.shoot_range = 200
+        self.dash_force = Vec2(0, 0)
 
     def update(self) -> None:
         super().update()
@@ -531,6 +534,12 @@ class EnemyCrash(Character):
 
         # TODO: Add some randomization
 
+        if current_pos.distance(player_pos) < self.shoot_range:
+            self.is_walking = False
+            return
+        else:
+            self.is_walking = True
+
         if self.last_force.distance(force) < 0.1:
             if abs(self.last_force.x - force.x) < 0.1:
                 tmp.x = self.l_or_r
@@ -540,9 +549,11 @@ class EnemyCrash(Character):
         else:
             self.last_force = force
             force = force.normalize().scale(self.speed)
+            self.dash_force = force
 
         self.physics_engines[0].apply_force(self, (force.x, force.y))
 
     def dash(self) -> None:
-        pass
+        force = self.dash_force.scale(3)
+        self.physics_engines[0].apply_force(self, (force.x, force.y))
 

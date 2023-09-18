@@ -168,8 +168,7 @@ class StartView(FadingView):
             moment_of_inertia=PymunkPhysicsEngine.MOMENT_INF,
             damping=0.001,
             collision_type="player",
-            elasticity=0.1,
-            max_velocity=400,
+            elasticity=0.1
         )
 
         # Create the walls
@@ -927,8 +926,7 @@ class GameView(FadingView):
             moment_of_inertia=PymunkPhysicsEngine.MOMENT_INF,
             damping=0.001,
             collision_type="player",
-            elasticity=0.1,
-            max_velocity=400,
+            elasticity=0.1
         )
         self.physics_engine.add_sprite_list(
             self.room.walls,
@@ -1329,6 +1327,21 @@ class GameView(FadingView):
                     self.enemy_bullet_list.extend(bullets)
             enemy.cd = min(enemy.cd + 1, enemy.cd_max)
 
+        # Enemy Crash
+        for enemy in self.enemy_crash_list:
+            if arcade.check_for_collision(enemy, self.player):
+                self.player.health = max(
+                    self.player.health - enemy.hit_damage, 0)
+                push = enemy.last_force.normalize().scale(utils.Utils.ENEMY_FORCE)
+                self.physics_engine.apply_force(self.player, (push.x, push.y))
+                self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
+            if enemy.is_walking == False:
+                if enemy.cd == enemy.cd_max:
+                    enemy.cd = 0
+                if enemy.cd < enemy.cd_max / 2:
+                    enemy.dash()
+            enemy.cd = min(enemy.cd + 1, enemy.cd_max)
+
     def process_enemy_bullet(self) -> None:
         self.enemy_bullet_list.update()
 
@@ -1522,17 +1535,31 @@ class GameView(FadingView):
         #                                        collision_type="enemy")
 
         # Enemy Big Mouth
-        if len(self.enemy_big_mouth_list) == 0:
+        # if len(self.enemy_big_mouth_list) == 0:
+        #     for pos in self.room.spawn_pos:
+        #         enemy = character.EnemyBigMouth(
+        #             pos.x, pos.y, self.physics_engine, self.player)
+        #         self.enemy_big_mouth_list.append(enemy)
+        #         self.enemy_sprite_list.extend(enemy.parts)
+        #         self.physics_engine.add_sprite(enemy,
+        #                                        friction=0,
+        #                                        moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+        #                                        damping=0.001,
+        #                                        collision_type="enemy")
+
+        # Enemy Crash
+        if len(self.enemy_crash_list) == 0:
             for pos in self.room.spawn_pos:
-                enemy = character.EnemyBigMouth(
+                enemy = character.EnemyCrash(
                     pos.x, pos.y, self.physics_engine, self.player)
-                self.enemy_big_mouth_list.append(enemy)
+                self.enemy_crash_list.append(enemy)
                 self.enemy_sprite_list.extend(enemy.parts)
                 self.physics_engine.add_sprite(enemy,
                                                friction=0,
                                                moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
                                                damping=0.001,
                                                collision_type="enemy")
+
 
 
 class GameOverView(arcade.View):
