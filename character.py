@@ -568,8 +568,8 @@ class EnemyTank(Character):
                  player: Player = None) -> None:
         super().__init__(x, y, physics_engine)
         self.speed = 600
-        self.health = int(500)
-        self.health_max = int(500)
+        self.health = int(400)
+        self.health_max = int(400)
         self.is_walking = True
         self.last_force = Vec2(0, 0)
         self.hit_damage = int(40)

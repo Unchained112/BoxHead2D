@@ -956,13 +956,12 @@ class GameView(FadingView):
 
         self.room.draw_ground()
         self.blood_list.draw()
+        self.player_mine_list.draw()
         self.room.draw_walls()
         self.player.draw()
         self.enemy_sprite_list.draw()
-
         self.player_bullet_list.draw()
         self.player_object_list.draw()
-        self.player_mine_list.draw()
         self.enemy_bullet_list.draw()
         self.explosions_list.draw()
 
@@ -1434,6 +1433,8 @@ class GameView(FadingView):
         for mine in hit_list:
             self.set_explosion(mine.position)
             mine.remove_from_sprite_lists()
+            self.room.grid[mine.grid_idx[0],
+                           mine.grid_idx[1]] = 0
 
     def set_explosion(self, position: arcade.Point) -> None:
         for _ in range(12):
