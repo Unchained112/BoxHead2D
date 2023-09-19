@@ -1024,6 +1024,10 @@ class GameView(FadingView):
             self.window.option_view.setup(self)
             self.window.show_view(self.window.option_view)
 
+        # Buy item
+        if key == arcade.key.B:
+            pass
+
     def on_key_release(self, key, modifiers) -> None:
 
         if key == arcade.key.W:
@@ -1597,7 +1601,20 @@ class GameWinView(arcade.View):
 
 
 class ShopView(arcade.View):
-    """Game over view."""
+    """Shop view."""
 
     def __init__(self):
         super().__init__()
+        self.manager = None
+        self.last_view = None
+
+    def on_show_view(self) -> None:
+        arcade.set_background_color(utils.Color.GROUND_WHITE)
+        self.window.set_mouse_visible(True)
+
+    def setup(self, last_view) -> None:
+        self.last_view = last_view
+
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+        self.rest_box = arcade.gui.UIBoxLayout(vertical=False)

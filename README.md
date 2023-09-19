@@ -1,6 +1,6 @@
 # BoxHead2D
 
-A simple BoxHead game in 2D with [Python Arcade](https://api.arcade.academy/en/latest/index.html).
+A simple BoxHead Survivor game in 2D with [Python Arcade](https://api.arcade.academy/en/latest/index.html).
 
 ### Design Document
 
