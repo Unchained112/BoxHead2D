@@ -69,3 +69,17 @@ class Style:
         "border_color_pressed": Color.WHITE,  # also used when hovered
         "font_color_pressed": Color.BLACK,
     }
+
+    BUTTON_CN = {
+        "font_name": ("Dotted Songti Square"),
+        "font_size": 16,
+        "font_color": Color.WHITE,
+        "border_width": 2,
+        "border_color": Color.BLACK,
+        "bg_color": Color.DARK_GRAY,
+
+        # used if button is pressed
+        "bg_color_pressed": Color.LIGHT_GRAY,
+        "border_color_pressed": Color.WHITE,  # also used when hovered
+        "font_color_pressed": Color.BLACK,
+    }

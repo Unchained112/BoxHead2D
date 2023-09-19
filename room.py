@@ -29,7 +29,7 @@ class WallCorner(Wall):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
-        self.texture = arcade.load_texture("graphics/WallCorner.png")
+        self.texture = arcade.load_texture("graphics/room/WallCorner.png")
         self.shadow = arcade.Sprite(
             center_x=self.pos.x - 3,
             center_y=self.pos.y - 3,
@@ -48,7 +48,7 @@ class WallSideHorizontal(Wall):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
-        self.texture = arcade.load_texture("graphics/WallSide.png")
+        self.texture = arcade.load_texture("graphics/room/WallSide.png")
         self.shadow = arcade.Sprite(
             center_x=self.pos.x,
             center_y=self.pos.y - 3,
@@ -67,7 +67,7 @@ class WallSideVertical(Wall):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__(x, y)
-        self.texture = arcade.load_texture("graphics/WallSide.png")
+        self.texture = arcade.load_texture("graphics/room/WallSide.png")
         self.angle = -90
         self.shadow = arcade.Sprite(
             center_x=self.pos.x - 3,
@@ -150,7 +150,7 @@ class StartRoom(Room):
 class GameRoom0(Room):
     """Game room No. 0"""
 
-    layout_sprite = arcade.Sprite("graphics/GameRoom0.png")
+    layout_sprite = arcade.Sprite("graphics/room/GameRoom0.png")
 
     def __init__(self, width: float = 2100, height: float = 1200) -> None:
         super().__init__(width, height)
@@ -221,7 +221,7 @@ class GameRoom0(Room):
 class GameRoom1(Room):
     """Game room No. 1"""
 
-    layout_sprite = arcade.Sprite("graphics/GameRoom1.png")
+    layout_sprite = arcade.Sprite("graphics/room/GameRoom1.png")
 
     def __init__(self, width: float = 2100, height: float = 1200) -> None:
         super().__init__(width, height)

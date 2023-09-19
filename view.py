@@ -68,7 +68,7 @@ class DefaultView(FadingView):
         arcade.set_background_color(utils.Color.GROUND_WHITE)
         self.w, self.h = self.window.get_size()
         self.title = arcade.Sprite(
-            filename="graphics/Title.png",
+            filename="graphics/ui/Title.png",
             scale=2,
             center_x=self.w / 2,
             center_y=self.h / 2 - 20,
@@ -183,12 +183,12 @@ class StartView(FadingView):
         self.start_sprite_list = arcade.SpriteList()
         self.start_sprite_list.append(
             arcade.Sprite(
-                filename="graphics/MoveGuide.png", scale=0.3, center_x=200, center_y=200
+                filename="graphics/ui/MoveGuide.png", scale=0.3, center_x=200, center_y=200
             )
         )
         self.start_sprite_list.append(
             arcade.Sprite(
-                filename="graphics/ShootGuide.png",
+                filename="graphics/ui/ShootGuide.png",
                 scale=0.3,
                 center_x=self.w - 200,
                 center_y=200,
@@ -196,7 +196,7 @@ class StartView(FadingView):
         )
         self.start_sprite_list.append(
             arcade.Sprite(
-                filename="graphics/PauseGuide.png",
+                filename="graphics/ui/PauseGuide.png",
                 scale=0.3,
                 center_x=200,
                 center_y=self.h - 100,
@@ -204,7 +204,7 @@ class StartView(FadingView):
         )
         self.start_sprite_list.append(
             arcade.Sprite(
-                filename="graphics/WeaponChangeGuide.png",
+                filename="graphics/ui/WeaponChangeGuide.png",
                 scale=0.3,
                 center_x=200,
                 center_y=self.h - 200,
@@ -215,7 +215,7 @@ class StartView(FadingView):
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
         self.vertical_box = arcade.gui.UIBoxLayout(x=200)
-        title = arcade.Sprite(filename="graphics/Title.png", scale=2)
+        title = arcade.Sprite(filename="graphics/ui/Title.png", scale=2)
         title_ui = arcade.gui.UISpriteWidget(
             sprite=title, width=400, height=300)
         self.vertical_box.add(title_ui.with_space_around(bottom=0))
@@ -797,7 +797,7 @@ class GameView(FadingView):
         self.mouse_x = None
         self.mouse_y = None
         self.mouse_pos = Vec2(0, 0)
-        self.mouse_sprite = arcade.Sprite("graphics/Cursor.png")
+        self.mouse_sprite = arcade.Sprite("graphics/ui/Cursor.png")
         self.physics_engine = None
         self.manager = None
 
@@ -850,7 +850,7 @@ class GameView(FadingView):
         # UI set up
         self.ui_sprite_list = arcade.SpriteList()
         self.health_sprite = arcade.Sprite(
-            filename="graphics/Health.png",
+            filename="graphics/ui/Health.png",
             center_x=72,
             center_y=self.h - 40,
             image_width=25,
@@ -858,7 +858,7 @@ class GameView(FadingView):
             scale=1,
         )
         self.energy_sprite = arcade.Sprite(
-            filename="graphics/Energy.png",
+            filename="graphics/ui/Energy.png",
             center_x=72,
             center_y=self.h - 70,
             image_width=25,
@@ -866,7 +866,7 @@ class GameView(FadingView):
             scale=1,
         )
         self.weapon_slot_sprite = arcade.Sprite(
-            filename="graphics/WeaponSlot.png",
+            filename="graphics/ui/WeaponSlot.png",
             center_x=150,
             center_y=self.h - 120,
             image_width=80,

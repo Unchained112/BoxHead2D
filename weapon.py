@@ -11,7 +11,7 @@ Bullets
 class Bullet(arcade.Sprite):
     """Bullet base class."""
 
-    def __init__(self, filename="graphics/Bullet.png",
+    def __init__(self, filename="graphics/weapon/Bullet.png",
                  width=6,
                  height=6,
                  scale=1) -> None:
@@ -36,21 +36,21 @@ class EnergyBullet(Bullet):
 
     def __init__(self) -> None:
         super().__init__()
-        self.texture = arcade.load_texture("graphics/EnergyBullet.png")
+        self.texture = arcade.load_texture("graphics/weapon/EnergyBullet.png")
 
 
 class Missile(Bullet):
     """Missile from the Rocket."""
 
     def __init__(self) -> None:
-        super().__init__("graphics/Missile.png", 15, 15)
+        super().__init__("graphics/weapon/Missile.png", 15, 15)
 
 
 class FireBall(Bullet):
     """FireBall class for enemy red."""
 
     def __init__(self) -> None:
-        super().__init__("graphics/FireBall.png", 20, 20)
+        super().__init__("graphics/weapon/FireBall.png", 20, 20)
         self.life_span = int(60)
 
 
@@ -59,7 +59,7 @@ class ExplosionParticle(Bullet):
 
     def __init__(self) -> None:
         super().__init__()
-        self.texture = arcade.load_texture("graphics/Particle.png")
+        self.texture = arcade.load_texture("graphics/weapon/Particle.png")
         self.height = 4
         self.width = 4
 
@@ -88,11 +88,11 @@ class PlacedWallObject(Object):
 
     def __init__(self, health_max: int = 200) -> None:
         super().__init__()
-        self.texture = arcade.load_texture("graphics/PlacedWall0.png")
+        self.texture = arcade.load_texture("graphics/weapon/PlacedWall0.png")
         self.object_type = 0  # Wall object
         self.textures = [
-            arcade.load_texture("graphics/PlacedWall1.png"),
-            arcade.load_texture("graphics/PlacedWall2.png")
+            arcade.load_texture("graphics/weapon/PlacedWall1.png"),
+            arcade.load_texture("graphics/weapon/PlacedWall2.png")
         ]
         self.health_max = health_max
         self.health = health_max
@@ -110,7 +110,7 @@ class BarrelObject(Object):
 
     def __init__(self) -> None:
         super().__init__()
-        self.texture = arcade.load_texture("graphics/Barrel.png")
+        self.texture = arcade.load_texture("graphics/weapon/Barrel.png")
         self.health = 0
         self.object_type = 1  # Barrel object
 
@@ -120,7 +120,7 @@ class MineObject(Object):
 
     def __init__(self) -> None:
         super().__init__()
-        self.texture = arcade.load_texture("graphics/Mine.png")
+        self.texture = arcade.load_texture("graphics/weapon/Mine.png")
         self.health = 0
         self.object_type = 2  # Mine object
 
@@ -134,7 +134,7 @@ class Weapon(arcade.Sprite):
     """Weapon base class."""
 
     def __init__(
-        self, weapon_name: str = "graphics/Pistol.png", x: float = 0, y: float = 0
+        self, weapon_name: str = "graphics/weapon/Pistol.png", x: float = 0, y: float = 0
     ) -> None:
         self.is_gun = True
         self.pos = Vec2(x, y)
@@ -201,7 +201,7 @@ class Shotgun(Weapon):
     """Shotgun class."""
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
-        super().__init__("graphics/Shotgun.png", x, y)
+        super().__init__("graphics/weapon/Shotgun.png", x, y)
         self.cd_max = int(30)  # 1/2 s
         self.cost = 8
         self.damage = 40
@@ -227,7 +227,7 @@ class Uzi(Weapon):
     """Uzi class."""
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
-        super().__init__("graphics/Uzi.png", x, y)
+        super().__init__("graphics/weapon/Uzi.png", x, y)
         self.cd_max = int(10)  # 1/6 s
         self.cost = 2
         self.damage = 30
@@ -251,7 +251,7 @@ class Rocket(Weapon):
     """Rocket class."""
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
-        super().__init__("graphics/Rocket.png", x, y)
+        super().__init__("graphics/weapon/Rocket.png", x, y)
         self.cd_max = int(30)  # 1/6 s
         self.cost = 20
         self.damage = 0
@@ -284,7 +284,7 @@ class PlacedWall(Weapon):
         self.cost = 5
         self.is_right = True
         self.texture_list = [
-            arcade.load_texture("graphics/PlacedWall0.png"),
+            arcade.load_texture("graphics/weapon/PlacedWall0.png"),
         ]
         self.sound = arcade.Sound("audio/wall_placed.wav")
         self.health_max = 200
@@ -314,7 +314,7 @@ class Barrel(Weapon):
         self.cost = 20
         self.is_right = True
         self.texture_list = [
-            arcade.load_texture("graphics/Barrel.png"),
+            arcade.load_texture("graphics/weapon/Barrel.png"),
         ]
         self.sound = arcade.Sound("audio/physics_place_object.wav")
 
@@ -343,7 +343,7 @@ class Mine(Weapon):
         self.cost = 20
         self.is_right = True
         self.texture_list = [
-            arcade.load_texture("graphics/Mine.png"),
+            arcade.load_texture("graphics/weapon/Mine.png"),
         ]
         self.sound = arcade.Sound("audio/physics_place_object.wav")
 

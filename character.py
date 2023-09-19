@@ -45,7 +45,7 @@ class Character(arcade.Sprite):
 
         # Init collider and physics engine
         super().__init__(
-            "graphics/CharacterCollider.png",
+            "graphics/character/CharacterCollider.png",
             center_x=self.pos.x + self.collider_pos.x,
             center_y=self.pos.y + self.collider_pos.y,
             image_width=20,
@@ -67,7 +67,7 @@ class Character(arcade.Sprite):
         self.body = arcade.Sprite()
         # Feet sprite
         self.foot_l = arcade.Sprite(
-            filename="graphics/Foot.png",
+            filename="graphics/character/Foot.png",
             center_x=self.foot_l_pos.x + self.pos.x,
             center_y=self.foot_l_pos.y + self.pos.x,
             image_width=4,
@@ -75,7 +75,7 @@ class Character(arcade.Sprite):
             scale=1,
         )
         self.foot_r = arcade.Sprite(
-            filename="graphics/Foot.png",
+            filename="graphics/character/Foot.png",
             center_x=self.foot_r_pos.x + self.pos.x,
             center_y=self.foot_r_pos.y + self.pos.x,
             image_width=4,
@@ -169,7 +169,7 @@ class Character(arcade.Sprite):
 class Player(Character):
     """Player game object."""
 
-    body_texture = arcade.load_texture("graphics/Player.png")
+    body_texture = arcade.load_texture("graphics/character/Player.png")
 
     def __init__(self, x: float = 0, y: float = 0,
                  physics_engine: arcade.PymunkPhysicsEngine = None) -> None:
@@ -279,7 +279,7 @@ class Player(Character):
 class Rambo(Player):
     "Rambo character."
 
-    body_texture = arcade.load_texture("graphics/Rambo.png")
+    body_texture = arcade.load_texture("graphics/character/Rambo.png")
 
 
 """Enemy characters"""
@@ -296,7 +296,7 @@ class EnemyWhite(Character):
         self.is_walking = True
         self.last_force = Vec2(0, 0)
         self.hit_damage = int(20)
-        self.body.texture = arcade.load_texture("graphics/EnemyWhite.png")
+        self.body.texture = arcade.load_texture("graphics/character/EnemyWhite.png")
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
         self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
@@ -338,7 +338,7 @@ class EnemyRed(Character):
         self.shoot_range = 280
         self.cd_max = int(60)
         self.bullet = weapon.FireBall
-        self.body.texture = arcade.load_texture("graphics/EnemyRed.png")
+        self.body.texture = arcade.load_texture("graphics/character/EnemyRed.png")
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
         self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
@@ -400,7 +400,7 @@ class EnemyCrack(Character):
         self.is_walking = True
         self.last_force = Vec2(0, 0)
         self.hit_damage = int(40)
-        self.body.texture = arcade.load_texture("graphics/Crack.png")
+        self.body.texture = arcade.load_texture("graphics/character/Crack.png")
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
         self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
@@ -442,7 +442,7 @@ class EnemyBigMouth(Character):
         self.shoot_range = 500
         self.cd_max = int(50)
         self.bullet = weapon.FireBall
-        self.body.texture = arcade.load_texture("graphics/BigMouth.png")
+        self.body.texture = arcade.load_texture("graphics/character/BigMouth.png")
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
         self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
@@ -519,7 +519,7 @@ class EnemyCrash(Character):
         self.is_walking = True
         self.last_force = Vec2(0, 0)
         self.hit_damage = int(40)
-        self.body.texture = arcade.load_texture("graphics/Crash.png")
+        self.body.texture = arcade.load_texture("graphics/character/Crash.png")
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
         self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
@@ -573,7 +573,7 @@ class EnemyTank(Character):
         self.is_walking = True
         self.last_force = Vec2(0, 0)
         self.hit_damage = int(40)
-        self.body.texture = arcade.load_texture("graphics/Tank.png")
+        self.body.texture = arcade.load_texture("graphics/character/Tank.png")
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
         self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
