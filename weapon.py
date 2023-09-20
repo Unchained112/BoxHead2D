@@ -144,6 +144,7 @@ class Weapon(arcade.Sprite):
         self.cd_max = int(20)  # 1/3 s
         self.bullet_speed = 25
         self.cost = int(0)
+        self.life_span = int(20)
         self.texture_list = [
             arcade.load_texture(weapon_name),
             arcade.load_texture(weapon_name, flipped_horizontally=True),
@@ -188,6 +189,7 @@ class Weapon(arcade.Sprite):
         bullet.center_x = self.center_x - 10
         bullet.center_y = self.center_y
         bullet.speed = self.bullet_speed
+        bullet.life_span = self.life_span
         bullet.aim = self.aim_pos.normalize().scale(bullet.speed)
         bullet.damage = self.damage
         bullets.append(bullet)
@@ -205,6 +207,7 @@ class Shotgun(Weapon):
         self.cd_max = int(30)  # 1/2 s
         self.cost = 8
         self.damage = 40
+        self.life_span = 10
         self.bullet = EnergyBullet
         self.sound = arcade.Sound("audio/wpn_fire_m1014.wav")
 
@@ -212,7 +215,7 @@ class Shotgun(Weapon):
         bullets = arcade.SpriteList()
         for angle in [-0.05, 0, 0.05]:
             bullet = self.bullet()
-            bullet.life_span = 10
+            bullet.life_span = self.life_span
             bullet.center_x = self.center_x - 10
             bullet.center_y = self.center_y
             bullet.speed = self.bullet_speed
@@ -229,15 +232,16 @@ class Uzi(Weapon):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__("graphics/weapon/Uzi.png", x, y)
         self.cd_max = int(10)  # 1/6 s
-        self.cost = 2
+        self.cost = 4
         self.damage = 30
+        self.life_span = 25
         self.bullet = EnergyBullet
         self.sound = arcade.Sound("audio/wpn_fire_p90.wav")
 
     def get_bullet(self) -> arcade.SpriteList:
         bullets = arcade.SpriteList()
         bullet = self.bullet()
-        bullet.life_span = 25
+        bullet.life_span = self.life_span
         bullet.center_x = self.center_x - 10
         bullet.center_y = self.center_y
         bullet.speed = self.bullet_speed
@@ -257,12 +261,13 @@ class Rocket(Weapon):
         self.damage = 0
         self.bullet = Missile
         self.bullet_speed = 32
+        self.life_span = 15
         self.sound = arcade.Sound("audio/wpn_fire_rocket.wav")
 
     def get_bullet(self) -> arcade.SpriteList:
         bullets = arcade.SpriteList()
         bullet = self.bullet()
-        bullet.life_span = 15
+        bullet.life_span = self.life_span
         bullet.center_x = self.center_x - 10
         bullet.center_y = self.center_y
         bullet.speed = self.bullet_speed

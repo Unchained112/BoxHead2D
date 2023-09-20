@@ -832,6 +832,7 @@ class GameView(FadingView):
         self.round: int = 0
         self.multiplier: int = 1
         self.score: int = 0
+        self.money_pool: int = 0
         self.round_text = arcade.Text("", self.w / 2,
                                       self.h - 50, utils.Color.BLACK,
                                       15, 2, "left", "FFF Forward")
