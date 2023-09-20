@@ -174,12 +174,13 @@ class Player(Character):
     def __init__(self, x: float = 0, y: float = 0,
                  physics_engine: arcade.PymunkPhysicsEngine = None) -> None:
         super().__init__(x, y, physics_engine)
-        self.speed = 2000
+        self.speed = 1600
         self.is_attack = False
         # self.energy = 0
         # self.health = 100
         self.kill_recover = 1
         self.explosion_damage = 20
+        self.luck = 0
 
         # For testing
         self.health = int(100000)
