@@ -178,9 +178,10 @@ class Player(Character):
         self.is_attack = False
         # self.energy = 0
         # self.health = 100
-        self.kill_recover = 1
+        self.kill_recover = 5
         self.explosion_damage = 20
-        self.luck = 0
+        self.money = 0
+        self.luck = 6
 
         # For testing
         self.health = int(100000)
