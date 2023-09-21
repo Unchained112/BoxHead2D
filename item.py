@@ -133,11 +133,11 @@ class Shop:
                  5, 12, 1, increase_kill_recover),
             Item("", "Sell health recover after kill: ",
                  5, -24, 1, minus_kill_recover),
-            Item("", "Increase Pistol damage: ", 
+            Item("", "Increase Pistol damage: ",
                  10, 9, 1, self.increase_pistol_damage),
-            Item("", "Reduce Pistol CD: ", 
+            Item("", "Reduce Pistol CD: ",
                  2, 14, 1, self.increase_pistol_speed),
-            Item("", "Increase Pistol attack range: ", 
+            Item("", "Increase Pistol attack range: ",
                  5, 16, 1, self.increase_pistol_range),
             self.add_uzi_item,
         ]
@@ -149,7 +149,14 @@ class Shop:
             Item("", "Sell explosion damage: ",
                  5, -40, 1, minus_explosion_damage),
         ]
-        self.uzi_item_list = []
+        self.uzi_item_list = [
+            Item("", "Increase Uzi damage: ", 10,
+                 21, 1, self.increase_uzi_damage),
+            Item("", "Reduce Uzi CD: ", 2, 19, 1, self.increase_pistol_speed),
+            Item("", "Increase Uzi attack range: ",
+                 5, 20, 1, self.increase_uzi_range),
+            Item("", "Sell Uzi", 0, 100, -1, self.sell_uzi)
+        ]
         self.shotgun_item_list = []
         self.rocket_item_list = []
         self.wall_item_list = []
@@ -160,7 +167,7 @@ class Shop:
         self.cur_item_list.extend(self.default_item_list)
 
     def generate_item(self, item: Item, wave: int, player: Player) -> Item:
-        # Calculate the acutual cost
+        # Calculate the actual cost
         if item.cost > 0:
             actual_cost = item.cost + wave + int(item.cost * wave * 0.1)
         else:
@@ -174,7 +181,7 @@ class Shop:
         # Randomly generate quality with luck
         rand_quality = random.randrange(0, 99)
         actual_quality = 0
-        if rand_quality < 5 + wave + player.luck: # 5% base
+        if rand_quality < 5 + wave + player.luck:  # 5% base
             actual_quality = 3
         elif rand_quality >= 5 + wave + player.luck and rand_quality < 5 + 2 * (wave + player.luck):
             actual_quality = 2
@@ -238,21 +245,30 @@ class Shop:
         self.uzi.life_span += item.value
         return True
 
+    def reduce_uzi_cost(self, item: Item, player: Player) -> bool:
+        self.uzi.cost -= max(self.uzi.cost - item.value, 0)
+        return True
+
+    def sell_uzi(self, item: Item, player: Player) -> bool:
+        for i in self.uzi_item_list:
+            self.cur_item_list.remove(i)
+        self.cur_item_list.append(self.add_uzi_item)
+        return True
+
     def clear(self) -> None:
         pass
 
 
 # For testing
-p = Player()
-shop = Shop(p)
-itms = shop.get_items(5, p)
-for i in itms:
-    print(i.description)
-    print(i.cost)
-    i.equip(i, p)
-    print("Player status")
-    # print(p.health)
-    # print(p.speed)
-    # print(p.luck)
-    # print(p.kill_recover)
-
+# p = Player()
+# shop = Shop(p)
+# itms = shop.get_items(5, p)
+# for i in itms:
+#     print(i.description)
+#     print(i.cost)
+#     i.equip(i, p)
+#     print("Player status")
+#     print(p.health)
+#     print(p.speed)
+#     print(p.luck)
+#     print(p.kill_recover)

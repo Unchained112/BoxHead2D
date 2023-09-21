@@ -1508,17 +1508,17 @@ class GameView(FadingView):
     def spawn_enemy(self) -> None:
         # Spawn enemy
         # Enemy white
-        # if len(self.enemy_white_list) == 0:
-        #     for pos in self.room.spawn_pos:
-        #         enemy = character.EnemyWhite(
-        #             pos.x, pos.y, self.physics_engine, self.player)
-        #         self.enemy_white_list.append(enemy)
-        #         self.enemy_sprite_list.extend(enemy.parts)
-        #         self.physics_engine.add_sprite(enemy,
-        #                                        friction=0,
-        #                                        moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
-        #                                        damping=0.001,
-        #                                        collision_type="enemy")
+        if len(self.enemy_white_list) == 0:
+            for pos in self.room.spawn_pos:
+                enemy = character.EnemyWhite(
+                    pos.x, pos.y, self.physics_engine, self.player)
+                self.enemy_white_list.append(enemy)
+                self.enemy_sprite_list.extend(enemy.parts)
+                self.physics_engine.add_sprite(enemy,
+                                               friction=0,
+                                               moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+                                               damping=0.001,
+                                               collision_type="enemy")
 
         # Enemy Red
         # if len(self.enemy_red_list) == 0:
@@ -1562,30 +1562,30 @@ class GameView(FadingView):
         #                                        collision_type="enemy")
 
         # Enemy Crash
-        if len(self.enemy_crash_list) == 0:
-            for pos in self.room.spawn_pos:
-                enemy = character.EnemyCrash(
-                    pos.x, pos.y, self.physics_engine, self.player)
-                self.enemy_crash_list.append(enemy)
-                self.enemy_sprite_list.extend(enemy.parts)
-                self.physics_engine.add_sprite(enemy,
-                                               friction=0,
-                                               moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
-                                               damping=0.05,
-                                               collision_type="enemy")
+        # if len(self.enemy_crash_list) == 0:
+        #     for pos in self.room.spawn_pos:
+        #         enemy = character.EnemyCrash(
+        #             pos.x, pos.y, self.physics_engine, self.player)
+        #         self.enemy_crash_list.append(enemy)
+        #         self.enemy_sprite_list.extend(enemy.parts)
+        #         self.physics_engine.add_sprite(enemy,
+        #                                        friction=0,
+        #                                        moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+        #                                        damping=0.05,
+        #                                        collision_type="enemy")
 
         # Enemy Tank
-        if len(self.enemy_tank_list) == 0:
-            for pos in self.room.spawn_pos:
-                enemy = character.EnemyTank(
-                    pos.x, pos.y, self.physics_engine, self.player)
-                self.enemy_tank_list.append(enemy)
-                self.enemy_sprite_list.extend(enemy.parts)
-                self.physics_engine.add_sprite(enemy,
-                                               friction=0,
-                                               moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
-                                               damping=0.001,
-                                               collision_type="enemy")
+        # if len(self.enemy_tank_list) == 0:
+        #     for pos in self.room.spawn_pos:
+        #         enemy = character.EnemyTank(
+        #             pos.x, pos.y, self.physics_engine, self.player)
+        #         self.enemy_tank_list.append(enemy)
+        #         self.enemy_sprite_list.extend(enemy.parts)
+        #         self.physics_engine.add_sprite(enemy,
+        #                                        friction=0,
+        #                                        moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+        #                                        damping=0.001,
+        #                                        collision_type="enemy")
 
 
 class GameOverView(arcade.View):
