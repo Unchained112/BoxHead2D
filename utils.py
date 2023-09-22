@@ -51,7 +51,7 @@ class Utils:
     def clear_ui_manager(manager: arcade.gui.UIManager):
         for _ in range(0, len(manager.children[0])):
             manager.clear()
-
+        manager.clear()
 
 class Style:
     """Design styles."""

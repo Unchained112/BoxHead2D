@@ -4,6 +4,7 @@ import utils
 import room
 import character
 import weapon
+import item
 import effect
 import math
 import random
@@ -709,6 +710,10 @@ class OptionView(arcade.View):
         self.clear()
         self.manager.draw()
 
+    def on_key_press(self, key, modifiers) -> None:
+        if key == arcade.key.ESCAPE:
+            self.on_click_back()
+
     def on_click_effect_volume_up(self, event) -> None:
         self.window.effect_volume = min(20, self.window.effect_volume + 1)
         self.effect_volume_text.text = str(self.window.effect_volume)
@@ -843,7 +848,6 @@ class GameView(FadingView):
                                       self.h - 50, utils.Color.BLACK,
                                       15, 2, "left", "FFF Forward")
 
-        self.weapon_check = 0
         self.window.set_mouse_visible(False)
         self.total_time = 0
         self.last_kill_time = 0
@@ -921,6 +925,9 @@ class GameView(FadingView):
         # Set up the player
         self.player = player(
             float(self.w / 2), float(self.h / 2), self.physics_engine)
+
+        # Set up the shop
+        self.shop = item.Shop(self.player)
 
         self.physics_engine.add_sprite(
             self.player,
@@ -1026,7 +1033,8 @@ class GameView(FadingView):
 
         # Buy item
         if key == arcade.key.B:
-            pass
+            self.window.shop_view.setup(self)
+            self.window.show_view(self.window.shop_view)
 
     def on_key_release(self, key, modifiers) -> None:
 
@@ -1616,7 +1624,111 @@ class ShopView(arcade.View):
 
     def setup(self, last_view) -> None:
         self.last_view = last_view
-
+        self.player = last_view.player
+        self.shop = last_view.shop
+        self.w, self.h = self.window.get_size()
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
         self.rest_box = arcade.gui.UIBoxLayout(vertical=False)
+
+        # Status text
+        # For testing
+        bg_tex = arcade.load_texture(":resources:gui_basic_assets/window/grey_panel.png")
+        self.player_text = ("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent eget pellentesque velit. "
+            "Nam eu rhoncus nulla. Fusce ornare libero eget ex vulputate, vitae mattis orci eleifend. "
+            "Donec quis volutpat arcu. Proin lacinia velit id imperdiet ultrices. Fusce porta magna leo, "
+            "non maximus justo facilisis vel. Duis pretium sem ut eros scelerisque, a dignissim ante "
+            "pellentesque. Cras rutrum aliquam fermentum. Donec id mollis mi.\n"
+            "\n"
+            "Nullam vitae nunc aliquet, lobortis purus eget, porttitor purus. Curabitur feugiat purus sit "
+            "amet finibus accumsan. Proin varius, enim in pretium pulvinar, augue erat pellentesque ipsum, "
+            "sit amet varius leo risus quis tellus. Donec posuere ligula risus, et scelerisque nibh cursus "
+            "ac. Mauris feugiat tortor turpis, vitae imperdiet mi euismod aliquam. Fusce vel ligula volutpat, "
+            "finibus sapien in, lacinia lorem. Proin tincidunt gravida nisl in pellentesque. Aenean sed "
+            "arcu ipsum. Vivamus quam arcu, elementum nec auctor non, convallis non elit. Maecenas id "
+            "scelerisque lectus. Vivamus eget sem tristique, dictum lorem eget, maximus leo. Mauris lorem "
+            "tellus, molestie eu orci ut, porta aliquam est. Nullam lobortis tempor magna, egestas lacinia lectus.\n"
+        )
+        text_area = arcade.gui.UITextArea(x=self.w/2 - 420,
+                                        y=self.h/2 - 160,
+                                        width=250,
+                                        height=400,
+                                        text=self.player_text,
+                                        text_color=(0, 0, 0, 255))
+        self.manager.add(
+            arcade.gui.UITexturePane(
+                text_area.with_space_around(right=20),
+                tex=bg_tex,
+                padding=(10, 10, 10, 10)
+            )
+        )
+
+        # Items
+        self.ref_pos = Vec2(self.w/2, self.h/2)
+        self.item_bg_list = arcade.SpriteList()
+        self.item_logo_list = arcade.SpriteList()
+        self.item_text = []
+        self.item_cost = []
+        self.items = None
+        self.get_items()
+
+        # Rest buttons
+        start_view_button = arcade.gui.UIFlatButton(
+            text="Start Menu", width=180, style=utils.Style.BUTTON_DEFAULT
+        )
+        continue_button = arcade.gui.UIFlatButton(
+            text="Continue", width=120, style=utils.Style.BUTTON_DEFAULT
+        )
+        self.rest_box.add(start_view_button.with_space_around(right=280))
+        self.rest_box.add(continue_button.with_space_around(right=0))
+        continue_button.on_click = self.on_click_continue
+        start_view_button.on_click = self.on_click_start_menu
+
+        # Add box layout
+        self.manager.add(arcade.gui.UIAnchorWidget(
+            align_y=-240, child=self.rest_box))
+
+    def on_draw(self) -> None:
+        self.clear()
+        self.manager.draw()
+        self.item_bg_list.draw()
+
+    def on_click_continue(self, event) -> None:
+        # Clear the game view reference
+        self.player = None
+        self.shop = None
+        utils.Utils.clear_ui_manager(self.manager)
+        self.last_view.resize_camera(self.window.width, self.window.height)
+        self.window.show_view(self.last_view)
+        self.window.play_button_sound()
+
+    def on_click_start_menu(self, event) -> None:
+        # Clear the game view reference
+        self.player = None
+        self.shop = None
+        self.last_view = None
+        utils.Utils.clear_ui_manager(self.manager)
+        self.window.start_view.setup()
+        self.window.start_view.resize_camera(
+            self.window.width, self.window.height)
+        self.window.show_view(self.window.start_view)
+        self.window.play_button_sound()
+
+    def get_player_text(self) -> None:
+        pass
+
+    def get_items(self) -> None:
+        self.items = self.shop.get_items(self.last_view.round, self.player)
+        for i in range(0, 4):
+            bg = arcade.Sprite()
+            bg.center_x = self.ref_pos.x + i * 120
+            bg.center_y = self.ref_pos.y
+            if self.items[i].quality == 1:
+                bg.texture = arcade.load_texture("graphics/ui/BronzeTier.png")
+            elif self.items[i].quality == 2:
+                bg.texture = arcade.load_texture("graphics/ui/SliverTier.png")
+            elif self.items[i].quality == 3:
+                bg.texture = arcade.load_texture("graphics/ui/GoldTier.png")
+            else:
+                bg.texture = arcade.load_texture("graphics/ui/SpecialTier.png")
+            self.item_bg_list.append(bg)

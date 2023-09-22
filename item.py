@@ -250,6 +250,8 @@ class Shop:
         return True
 
     def sell_uzi(self, item: Item, player: Player) -> bool:
+        player.weapons.remove(self.uzi)
+        self.uzi = weapon.Uzi()
         for i in self.uzi_item_list:
             self.cur_item_list.remove(i)
         self.cur_item_list.append(self.add_uzi_item)

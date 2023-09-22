@@ -30,6 +30,7 @@ class BoxHead2d(arcade.Window):
     def set_up(self) -> None:
         self.option_view = view.OptionView()
         self.select_view = view.SelectionView()
+        self.shop_view = view.ShopView()
 
     def play_button_sound(self) -> None:
         self.button_sound.play(volume=self.effect_volume/20)
