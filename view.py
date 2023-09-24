@@ -712,7 +712,7 @@ class OptionView(arcade.View):
 
     def on_key_press(self, key, modifiers) -> None:
         if key == arcade.key.ESCAPE:
-            self.on_click_back()
+            self.on_click_back(event=None)
 
     def on_click_effect_volume_up(self, event) -> None:
         self.window.effect_volume = min(20, self.window.effect_volume + 1)
@@ -945,18 +945,18 @@ class GameView(FadingView):
         )
 
         # For testing
-        shotgun = weapon.Shotgun()
-        self.player.add_weapon(shotgun)
-        uzi = weapon.Uzi()
-        self.player.add_weapon(uzi)
-        rocket = weapon.Rocket()
-        self.player.add_weapon(rocket)
-        placed_wall = weapon.PlacedWall()
-        self.player.add_weapon(placed_wall)
-        barrel = weapon.Barrel()
-        self.player.add_weapon(barrel)
-        mine = weapon.Mine()
-        self.player.add_weapon(mine)
+        # shotgun = weapon.Shotgun()
+        # self.player.add_weapon(shotgun)
+        # uzi = weapon.Uzi()
+        # self.player.add_weapon(uzi)
+        # rocket = weapon.Rocket()
+        # self.player.add_weapon(rocket)
+        # placed_wall = weapon.PlacedWall()
+        # self.player.add_weapon(placed_wall)
+        # barrel = weapon.Barrel()
+        # self.player.add_weapon(barrel)
+        # mine = weapon.Mine()
+        # self.player.add_weapon(mine)
 
     def on_draw(self) -> None:
         self.clear()
@@ -1626,51 +1626,94 @@ class ShopView(arcade.View):
         self.last_view = last_view
         self.player = last_view.player
         self.shop = last_view.shop
+        self.cnt = 0
+        self.refresh_cost = self.last_view.round + 4
         self.w, self.h = self.window.get_size()
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
         self.rest_box = arcade.gui.UIBoxLayout(vertical=False)
+        self.item_box = arcade.gui.UIBoxLayout(x=self.w/2 + 50,
+                                               y=self.h/2 - 50,
+                                               vertical=False)
 
         # Status text
-        # For testing
-        bg_tex = arcade.load_texture(":resources:gui_basic_assets/window/grey_panel.png")
-        self.player_text = ("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent eget pellentesque velit. "
-            "Nam eu rhoncus nulla. Fusce ornare libero eget ex vulputate, vitae mattis orci eleifend. "
-            "Donec quis volutpat arcu. Proin lacinia velit id imperdiet ultrices. Fusce porta magna leo, "
-            "non maximus justo facilisis vel. Duis pretium sem ut eros scelerisque, a dignissim ante "
-            "pellentesque. Cras rutrum aliquam fermentum. Donec id mollis mi.\n"
-            "\n"
-            "Nullam vitae nunc aliquet, lobortis purus eget, porttitor purus. Curabitur feugiat purus sit "
-            "amet finibus accumsan. Proin varius, enim in pretium pulvinar, augue erat pellentesque ipsum, "
-            "sit amet varius leo risus quis tellus. Donec posuere ligula risus, et scelerisque nibh cursus "
-            "ac. Mauris feugiat tortor turpis, vitae imperdiet mi euismod aliquam. Fusce vel ligula volutpat, "
-            "finibus sapien in, lacinia lorem. Proin tincidunt gravida nisl in pellentesque. Aenean sed "
-            "arcu ipsum. Vivamus quam arcu, elementum nec auctor non, convallis non elit. Maecenas id "
-            "scelerisque lectus. Vivamus eget sem tristique, dictum lorem eget, maximus leo. Mauris lorem "
-            "tellus, molestie eu orci ut, porta aliquam est. Nullam lobortis tempor magna, egestas lacinia lectus.\n"
-        )
-        text_area = arcade.gui.UITextArea(x=self.w/2 - 420,
-                                        y=self.h/2 - 160,
-                                        width=250,
-                                        height=400,
-                                        text=self.player_text,
-                                        text_color=(0, 0, 0, 255))
+        back_ground = arcade.load_texture("graphics/ui/StatusText.png")
+        self.player_text = arcade.gui.UITextArea(x=self.w/2 - 480,
+                                                 y=self.h/2 - 160,
+                                                 width=250,
+                                                 height=400,
+                                                 text="",
+                                                 text_color=(0, 0, 0, 255))
+        self.get_player_text()
+
         self.manager.add(
             arcade.gui.UITexturePane(
-                text_area.with_space_around(right=20),
-                tex=bg_tex,
+                self.player_text.with_space_around(right=20),
+                tex=back_ground,
                 padding=(10, 10, 10, 10)
             )
         )
 
+        # Money
+        self.coin = arcade.Sprite(filename="graphics/ui/Coin.png",
+                                  center_x=self.w/2 - 480,
+                                  center_y=self.h/2 + 280,
+                                  scale=1)
+        self.money_text = arcade.Text(str(self.player.money),
+                                      self.w/2 - 420,
+                                      self.h/2 + 270,
+                                      color=utils.Color.BLACK,
+                                      font_size=12,
+                                      font_name="FFF Forward",
+                                      anchor_x="center")
+        self.purchase_text = arcade.Text("",
+                                         self.w/2,
+                                         self.h/2 + 280,
+                                         color=utils.Color.BLACK,
+                                         font_size=12,
+                                         font_name="FFF Forward",
+                                         anchor_x="center")
+
         # Items
-        self.ref_pos = Vec2(self.w/2, self.h/2)
+        self.ref_pos = Vec2(self.w/2 - 80, self.h/2 + 100)
         self.item_bg_list = arcade.SpriteList()
         self.item_logo_list = arcade.SpriteList()
         self.item_text = []
         self.item_cost = []
         self.items = None
         self.get_items()
+
+        # Item buttons
+        self.item_button_enables = [True, True, True, True]
+        item_button_0 = arcade.gui.UIFlatButton(
+            text="Buy", width=80, style=utils.Style.BUTTON_DEFAULT
+        )
+        item_button_1 = arcade.gui.UIFlatButton(
+            text="Buy", width=80, style=utils.Style.BUTTON_DEFAULT
+        )
+        item_button_2 = arcade.gui.UIFlatButton(
+            text="Buy", width=80, style=utils.Style.BUTTON_DEFAULT
+        )
+        item_button_3 = arcade.gui.UIFlatButton(
+            text="Buy", width=80, style=utils.Style.BUTTON_DEFAULT
+        )
+        self.item_box.add(item_button_0.with_space_around(left=80, right=80))
+        self.item_box.add(item_button_1.with_space_around(right=80))
+        self.item_box.add(item_button_2.with_space_around(right=80))
+        self.item_box.add(item_button_3.with_space_around(right=80))
+        item_button_0.on_click = self.on_click_item_0
+        item_button_1.on_click = self.on_click_item_1
+        item_button_2.on_click = self.on_click_item_2
+        item_button_3.on_click = self.on_click_item_3
+
+        # Refresh button
+        refresh_button = arcade.gui.UIFlatButton(text="Refresh (D)",
+                                                 x=self.w/2 + 120,
+                                                 y=self.h/2 - 170,
+                                                 width=120,
+                                                 style=utils.Style.BUTTON_DEFAULT)
+        self.manager.add(refresh_button)
+        refresh_button.on_click = self.on_click_refresh
 
         # Rest buttons
         start_view_button = arcade.gui.UIFlatButton(
@@ -1686,12 +1729,32 @@ class ShopView(arcade.View):
 
         # Add box layout
         self.manager.add(arcade.gui.UIAnchorWidget(
+            align_x=160, align_y=-80, child=self.item_box))
+        self.manager.add(arcade.gui.UIAnchorWidget(
             align_y=-240, child=self.rest_box))
+
+    def on_update(self, delta_time: float) -> None:
+        self.item_bg_list.update()
+        self.item_logo_list.update()
+        self.get_player_text()
+        self.money_text.text = str(self.player.money)
+        if self.cnt > 0:
+            self.cnt -= 1
+        elif self.cnt == 0:
+            self.purchase_text.text = ""
 
     def on_draw(self) -> None:
         self.clear()
         self.manager.draw()
+        self.coin.draw()
+        self.purchase_text.draw()
+        self.money_text.draw()
         self.item_bg_list.draw()
+        self.item_logo_list.draw()
+        for description in self.item_text:
+            description.draw()
+        for cost in self.item_cost:
+            cost.draw()
 
     def on_click_continue(self, event) -> None:
         # Clear the game view reference
@@ -1715,14 +1778,37 @@ class ShopView(arcade.View):
         self.window.play_button_sound()
 
     def get_player_text(self) -> None:
-        pass
+        text = "Player status:\n"
+        text += "- Health: " + str(self.player.health) + "\n"
+        text += "- Energy: " + str(self.player.energy) + "\n"
+        text += "- Recover after kill: " + str(self.player.kill_recover) + "\n"
+        text += "- Luck: " + str(self.player.luck) + "\n"
+        text += "- Explosion damage: " + \
+            str(self.player.explosion_damage) + "\n"
+        text += "\n"
+
+        text += "Pistol:\n"
+        text += "- Damage: " + str(self.shop.pistol.damage) + "\n"
+        text += "- CD: " + str(self.shop.pistol.cd_max) + "\n"
+        text += "- Attack range: " + str(self.shop.pistol.life_span) + "\n"
+        text += "\n"
+
+        if self.player.weapons.count(self.shop.uzi) > 0:
+            text += "Uzi:\n"
+            text += "- Damage: " + str(self.shop.uzi.damage) + "\n"
+            text += "- CD: " + str(self.shop.uzi.cd_max) + "\n"
+            text += "- Attack range: " + str(self.shop.uzi.life_span) + "\n"
+            text += "- Energy cost: " + str(self.shop.uzi.cost) + "\n"
+
+        self.player_text.text = text
 
     def get_items(self) -> None:
         self.items = self.shop.get_items(self.last_view.round, self.player)
         for i in range(0, 4):
+            # Item background
             bg = arcade.Sprite()
-            bg.center_x = self.ref_pos.x + i * 120
-            bg.center_y = self.ref_pos.y
+            bg.center_x = self.ref_pos.x + i*160
+            bg.center_y = self.ref_pos.y + 20
             if self.items[i].quality == 1:
                 bg.texture = arcade.load_texture("graphics/ui/BronzeTier.png")
             elif self.items[i].quality == 2:
@@ -1731,4 +1817,116 @@ class ShopView(arcade.View):
                 bg.texture = arcade.load_texture("graphics/ui/GoldTier.png")
             else:
                 bg.texture = arcade.load_texture("graphics/ui/SpecialTier.png")
+            bg.scale = 1.5
             self.item_bg_list.append(bg)
+
+            # Item logo
+            logo = arcade.Sprite()
+            logo.texture = arcade.load_texture("graphics/item/PlaceHolder.png")
+            logo.center_x = self.ref_pos.x + i*160
+            logo.center_y = self.ref_pos.y + 120
+            self.item_logo_list.append(logo)
+
+            # Item text
+            description = arcade.Text(
+                self.items[i].description,
+                self.ref_pos.x + i*160,
+                self.ref_pos.y + 60,
+                width=120,
+                color=utils.Color.BLACK,
+                font_size=14,
+                font_name="Source Han Sans Old Style Normal",
+                anchor_x="center",
+                align="center",
+                multiline=True,
+            )
+            self.item_text.append(description)
+
+            # Item cost
+            cost_text = self.items[i].cost if self.items[i].cost > 0 \
+                else -self.items[i].cost
+            cost_color = utils.Color.DARK_GRAY if self.items[i].cost > 0 \
+                else utils.Color.BRIGHT_GREEN
+            cost = arcade.Text(
+                str(cost_text),
+                self.ref_pos.x + i*160,
+                self.ref_pos.y - 60,
+                width=120,
+                color=cost_color,
+                font_size=12,
+                font_name="FFF Forward",
+                anchor_x="center",
+                align="center",
+                multiline=True,
+            )
+            self.item_cost.append(cost)
+
+    def update_purchase_text(self, sign: int) -> None:
+        if sign == 0: # purchase success
+            self.purchase_text.text = "Purchase succeeded."
+            self.purchase_text.color = utils.Color.BRIGHT_GREEN
+        elif sign == 1: # purchase failed
+            self.purchase_text.text = "Purchase failed."
+            self.purchase_text.color = utils.Color.HEALTH_RED
+        elif sign == 2: # refresh failed
+            self.purchase_text.text = "Refresh failed."
+            self.purchase_text.color = utils.Color.HEALTH_RED
+
+        self.cnt = 60
+
+    def purchase_item(self, index: int) -> None:
+        if self.player.money < self.items[index].cost:
+            # Not enough money
+            self.update_purchase_text(1)
+            return
+
+        if self.items[index].equip(self.items[index], self.player):
+            # Deal with the button
+
+            # Remove item visuals
+            self.item_bg_list[index].alpha = 0
+            self.item_logo_list[index].alpha = 0
+            self.item_text[index].text = ""
+            self.item_cost[index].text = ""
+
+            # Purchase succeed
+            self.player.money -= self.items[index].cost
+            self.update_purchase_text(0)
+            self.item_button_enables[index] = False
+        else:
+            # Purchase failed
+            self.update_purchase_text(1)
+
+
+    def on_click_refresh(self, event) -> None:
+        if self.player.money < self.refresh_cost:
+            self.update_purchase_text(2)
+            return
+        self.player.money -= self.refresh_cost
+        self.refresh_cost += self.last_view.round
+
+        # Clear item list
+        self.item_bg_list.clear()
+        self.item_logo_list.clear()
+        self.item_text.clear()
+        self.item_cost.clear()
+        self.item_button_enables = [True, True, True, True]
+
+        self.get_items()
+
+    def on_click_item_0(self, event) -> None:
+        if self.item_button_enables[0]:
+            self.purchase_item(0)
+
+    def on_click_item_1(self, event) -> None:
+        if self.item_button_enables[1]:
+            self.purchase_item(1)
+    
+    def on_click_item_2(self, event) -> None:
+        if self.item_button_enables[2]:
+            self.purchase_item(2)
+
+    def on_click_item_3(self, event) -> None:
+        if self.item_button_enables[3]:
+            self.purchase_item(3)
+

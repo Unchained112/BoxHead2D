@@ -18,6 +18,7 @@ class Color:
     HEALTH_RED = (205, 24, 24)
     ENERGY_BLUE = (77, 166, 255)
     DARK_GREEN = (65, 100, 74)
+    BRIGHT_GREEN = (114, 176, 29)
     # For multiplier only
     MUL_GREEN = [76, 187, 23, 255]
     MUL_YELLOW = [255, 215, 0, 255]

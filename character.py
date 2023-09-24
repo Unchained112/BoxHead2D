@@ -180,10 +180,11 @@ class Player(Character):
         # self.health = 100
         self.kill_recover = 5
         self.explosion_damage = 20
-        self.money = 0
+        # self.money = 0
         self.luck = 6
 
         # For testing
+        self.money = int(100000)
         self.health = int(100000)
         self.energy = int(100000)
 

@@ -187,6 +187,7 @@ class Shop:
             actual_quality = 2
         else:
             actual_quality = 1
+        actual_cost *= actual_quality
 
         real_value = 0
         if actual_quality == 1:
