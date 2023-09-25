@@ -838,6 +838,7 @@ class GameView(FadingView):
         self.multiplier: int = 1
         self.score: int = 0
         self.money_pool: int = 0
+        self.spawn_cnt = -1
         self.round_text = arcade.Text("", self.w / 2,
                                       self.h - 50, utils.Color.BLACK,
                                       15, 2, "left", "FFF Forward")
@@ -1493,6 +1494,7 @@ class GameView(FadingView):
         if self.total_time > 3.5 and self.total_time < 4:
             self.round_text.text = "Round: 1"
             self.round = 1
+            self.spawn_cnt = 1
 
         # Score multiplier
         if self.total_time - self.last_kill_time > 1.0 and self.multiplier > 1:
@@ -1505,7 +1507,12 @@ class GameView(FadingView):
             if seconds_100s % 3 == 0:
                 self.multiplier_text.font_size -= 1
 
-        self.spawn_enemy()
+        # Spawn enemy and round up
+        self.spawn_enemy(seconds_100s)
+        if len(self.enemy_sprite_list) == 0 and self.spawn_cnt == 0:
+            self.round += 1
+            self.round_text.text = "Round: " + str(self.round)
+            self.spawn_cnt = self.round
 
         # Update enemies
         self.enemy_white_list.update()
@@ -1515,11 +1522,13 @@ class GameView(FadingView):
         self.enemy_crash_list.update()
         self.enemy_tank_list.update()
 
-    def spawn_enemy(self) -> None:
+    def spawn_enemy(self, sec_100: int) -> None:
         """Spawn enemy with different rounds."""
 
-        if self.round <= 3:
-            pass
+        if self.spawn_cnt > 0 and self.round <= 3:
+            if sec_100 == 1:
+                self.spawn_enemy_white()
+                self.spawn_cnt -= 1
 
         if self.round > 3 and self.round <= 6:
             pass
@@ -1734,6 +1743,13 @@ class ShopView(arcade.View):
         item_button_3.on_click = self.on_click_item_3
 
         # Refresh button
+        self.refresh_cost_text = arcade.Text(str(self.refresh_cost),
+                                             start_x=self.w/2 + 100,
+                                             start_y=self.h/2 - 160,
+                                             color=utils.Color.BLACK,
+                                             font_size=12,
+                                             font_name="FFF Forward",
+                                             anchor_x="center")
         refresh_button = arcade.gui.UIFlatButton(text="Refresh (D)",
                                                  x=self.w/2 + 120,
                                                  y=self.h/2 - 170,
@@ -1769,6 +1785,7 @@ class ShopView(arcade.View):
             self.cnt -= 1
         elif self.cnt == 0:
             self.purchase_text.text = ""
+        self.refresh_cost_text.text = str(self.refresh_cost)
 
     def on_draw(self) -> None:
         self.clear()
@@ -1782,6 +1799,7 @@ class ShopView(arcade.View):
             description.draw()
         for cost in self.item_cost:
             cost.draw()
+        self.refresh_cost_text.draw()
 
     def on_click_continue(self, event) -> None:
         # Clear the game view reference
@@ -1889,13 +1907,13 @@ class ShopView(arcade.View):
             self.item_cost.append(cost)
 
     def update_purchase_text(self, sign: int) -> None:
-        if sign == 0: # purchase success
+        if sign == 0:  # purchase success
             self.purchase_text.text = "Purchase succeeded."
             self.purchase_text.color = utils.Color.BRIGHT_GREEN
-        elif sign == 1: # purchase failed
+        elif sign == 1:  # purchase failed
             self.purchase_text.text = "Purchase failed."
             self.purchase_text.color = utils.Color.HEALTH_RED
-        elif sign == 2: # refresh failed
+        elif sign == 2:  # refresh failed
             self.purchase_text.text = "Refresh failed."
             self.purchase_text.color = utils.Color.HEALTH_RED
 
@@ -1923,7 +1941,6 @@ class ShopView(arcade.View):
         else:
             # Purchase failed
             self.update_purchase_text(1)
-
 
     def on_click_refresh(self, event) -> None:
         if self.player.money < self.refresh_cost:
@@ -1956,4 +1973,3 @@ class ShopView(arcade.View):
     def on_click_item_3(self, event) -> None:
         if self.item_button_enables[3]:
             self.purchase_item(3)
-

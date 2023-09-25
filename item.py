@@ -152,7 +152,7 @@ class Shop:
         self.uzi_item_list = [
             Item("", "Increase Uzi damage: ", 10,
                  21, 1, self.increase_uzi_damage),
-            Item("", "Reduce Uzi CD: ", 2, 19, 1, self.increase_pistol_speed),
+            Item("", "Reduce Uzi CD: ", 2, 19, 1, self.increase_uzi_speed),
             Item("", "Increase Uzi attack range: ",
                  5, 20, 1, self.increase_uzi_range),
             Item("", "Sell Uzi", 0, 100, -1, self.sell_uzi)
