@@ -1506,6 +1506,8 @@ class GameView(FadingView):
                 self.multiplier_text.font_size -= 1
 
         self.spawn_enemy()
+
+        # Update enemies
         self.enemy_white_list.update()
         self.enemy_red_list.update()
         self.enemy_crack_list.update()
@@ -1514,86 +1516,111 @@ class GameView(FadingView):
         self.enemy_tank_list.update()
 
     def spawn_enemy(self) -> None:
-        # Spawn enemy
+        """Spawn enemy with different rounds."""
+
+        if self.round <= 3:
+            pass
+
+        if self.round > 3 and self.round <= 6:
+            pass
+
+        if self.round > 3 and self.round <= 6:
+            pass
+
+        if self.round > 6 and self.round <= 9:
+            pass
+
+        if self.round > 9 and self.round <= 12:
+            pass
+
+        if self.round > 12 and self.round <= 15:
+            pass
+
+        if self.round > 15:
+            pass
+
+        # if self.round > 15 and self.round <= 18:
+        #     pass
+
+    def spawn_enemy_white(self) -> None:
         # Enemy white
-        if len(self.enemy_white_list) == 0:
-            for pos in self.room.spawn_pos:
-                enemy = character.EnemyWhite(
-                    pos.x, pos.y, self.physics_engine, self.player)
-                self.enemy_white_list.append(enemy)
-                self.enemy_sprite_list.extend(enemy.parts)
-                self.physics_engine.add_sprite(enemy,
-                                               friction=0,
-                                               moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
-                                               damping=0.001,
-                                               collision_type="enemy")
+        for pos in self.room.spawn_pos:
+            enemy = character.EnemyWhite(
+                pos.x, pos.y, self.physics_engine, self.player)
+            self.enemy_white_list.append(enemy)
+            self.enemy_sprite_list.extend(enemy.parts)
+            self.physics_engine.add_sprite(enemy,
+                                           friction=0,
+                                           moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+                                           damping=0.001,
+                                           collision_type="enemy")
 
+    def spawn_enemy_red(self) -> None:
         # Enemy Red
-        # if len(self.enemy_red_list) == 0:
-        #     for pos in self.room.spawn_pos:
-        #         enemy = character.EnemyRed(
-        #             pos.x, pos.y, self.physics_engine, self.player)
-        #         self.enemy_red_list.append(enemy)
-        #         self.enemy_sprite_list.extend(enemy.parts)
-        #         self.physics_engine.add_sprite(enemy,
-        #                                        friction=0,
-        #                                        moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
-        #                                        damping=0.001,
-        #                                        collision_type="enemy")
+        for pos in self.room.spawn_pos:
+            enemy = character.EnemyRed(
+                pos.x, pos.y, self.physics_engine, self.player)
+            self.enemy_red_list.append(enemy)
+            self.enemy_sprite_list.extend(enemy.parts)
+            self.physics_engine.add_sprite(enemy,
+                                           friction=0,
+                                           moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+                                           damping=0.001,
+                                           collision_type="enemy")
 
+    def spawn_enemy_crack(self) -> None:
         # Enemy Crack
-        # if len(self.enemy_crack_list) == 0:
-        #     for _ in range(0, 16):
-        #         pos_x = random.randrange(60, self.room.width - 60)
-        #         pos_y = random.randrange(60, self.room.height - 60)
-        #         enemy = character.EnemyCrack(
-        #             pos_x, pos_y, self.physics_engine, self.player)
-        #         self.enemy_crack_list.append(enemy)
-        #         self.enemy_sprite_list.extend(enemy.parts)
-        #         self.physics_engine.add_sprite(enemy,
-        #                                        friction=0,
-        #                                        moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
-        #                                        damping=0.001,
-        #                                        collision_type="enemy")
+        for _ in range(0, 16):
+            pos_x = random.randrange(60, self.room.width - 60)
+            pos_y = random.randrange(60, self.room.height - 60)
+            enemy = character.EnemyCrack(
+                pos_x, pos_y, self.physics_engine, self.player)
+            self.enemy_crack_list.append(enemy)
+            self.enemy_sprite_list.extend(enemy.parts)
+            self.physics_engine.add_sprite(enemy,
+                                           friction=0,
+                                           moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+                                           damping=0.001,
+                                           collision_type="enemy")
 
+    def spawn_enemy_big_mouth(self) -> None:
         # Enemy Big Mouth
-        # if len(self.enemy_big_mouth_list) == 0:
-        #     for pos in self.room.spawn_pos:
-        #         enemy = character.EnemyBigMouth(
-        #             pos.x, pos.y, self.physics_engine, self.player)
-        #         self.enemy_big_mouth_list.append(enemy)
-        #         self.enemy_sprite_list.extend(enemy.parts)
-        #         self.physics_engine.add_sprite(enemy,
-        #                                        friction=0,
-        #                                        moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
-        #                                        damping=0.001,
-        #                                        collision_type="enemy")
+        for pos in self.room.spawn_pos:
+            enemy = character.EnemyBigMouth(
+                pos.x, pos.y, self.physics_engine, self.player)
+            self.enemy_big_mouth_list.append(enemy)
+            self.enemy_sprite_list.extend(enemy.parts)
+            self.physics_engine.add_sprite(enemy,
+                                           friction=0,
+                                           moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+                                           damping=0.001,
+                                           collision_type="enemy")
 
+    def spawn_enemy_crash(self) -> None:
         # Enemy Crash
-        # if len(self.enemy_crash_list) == 0:
-        #     for pos in self.room.spawn_pos:
-        #         enemy = character.EnemyCrash(
-        #             pos.x, pos.y, self.physics_engine, self.player)
-        #         self.enemy_crash_list.append(enemy)
-        #         self.enemy_sprite_list.extend(enemy.parts)
-        #         self.physics_engine.add_sprite(enemy,
-        #                                        friction=0,
-        #                                        moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
-        #                                        damping=0.05,
-        #                                        collision_type="enemy")
+        for pos in self.room.spawn_pos:
+            enemy = character.EnemyCrash(
+                pos.x, pos.y, self.physics_engine, self.player)
+            self.enemy_crash_list.append(enemy)
+            self.enemy_sprite_list.extend(enemy.parts)
+            self.physics_engine.add_sprite(enemy,
+                                           friction=0,
+                                           moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+                                           damping=0.05,
+                                           collision_type="enemy")
 
+    def spawn_enemy_tank(self) -> None:
         # Enemy Tank
-        # if len(self.enemy_tank_list) == 0:
-        #     for pos in self.room.spawn_pos:
-        #         enemy = character.EnemyTank(
-        #             pos.x, pos.y, self.physics_engine, self.player)
-        #         self.enemy_tank_list.append(enemy)
-        #         self.enemy_sprite_list.extend(enemy.parts)
-        #         self.physics_engine.add_sprite(enemy,
-        #                                        friction=0,
-        #                                        moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
-        #                                        damping=0.001,
-        #                                        collision_type="enemy")
+        for pos in self.room.spawn_pos:
+            enemy = character.EnemyTank(
+                pos.x, pos.y, self.physics_engine, self.player)
+            self.enemy_tank_list.append(enemy)
+            self.enemy_sprite_list.extend(enemy.parts)
+            self.physics_engine.add_sprite(enemy,
+                                           friction=0,
+                                           moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+                                           damping=0.001,
+                                           collision_type="enemy")
 
 
 class GameOverView(arcade.View):
@@ -1921,7 +1948,7 @@ class ShopView(arcade.View):
     def on_click_item_1(self, event) -> None:
         if self.item_button_enables[1]:
             self.purchase_item(1)
-    
+
     def on_click_item_2(self, event) -> None:
         if self.item_button_enables[2]:
             self.purchase_item(2)
