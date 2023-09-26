@@ -889,11 +889,9 @@ class GameView(FadingView):
         self.last_weapon_sprite = arcade.Sprite()
         self.last_weapon_sprite.center_x = 70
         self.last_weapon_sprite.center_y = self.h - 120
-        self.last_weapon_sprite.color = (255, 255, 255, 100)
         self.next_weapon_sprite = arcade.Sprite()
         self.next_weapon_sprite.center_x = 230
         self.next_weapon_sprite.center_y = self.h - 120
-        self.next_weapon_sprite.color = (255, 255, 255, 100)
         self.ui_sprite_list.append(self.cur_weapon_sprite)
         self.ui_sprite_list.append(self.last_weapon_sprite)
         self.ui_sprite_list.append(self.next_weapon_sprite)
@@ -1168,10 +1166,10 @@ class GameView(FadingView):
             self.next_weapon_sprite.alpha = 0
         elif wp_size == 2:
             self.last_weapon_sprite.alpha = 0
-            self.next_weapon_sprite.alpha = 255
+            self.next_weapon_sprite.alpha = 120
         else:
-            self.last_weapon_sprite.alpha = 255
-            self.next_weapon_sprite.alpha = 255
+            self.last_weapon_sprite.alpha = 120
+            self.next_weapon_sprite.alpha = 120
 
         self.ui_sprite_list.draw()
 
@@ -1495,18 +1493,19 @@ class GameView(FadingView):
         # Round
         seconds = int(self.total_time) % 60
         seconds_100s = int((self.total_time - seconds) * 100)
-        if seconds == 0:
+        if int(self.total_time) == 0:
             self.round_text.text = "3"
-        if seconds == 1:
+        if int(self.total_time) == 1:
             self.round_text.text = "2"
-        if seconds == 2:
+        if int(self.total_time) == 2:
             self.round_text.text = "1"
-        if seconds == 3:
+        if int(self.total_time) == 3:
             self.round_text.text = "Start !!!"
         if self.total_time > 3.5 and self.total_time < 4:
             self.round_text.text = "Round: 1"
-            self.round = 1
-            self.spawn_cnt = 1
+            if seconds_100s == 56: # set those value for only once
+                self.round = 1
+                self.spawn_cnt = 1
 
         # Score multiplier
         if self.total_time - self.last_kill_time > 1.0 and self.multiplier > 1:
@@ -1520,7 +1519,7 @@ class GameView(FadingView):
                 self.multiplier_text.font_size -= 1
 
         # Spawn enemy and round up
-        self.spawn_enemy(seconds_100s)
+        self.spawn_enemy(seconds, seconds_100s)
         if len(self.enemy_sprite_list) == 0 and self.spawn_cnt == 0:
             self.round += 1
             self.round_text.text = "Round: " + str(self.round)
@@ -1534,33 +1533,86 @@ class GameView(FadingView):
         self.enemy_crash_list.update()
         self.enemy_tank_list.update()
 
-    def spawn_enemy(self, sec_100: int) -> None:
+    def spawn_enemy(self, sec: int, sec_100: int) -> None:
         """Spawn enemy with different rounds."""
 
         if self.spawn_cnt > 0 and self.round <= 3:
-            if sec_100 == 1:
+            if sec_100 == 60:
                 self.spawn_enemy_white()
                 self.spawn_cnt -= 1
 
         if self.round > 3 and self.round <= 6:
-            pass
-
-        if self.round > 3 and self.round <= 6:
-            pass
+            if sec_100 == 1 and self.spawn_cnt > 0:
+                self.spawn_enemy_white()
+                self.spawn_cnt -= 1
+            if sec_100 == 66 and self.spawn_cnt > 0:
+                self.spawn_enemy_red()
+                self.spawn_cnt -= 1
 
         if self.round > 6 and self.round <= 9:
-            pass
+            if sec_100 == 1 and self.spawn_cnt > 0:
+                self.spawn_enemy_white()
+                self.spawn_cnt -= 1
+            if sec_100 == 48 and self.spawn_cnt > 0:
+                self.spawn_enemy_crack()
+                self.spawn_cnt -= 1
+            if sec % 5 == 0 and sec_100 == 60 and self.spawn_cnt > 0:
+                self.spawn_enemy_red()
+                self.spawn_cnt -= 1
 
         if self.round > 9 and self.round <= 12:
-            pass
+            if sec_100 == 1 or sec_100 == 36 and self.spawn_cnt > 0:
+                self.spawn_enemy_crack()
+                self.spawn_cnt -= 1
+            if sec_100 == 56:
+                self.spawn_enemy_big_mouth()
+                self.spawn_cnt -= 1
+            if sec % 5 == 0 and sec_100 == 60 and self.spawn_cnt > 0:
+                self.spawn_enemy_white()
+                self.spawn_cnt -= 1
+            if sec % 6 == 0 and sec_100 == 80 and self.spawn_cnt > 0:
+                self.spawn_enemy_red()
+                self.spawn_cnt -= 1
 
         if self.round > 12 and self.round <= 15:
-            pass
+            if sec_100 == 1 and self.spawn_cnt > 0:
+                self.spawn_enemy_crack()
+                self.spawn_cnt -= 1
+            if sec_100 == 36 and self.spawn_cnt > 0:
+                self.spawn_enemy_crash()
+                self.spawn_cnt -= 1
+            if sec_100 == 56 and self.spawn_cnt > 0:
+                self.spawn_enemy_big_mouth()
+                self.spawn_cnt -= 1
+            if sec % 5 == 0 and sec_100 == 60 and self.spawn_cnt > 0:
+                self.spawn_enemy_white()
+                self.spawn_cnt -= 1
+            if sec % 6 == 0 and sec_100 == 80 and self.spawn_cnt > 0:
+                self.spawn_enemy_red()
+                self.spawn_cnt -= 1
 
         if self.round > 15:
-            pass
+            if sec_100 == 1 and self.spawn_cnt > 0:
+                self.spawn_enemy_crack()
+                self.spawn_cnt -= 1
+            if sec_100 == 36 and self.spawn_cnt > 0:
+                self.spawn_enemy_crash()
+                self.spawn_cnt -= 1
+            if sec_100 == 56 and self.spawn_cnt > 0:
+                self.spawn_enemy_big_mouth()
+                self.spawn_cnt -= 1
+            if sec % 3 == 0 and sec_100 == 60 and self.spawn_cnt > 0:
+                self.spawn_enemy_tank()
+                self.spawn_cnt -= 2
+            if sec % 8 == 0 and sec_100 == 60 and self.spawn_cnt > 0:
+                self.spawn_enemy_white()
+                self.spawn_cnt -= 1
+            if sec % 10 == 0 and sec_100 == 80 and self.spawn_cnt > 0:
+                self.spawn_enemy_red()
+                self.spawn_cnt -= 1
 
         # if self.round > 15 and self.round <= 18:
+        #     # Add boss
         #     pass
 
     def spawn_enemy_white(self) -> None:
