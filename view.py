@@ -1143,23 +1143,35 @@ class GameView(FadingView):
                          font_name="FFF Forward")
 
         # Weapon slot
+        wp_size = len(self.player.weapons)
         self.cur_weapon_sprite.texture = self.player.current_weapon.texture_list[0]
         if self.player.current_weapon.is_gun:
             self.cur_weapon_sprite.scale = 2
         else:
             self.cur_weapon_sprite.scale = 0.8
-        last_index = (self.player.weapon_index - 1) % len(self.player.weapons)
+        last_index = (self.player.weapon_index - 1) % wp_size
         self.last_weapon_sprite.texture = self.player.weapons[last_index].texture_list[0]
         if self.player.weapons[last_index].is_gun:
             self.last_weapon_sprite.scale = 2
         else:
             self.last_weapon_sprite.scale = 0.8
-        next_index = (self.player.weapon_index + 1) % len(self.player.weapons)
+        next_index = (self.player.weapon_index + 1) % wp_size
         self.next_weapon_sprite.texture = self.player.weapons[next_index].texture_list[0]
         if self.player.weapons[next_index].is_gun:
             self.next_weapon_sprite.scale = 2
         else:
             self.next_weapon_sprite.scale = 0.8
+
+        # Change weapon ui according to the number of weapons
+        if wp_size == 1:
+            self.last_weapon_sprite.alpha = 0
+            self.next_weapon_sprite.alpha = 0
+        elif wp_size == 2:
+            self.last_weapon_sprite.alpha = 0
+            self.next_weapon_sprite.alpha = 255
+        else:
+            self.last_weapon_sprite.alpha = 255
+            self.next_weapon_sprite.alpha = 255
 
         self.ui_sprite_list.draw()
 

@@ -119,6 +119,7 @@ class Shop:
         self.barrel = weapon.Barrel()
         self.mine = weapon.Mine()
         self.add_uzi_item = Item("", "Get Uzi", 0, 30, -1, self.add_uzi)
+        self.add_shotgun_item = Item("", "Get Shotgun", 0, 45, -1, self.add_shotgun)
 
         self.default_item_list = [
             Item("", "Add health: ", 50, 10, 1, increase_health),
@@ -140,6 +141,7 @@ class Shop:
             Item("", "Increase Pistol attack range: ",
                  5, 16, 1, self.increase_pistol_range),
             self.add_uzi_item,
+            self.add_shotgun_item,
         ]
 
         self.is_explosion_added = False
@@ -155,9 +157,17 @@ class Shop:
             Item("", "Reduce Uzi CD: ", 2, 19, 1, self.increase_uzi_speed),
             Item("", "Increase Uzi attack range: ",
                  5, 20, 1, self.increase_uzi_range),
-            Item("", "Sell Uzi", 0, 100, -1, self.sell_uzi)
+            Item("", "Sell Uzi", 0, -100, -1, self.sell_uzi),
         ]
-        self.shotgun_item_list = []
+        self.shotgun_item_list = [
+            Item("", "Increase Shotgun damage: ", 10,
+                 36, 1, self.increase_shotgun_damage),
+            Item("", "Reduce Shotgun CD: ", 2, 21, 1, self.increase_shotgun_speed),
+            Item("", "Increase Shotgun attack range: ",
+                 5, 28, 1, self.increase_shotgun_range),
+            Item("", "Sell Shotgun", 0, -300, -1, self.sell_shotgun),
+            Item("", "Increase Shotgun bullets:", 1, 26, 1, self.increase_shotgun_bullets)
+        ]
         self.rocket_item_list = []
         self.wall_item_list = []
         self.barrel_item_list = []
@@ -258,20 +268,46 @@ class Shop:
         self.cur_item_list.append(self.add_uzi_item)
         return True
 
+    # Shotgun items
+
+    def add_shotgun(self, item: Item, player: Player) -> bool:
+        player.add_weapon(self.shotgun)
+        self.cur_item_list.remove(self.add_shotgun_item)
+        self.cur_item_list.extend(self.shotgun_item_list)
+        return True
+
+    def increase_shotgun_damage(self, item: Item, player: Player) -> bool:
+        self.shotgun.damage += item.value
+        return True
+
+    def increase_shotgun_speed(self, item: Item, player: Player) -> bool:
+        self.shotgun.cd_max = max(self.shotgun.cd_max - item.value, 0)
+        return True
+
+    def increase_shotgun_range(self, item: Item, player: Player) -> bool:
+        self.shotgun.life_span += item.value
+        return True
+
+    def reduce_shotgun_cost(self, item: Item, player: Player) -> bool:
+        self.shotgun.cost -= max(self.shotgun.cost - item.value, 0)
+        return True
+
+    def sell_shotgun(self, item: Item, player: Player) -> bool:
+        player.weapons.remove(self.shotgun)
+        self.shotgun = weapon.Shotgun()
+        for i in self.shotgun_item_list:
+            self.cur_item_list.remove(i)
+        self.cur_item_list.append(self.add_shotgun_item)
+        return True
+
+    def increase_shotgun_bullets(self, item: Item, player: Player) -> bool:
+        self.shotgun.bullet_num += item.value
+        return True
+
+    # Rocket items
+    # PlacedWall items
+    # Barrel items
+    # Mine items
+
     def clear(self) -> None:
         pass
-
-
-# For testing
-# p = Player()
-# shop = Shop(p)
-# itms = shop.get_items(5, p)
-# for i in itms:
-#     print(i.description)
-#     print(i.cost)
-#     i.equip(i, p)
-#     print("Player status")
-#     print(p.health)
-#     print(p.speed)
-#     print(p.luck)
-#     print(p.kill_recover)

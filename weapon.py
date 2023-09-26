@@ -208,12 +208,14 @@ class Shotgun(Weapon):
         self.cost = 8
         self.damage = 40
         self.life_span = 10
+        self.bullet_num = 3
         self.bullet = EnergyBullet
         self.sound = arcade.Sound("audio/wpn_fire_m1014.wav")
 
     def get_bullet(self) -> arcade.SpriteList:
         bullets = arcade.SpriteList()
-        for angle in [-0.05, 0, 0.05]:
+        for i in range(1, self.bullet_num + 1):
+            angle = (-0.02 + 0.04 / (self.bullet_num+1) * i) * self.bullet_num
             bullet = self.bullet()
             bullet.life_span = self.life_span
             bullet.center_x = self.center_x - 10
