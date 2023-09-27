@@ -838,7 +838,7 @@ class GameView(FadingView):
         self.multiplier: int = 1
         self.score: int = 0
         self.money_pool: int = 0
-        self.spawn_cnt = -1
+        self.spawn_cnt: int = -1
         self.round_text = arcade.Text("", self.w / 2,
                                       self.h - 50, utils.Color.BLACK,
                                       15, 2, "left", "FFF Forward")
@@ -850,8 +850,10 @@ class GameView(FadingView):
                                       15, 2, "left", "FFF Forward")
 
         self.window.set_mouse_visible(False)
+        self.counter: int = 0  # assume 60 frames -> 60 = 1s
         self.total_time = 0
         self.last_kill_time = 0
+        self.shop_enabled = False  # Enable if money_pool >= round * 100
 
         # UI set up
         self.ui_sprite_list = arcade.SpriteList()
@@ -882,6 +884,34 @@ class GameView(FadingView):
         self.ui_sprite_list.append(self.health_sprite)
         self.ui_sprite_list.append(self.energy_sprite)
         self.ui_sprite_list.append(self.weapon_slot_sprite)
+        # Money UI
+        self.money_ui = arcade.Sprite(
+            filename="graphics/ui/Coin.png",
+            center_x=self.w/2 + 320,
+            center_y=60,
+            scale=1,
+        )
+        self.money_ui.alpha = 0
+        self.buy_text = arcade.Text("", self.w/2 + 340,
+                                    52, utils.Color.BLACK,
+                                    10, 2, "left", "FFF Forward")
+        self.money_container = arcade.SpriteSolidColor(
+            600, 16, utils.Color.BLACK)
+        self.money_container.center_x = self.w / 2
+        self.money_container.center_y = 60
+        self.money_fill = arcade.SpriteSolidColor(
+            594, 10, utils.Color.DARK_GRAY)
+        self.money_fill.center_x = self.w / 2
+        self.money_fill.center_y = 60
+        self.money_pool_ui = arcade.SpriteSolidColor(
+            1, 10, utils.Color.YELLOW)
+        self.money_pool_ui.center_x = self.w / 2 - 297
+        self.money_pool_ui.center_y = 60
+
+        self.ui_sprite_list.append(self.money_ui)
+        self.ui_sprite_list.append(self.money_container)
+        self.ui_sprite_list.append(self.money_fill)
+        self.ui_sprite_list.append(self.money_pool_ui)
 
         self.cur_weapon_sprite = arcade.Sprite()
         self.cur_weapon_sprite.center_x = 150
@@ -985,6 +1015,7 @@ class GameView(FadingView):
     def on_update(self, delta_time) -> None:
         self.physics_engine.step()
         self.total_time += delta_time
+        self.counter += 1
 
         # Update player
         self.player.update()
@@ -1031,7 +1062,7 @@ class GameView(FadingView):
             self.window.show_view(self.window.option_view)
 
         # Buy item
-        if key == arcade.key.B:
+        if key == arcade.key.B and self.shop_enabled:
             self.window.shop_view.setup(self)
             self.window.show_view(self.window.shop_view)
 
@@ -1118,6 +1149,10 @@ class GameView(FadingView):
         self.multiplier_text.y = self.h - 140
         self.score_text.x = self.w - 240
         self.score_text.y = self.h - 50
+        self.money_container.center_x = self.w / 2
+        self.money_fill.center_x = self.w / 2
+        self.money_ui.center_x = self.w/2 + 320
+        self.buy_text.center_x = self.w/2 + 340
 
     def draw_ui(self) -> None:
         # Health
@@ -1179,6 +1214,9 @@ class GameView(FadingView):
         # Score
         self.score_text.draw()
         self.multiplier_text.draw()
+
+        # Money
+        self.buy_text.draw()
 
     def update_player_attack(self) -> None:
         if self.player.is_attack:
@@ -1414,8 +1452,21 @@ class GameView(FadingView):
         enemy.remove_from_sprite_lists()
 
         # Update score
-        self.score += enemy.health_max * self.multiplier
+        score_change = enemy.health_max * self.multiplier
+        self.score += score_change
         self.score_text.text = "Score: " + str(self.score)
+
+        # Update money pool
+        self.money_pool += int(score_change / 10)
+        money_pool_len = 594.0 * float(self.money_pool) / float(self.round*100)
+        money_pool_len = min(594, money_pool_len)
+        money_pool_x = self.w/2 - 297 + (money_pool_len/2)
+        self.money_pool_ui.width = money_pool_len
+        self.money_pool_ui.center_x = money_pool_x
+        if self.money_pool >= self.round * 100:
+            self.shop_enabled = True
+            self.money_ui.alpha = 255
+            self.buy_text.text = "[B]"
 
         if self.last_kill_time == 0:
             self.last_kill_time = self.total_time
@@ -1491,21 +1542,18 @@ class GameView(FadingView):
 
     def manage_level(self) -> None:
         # Round
-        seconds = int(self.total_time) % 60
-        seconds_100s = int((self.total_time - seconds) * 100)
-        if int(self.total_time) == 0:
+        if self.counter <= 60:
             self.round_text.text = "3"
-        if int(self.total_time) == 1:
+        elif self.counter > 60 and self.counter <= 120:
             self.round_text.text = "2"
-        if int(self.total_time) == 2:
+        elif self.counter > 120 and self.counter <= 180:
             self.round_text.text = "1"
-        if int(self.total_time) == 3:
+        elif self.counter > 180 and self.counter < 240:
             self.round_text.text = "Start !!!"
-        if self.total_time > 3.5 and self.total_time < 4:
+        if self.counter == 250:
             self.round_text.text = "Round: 1"
-            if seconds_100s == 56: # set those value for only once
-                self.round = 1
-                self.spawn_cnt = 1
+            self.round = 1
+            self.spawn_cnt = 1
 
         # Score multiplier
         if self.total_time - self.last_kill_time > 1.0 and self.multiplier > 1:
@@ -1515,11 +1563,11 @@ class GameView(FadingView):
             self.multiplier_text.color = utils.Color.MUL_GREEN
 
         if self.total_time - self.last_kill_time < 1.0:
-            if seconds_100s % 3 == 0:
+            if self.counter % 3 == 0:
                 self.multiplier_text.font_size -= 1
 
         # Spawn enemy and round up
-        self.spawn_enemy(seconds, seconds_100s)
+        self.spawn_enemy()
         if len(self.enemy_sprite_list) == 0 and self.spawn_cnt == 0:
             self.round += 1
             self.round_text.text = "Round: " + str(self.round)
@@ -1533,81 +1581,81 @@ class GameView(FadingView):
         self.enemy_crash_list.update()
         self.enemy_tank_list.update()
 
-    def spawn_enemy(self, sec: int, sec_100: int) -> None:
+    def spawn_enemy(self) -> None:
         """Spawn enemy with different rounds."""
 
         if self.spawn_cnt > 0 and self.round <= 3:
-            if sec_100 == 60:
+            if self.counter % 60 == 0:
                 self.spawn_enemy_white()
                 self.spawn_cnt -= 1
 
         if self.round > 3 and self.round <= 6:
-            if sec_100 == 1 and self.spawn_cnt > 0:
+            if self.counter % 60 == 0 and self.spawn_cnt > 0:
                 self.spawn_enemy_white()
                 self.spawn_cnt -= 1
-            if sec_100 == 66 and self.spawn_cnt > 0:
+            if self.counter % 60 == 30 and self.spawn_cnt > 0:
                 self.spawn_enemy_red()
                 self.spawn_cnt -= 1
 
         if self.round > 6 and self.round <= 9:
-            if sec_100 == 1 and self.spawn_cnt > 0:
+            if self.counter % 60 == 0 and self.spawn_cnt > 0:
                 self.spawn_enemy_white()
                 self.spawn_cnt -= 1
-            if sec_100 == 48 and self.spawn_cnt > 0:
+            if self.counter % 60 == 30 and self.spawn_cnt > 0:
                 self.spawn_enemy_crack()
                 self.spawn_cnt -= 1
-            if sec % 5 == 0 and sec_100 == 60 and self.spawn_cnt > 0:
+            if self.counter % 120 == 1 and self.spawn_cnt > 0:
                 self.spawn_enemy_red()
                 self.spawn_cnt -= 1
 
         if self.round > 9 and self.round <= 12:
-            if sec_100 == 1 or sec_100 == 36 and self.spawn_cnt > 0:
+            if self.counter % 40 == 0 and self.spawn_cnt > 0:
                 self.spawn_enemy_crack()
                 self.spawn_cnt -= 1
-            if sec_100 == 56:
+            if self.counter % 60 == 0 and self.spawn_cnt > 0:
                 self.spawn_enemy_big_mouth()
                 self.spawn_cnt -= 1
-            if sec % 5 == 0 and sec_100 == 60 and self.spawn_cnt > 0:
+            if self.counter % 120 == 0 and self.spawn_cnt > 0:
                 self.spawn_enemy_white()
                 self.spawn_cnt -= 1
-            if sec % 6 == 0 and sec_100 == 80 and self.spawn_cnt > 0:
+            if self.counter % 120 == 50 and self.spawn_cnt > 0:
                 self.spawn_enemy_red()
                 self.spawn_cnt -= 1
 
         if self.round > 12 and self.round <= 15:
-            if sec_100 == 1 and self.spawn_cnt > 0:
+            if self.counter % 40 == 0 and self.spawn_cnt > 0:
                 self.spawn_enemy_crack()
                 self.spawn_cnt -= 1
-            if sec_100 == 36 and self.spawn_cnt > 0:
+            if self.counter % 60 == 32 and self.spawn_cnt > 0:
                 self.spawn_enemy_crash()
                 self.spawn_cnt -= 1
-            if sec_100 == 56 and self.spawn_cnt > 0:
+            if self.counter % 60 == 50 and self.spawn_cnt > 0:
                 self.spawn_enemy_big_mouth()
                 self.spawn_cnt -= 1
-            if sec % 5 == 0 and sec_100 == 60 and self.spawn_cnt > 0:
+            if self.counter % 150 == 5 and self.spawn_cnt > 0:
                 self.spawn_enemy_white()
                 self.spawn_cnt -= 1
-            if sec % 6 == 0 and sec_100 == 80 and self.spawn_cnt > 0:
+            if self.counter % 180 == 10 and self.spawn_cnt > 0:
                 self.spawn_enemy_red()
                 self.spawn_cnt -= 1
 
         if self.round > 15:
-            if sec_100 == 1 and self.spawn_cnt > 0:
+            if self.counter % 40 == 0 and self.spawn_cnt > 0:
                 self.spawn_enemy_crack()
                 self.spawn_cnt -= 1
-            if sec_100 == 36 and self.spawn_cnt > 0:
+            if self.counter % 60 == 32 and self.spawn_cnt > 0:
                 self.spawn_enemy_crash()
                 self.spawn_cnt -= 1
-            if sec_100 == 56 and self.spawn_cnt > 0:
+            if self.counter % 60 == 56 and self.spawn_cnt > 0:
                 self.spawn_enemy_big_mouth()
                 self.spawn_cnt -= 1
-            if sec % 3 == 0 and sec_100 == 60 and self.spawn_cnt > 0:
+            if self.counter % 90 == 3 and self.spawn_cnt > 0:
                 self.spawn_enemy_tank()
                 self.spawn_cnt -= 2
-            if sec % 8 == 0 and sec_100 == 60 and self.spawn_cnt > 0:
+            if self.counter % 150 == 5 and self.spawn_cnt > 0:
                 self.spawn_enemy_white()
                 self.spawn_cnt -= 1
-            if sec % 10 == 0 and sec_100 == 80 and self.spawn_cnt > 0:
+            if self.counter % 180 == 10 and self.spawn_cnt > 0:
                 self.spawn_enemy_red()
                 self.spawn_cnt -= 1
 
@@ -1728,6 +1776,15 @@ class ShopView(arcade.View):
         self.shop = last_view.shop
         self.cnt = 0
         self.refresh_cost = self.last_view.round + 4
+        self.player.money += self.last_view.money_pool
+
+        # Reset money pool of the game view
+        self.last_view.money_pool = 0
+        self.last_view.money_ui.alpha = 0
+        self.last_view.buy_text.text = ""
+        self.last_view.money_pool_ui.width = 1
+
+        # UI
         self.w, self.h = self.window.get_size()
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
@@ -1908,6 +1965,27 @@ class ShopView(arcade.View):
             text += "- CD: " + str(self.shop.uzi.cd_max) + "\n"
             text += "- Attack range: " + str(self.shop.uzi.life_span) + "\n"
             text += "- Energy cost: " + str(self.shop.uzi.cost) + "\n"
+
+        if self.player.weapons.count(self.shop.shotgun) > 0:
+            text += "Shotgun:\n"
+            text += "- Damage: " + str(self.shop.shotgun.damage) + "\n"
+            text += "- CD: " + str(self.shop.shotgun.cd_max) + "\n"
+            text += "- Attack range: " + \
+                str(self.shop.shotgun.life_span) + "\n"
+            text += "- Energy cost: " + str(self.shop.shotgun.cost) + "\n"
+            text += "- Bullet numbers: " + \
+                str(self.shop.shotgun.bullet_num) + "\n"
+            text += "\n"
+
+        if self.player.weapons.count(self.shop.rocket) > 0:
+            text += "Rocket:\n"
+            text += "- Damage: " + str(self.shop.rocket.damage) + "\n"
+            text += "- CD: " + str(self.shop.rocket.cd_max) + "\n"
+            text += "- Attack range: " + str(self.shop.rocket.life_span) + "\n"
+            text += "- Energy cost: " + str(self.shop.rocket.cost) + "\n"
+            text += "- Bullet numbers: " + \
+                str(self.shop.rocket.bullet_num) + "\n"
+            text += "\n"
 
         self.player_text.text = text
 

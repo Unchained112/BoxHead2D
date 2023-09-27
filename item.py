@@ -119,7 +119,8 @@ class Shop:
         self.barrel = weapon.Barrel()
         self.mine = weapon.Mine()
         self.add_uzi_item = Item("", "Get Uzi", 0, 30, -1, self.add_uzi)
-        self.add_shotgun_item = Item("", "Get Shotgun", 0, 45, -1, self.add_shotgun)
+        self.add_shotgun_item = Item(
+            "", "Get Shotgun", 0, 45, -1, self.add_shotgun)
 
         self.default_item_list = [
             Item("", "Add health: ", 50, 10, 1, increase_health),
@@ -157,16 +158,22 @@ class Shop:
             Item("", "Reduce Uzi CD: ", 2, 19, 1, self.increase_uzi_speed),
             Item("", "Increase Uzi attack range: ",
                  5, 20, 1, self.increase_uzi_range),
+            Item("", "Reduce Uzi energy cost: ",
+                 1, 18, 1, self.reduce_uzi_cost),
             Item("", "Sell Uzi", 0, -100, -1, self.sell_uzi),
         ]
         self.shotgun_item_list = [
             Item("", "Increase Shotgun damage: ", 10,
                  36, 1, self.increase_shotgun_damage),
-            Item("", "Reduce Shotgun CD: ", 2, 21, 1, self.increase_shotgun_speed),
+            Item("", "Reduce Shotgun CD: ", 2, 21,
+                 1, self.increase_shotgun_speed),
             Item("", "Increase Shotgun attack range: ",
                  5, 28, 1, self.increase_shotgun_range),
+            Item("", "Reduce Shotgun energy cost: ",
+                 1, 18, 1, self.reduce_shotgun_cost),
             Item("", "Sell Shotgun", 0, -300, -1, self.sell_shotgun),
-            Item("", "Increase Shotgun bullets:", 1, 26, 1, self.increase_shotgun_bullets)
+            Item("", "Increase Shotgun bullets:", 1,
+                 26, 1, self.increase_shotgun_bullets)
         ]
         self.rocket_item_list = []
         self.wall_item_list = []
