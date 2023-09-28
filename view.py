@@ -973,20 +973,6 @@ class GameView(FadingView):
             body_type=PymunkPhysicsEngine.STATIC,
         )
 
-        # For testing
-        # shotgun = weapon.Shotgun()
-        # self.player.add_weapon(shotgun)
-        # uzi = weapon.Uzi()
-        # self.player.add_weapon(uzi)
-        # rocket = weapon.Rocket()
-        # self.player.add_weapon(rocket)
-        # placed_wall = weapon.PlacedWall()
-        # self.player.add_weapon(placed_wall)
-        # barrel = weapon.Barrel()
-        # self.player.add_weapon(barrel)
-        # mine = weapon.Mine()
-        # self.player.add_weapon(mine)
-
     def on_draw(self) -> None:
         self.clear()
         self.camera_sprites.use()
@@ -1583,6 +1569,11 @@ class GameView(FadingView):
 
     def spawn_enemy(self) -> None:
         """Spawn enemy with different rounds."""
+
+        # Limit the number of enemies for performance issue
+        # TODO: Optimized the performance
+        if len(self.enemy_sprite_list) >= 800:
+            return
 
         if self.spawn_cnt > 0 and self.round <= 3:
             if self.counter % 60 == 0:

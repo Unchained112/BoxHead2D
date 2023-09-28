@@ -36,6 +36,10 @@ class Utils:
     WALL_SIZE = 30
     HALF_WALL_SIZE = 15
 
+    # Minumus CD for guns, 
+    # might change later for different weapons
+    CD_MIN = 4
+
     @staticmethod
     def get_sin(v: Vec2) -> float:
         """Get sine value of a given vector."""

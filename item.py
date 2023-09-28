@@ -1,5 +1,6 @@
 import weapon
 import random
+from utils import Utils
 from character import Player
 
 
@@ -120,7 +121,15 @@ class Shop:
         self.mine = weapon.Mine()
         self.add_uzi_item = Item("", "Get Uzi", 0, 30, -1, self.add_uzi)
         self.add_shotgun_item = Item(
-            "", "Get Shotgun", 0, 45, -1, self.add_shotgun)
+            "", "Get Shotgun", 0, 42, -1, self.add_shotgun)
+        self.add_rocket_item = Item(
+            "", "Get Rocket", 0, 56, -1, self.add_rocket)
+        self.add_wall_item = Item(
+            "", "Get Wall", 0, 28, -1, self.add_wall)
+        self.add_barrel_item = Item(
+            "", "Get Barrel", 0, 52, -1, self.add_barrel)
+        self.add_mine_item = Item(
+            "", "Get Mine", 0, 49, -1, self.add_mine)
 
         self.default_item_list = [
             Item("", "Add health: ", 50, 10, 1, increase_health),
@@ -143,6 +152,10 @@ class Shop:
                  5, 16, 1, self.increase_pistol_range),
             self.add_uzi_item,
             self.add_shotgun_item,
+            self.add_rocket_item,
+            self.add_wall_item,
+            self.add_barrel_item,
+            self.add_mine_item,
         ]
 
         self.is_explosion_added = False
@@ -160,7 +173,7 @@ class Shop:
                  5, 20, 1, self.increase_uzi_range),
             Item("", "Reduce Uzi energy cost: ",
                  1, 18, 1, self.reduce_uzi_cost),
-            Item("", "Sell Uzi", 0, -100, -1, self.sell_uzi),
+            Item("", "Sell Uzi", 0, -280, -1, self.sell_uzi),
         ]
         self.shotgun_item_list = [
             Item("", "Increase Shotgun damage: ", 10,
@@ -170,15 +183,42 @@ class Shop:
             Item("", "Increase Shotgun attack range: ",
                  5, 28, 1, self.increase_shotgun_range),
             Item("", "Reduce Shotgun energy cost: ",
-                 1, 18, 1, self.reduce_shotgun_cost),
-            Item("", "Sell Shotgun", 0, -300, -1, self.sell_shotgun),
+                 1, 24, 1, self.reduce_shotgun_cost),
+            Item("", "Sell Shotgun", 0, -400, -1, self.sell_shotgun),
             Item("", "Increase Shotgun bullets:", 1,
                  26, 1, self.increase_shotgun_bullets)
         ]
-        self.rocket_item_list = []
-        self.wall_item_list = []
-        self.barrel_item_list = []
-        self.mine_item_list = []
+        self.rocket_item_list = [
+            Item("", "Reduce Rocket CD: ", 2, 32,
+                 1, self.increase_rocket_speed),
+            Item("", "Increase Rocket attack range: ",
+                 5, 35, 1, self.increase_rocket_range),
+            Item("", "Reduce Rocket energy cost: ",
+                 1, 28, 1, self.reduce_rocket_cost),
+            Item("", "Sell Rocket", 0, -500, -1, self.sell_rocket),
+            Item("", "Increase Rocket bullets:", 1,
+                 52, 1, self.increase_rocket_bullets)
+        ]
+        self.wall_item_list = [
+            Item("", "Reduce Wall cost: ", 1, 16,
+                 1, self.reduce_wall_cost),
+            Item("", "Sell Wall: ", 2, -200,
+                 -1, self.sell_wall),
+            Item("", "Increase Wall durability: ", 20, 24,
+                 1, self.add_wall_durability),
+        ]
+        self.barrel_item_list = [
+            Item("", "Reduce Barrel cost: ", 1, 35,
+                 1, self.reduce_barrel_cost),
+            Item("", "Sell Barrel: ", 2, -400,
+                 -1, self.sell_barrel),
+        ]
+        self.mine_item_list = [
+            Item("", "Reduce Mine cost: ", 1, 28,
+                 1, self.reduce_mine_cost),
+            Item("", "Sell Mine: ", 2, -360,
+                 -1, self.sell_mine),
+        ]
 
         self.cur_item_list = []
         self.cur_item_list.extend(self.default_item_list)
@@ -236,7 +276,7 @@ class Shop:
         return True
 
     def increase_pistol_speed(self, item: Item, player: Player) -> bool:
-        self.pistol.cd_max = max(self.pistol.cd_max - item.value, 0)
+        self.pistol.cd_max = max(self.pistol.cd_max - item.value, Utils.CD_MIN)
         return True
 
     def increase_pistol_range(self, item: Item, player: Player) -> bool:
@@ -256,7 +296,7 @@ class Shop:
         return True
 
     def increase_uzi_speed(self, item: Item, player: Player) -> bool:
-        self.uzi.cd_max = max(self.uzi.cd_max - item.value, 0)
+        self.uzi.cd_max = max(self.uzi.cd_max - item.value, Utils.CD_MIN)
         return True
 
     def increase_uzi_range(self, item: Item, player: Player) -> bool:
@@ -264,7 +304,7 @@ class Shop:
         return True
 
     def reduce_uzi_cost(self, item: Item, player: Player) -> bool:
-        self.uzi.cost -= max(self.uzi.cost - item.value, 0)
+        self.uzi.cost = max(self.uzi.cost - item.value, 0)
         return True
 
     def sell_uzi(self, item: Item, player: Player) -> bool:
@@ -288,7 +328,7 @@ class Shop:
         return True
 
     def increase_shotgun_speed(self, item: Item, player: Player) -> bool:
-        self.shotgun.cd_max = max(self.shotgun.cd_max - item.value, 0)
+        self.shotgun.cd_max = max(self.shotgun.cd_max - item.value, Utils.CD_MIN)
         return True
 
     def increase_shotgun_range(self, item: Item, player: Player) -> bool:
@@ -296,7 +336,7 @@ class Shop:
         return True
 
     def reduce_shotgun_cost(self, item: Item, player: Player) -> bool:
-        self.shotgun.cost -= max(self.shotgun.cost - item.value, 0)
+        self.shotgun.cost = max(self.shotgun.cost - item.value, 0)
         return True
 
     def sell_shotgun(self, item: Item, player: Player) -> bool:
@@ -312,9 +352,127 @@ class Shop:
         return True
 
     # Rocket items
+
+    def add_rocket(self, item: Item, player: Player) -> bool:
+        if self.is_explosion_added == False:
+            self.is_explosion_added = True
+            self.cur_item_list.extend(self.explosion_item_list)
+        player.add_weapon(self.rocket)
+        self.cur_item_list.remove(self.add_rocket_item)
+        self.cur_item_list.extend(self.rocket_item_list)
+        return True
+
+    def increase_rocket_speed(self, item: Item, player: Player) -> bool:
+        self.rocket.cd_max = max(self.rocket.cd_max - item.value, Utils.CD_MIN)
+        return True
+
+    def increase_rocket_range(self, item: Item, player: Player) -> bool:
+        self.rocket.life_span += item.value
+        return True
+
+    def reduce_rocket_cost(self, item: Item, player: Player) -> bool:
+        self.rocket.cost = max(self.rocket.cost - item.value, 0)
+        return True
+
+    def sell_rocket(self, item: Item, player: Player) -> bool:
+        player.weapons.remove(self.rocket)
+        self.rocket = weapon.Rocket()
+        for i in self.rocket_item_list:
+            self.cur_item_list.remove(i)
+        self.cur_item_list.append(self.add_rocket_item)
+        
+        if (player.weapons.count(self.barrel) == 0 and
+            player.weapons.count(self.mine) == 0):
+            for i in self.explosion_item_list:
+                self.cur_item_list.remove(i)
+            self.is_explosion_added = False
+
+        return True
+
+    def increase_rocket_bullets(self, item: Item, player: Player) -> bool:
+        self.rocket.bullet_num += item.value
+        return True
+
     # PlacedWall items
+
+    def add_wall(self, item: Item, player: Player) -> bool:
+        player.add_weapon(self.placed_wall)
+        self.cur_item_list.remove(self.add_wall_item)
+        self.cur_item_list.extend(self.wall_item_list)
+        return True
+
+    def reduce_wall_cost(self, item: Item, player: Player) -> bool:
+        self.wall.cost = max(self.wall.cost - item.value, 0)
+        return True
+
+    def sell_wall(self, item: Item, player: Player) -> bool:
+        player.weapons.remove(self.wall)
+        self.wall = weapon.PlacedWall()
+        for i in self.wall_item_list:
+            self.cur_item_list.remove(i)
+        self.cur_item_list.append(self.add_wall_item)
+        return True
+
+    def add_wall_durability(self, item: Item, player: Player) -> bool:
+        self.wall.health_max += item.value
+        return True
+
     # Barrel items
+
+    def add_barrel(self, item: Item, player: Player) -> bool:
+        if self.is_explosion_added == False:
+            self.is_explosion_added = True
+            self.cur_item_list.extend(self.explosion_item_list)
+        player.add_weapon(self.barrel)
+        self.cur_item_list.remove(self.add_barrel_item)
+        self.cur_item_list.extend(self.barrel_item_list)
+        return True
+
+    def reduce_barrel_cost(self, item: Item, player: Player) -> bool:
+        self.barrel.cost = max(self.barrel.cost - item.value, 0)
+        return True
+
+    def sell_barrel(self, item: Item, player: Player) -> bool:
+        player.weapons.remove(self.barrel)
+        self.barrel = weapon.Barrel()
+        for i in self.barrel_item_list:
+            self.cur_item_list.remove(i)
+        self.cur_item_list.append(self.add_barrel_item)
+
+        if (player.weapons.count(self.rocket) == 0 and
+            player.weapons.count(self.mine) == 0):
+            for i in self.explosion_item_list:
+                self.cur_item_list.remove(i)
+            self.is_explosion_added = False
+
+        return True
+
     # Mine items
 
-    def clear(self) -> None:
-        pass
+    def add_mine(self, item: Item, player: Player) -> bool:
+        if self.is_explosion_added == False:
+            self.is_explosion_added = True
+            self.cur_item_list.extend(self.explosion_item_list)
+        player.add_weapon(self.mine)
+        self.cur_item_list.remove(self.add_mine_item)
+        self.cur_item_list.extend(self.mine_item_list)
+        return True
+
+    def reduce_mine_cost(self, item: Item, player: Player) -> bool:
+        self.mine.cost = max(self.mine.cost - item.value, 0)
+        return True
+
+    def sell_mine(self, item: Item, player: Player) -> bool:
+        player.weapons.remove(self.mine)
+        self.mine = weapon.Mine()
+        for i in self.mine_item_list:
+            self.cur_item_list.remove(i)
+        self.cur_item_list.append(self.add_mine_item)
+
+        if (player.weapons.count(self.barrel) == 0 and
+            player.weapons.count(self.rocket) == 0):
+            for i in self.explosion_item_list:
+                self.cur_item_list.remove(i)
+            self.is_explosion_added = False
+
+        return True

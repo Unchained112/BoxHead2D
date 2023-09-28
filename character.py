@@ -176,17 +176,15 @@ class Player(Character):
         super().__init__(x, y, physics_engine)
         self.speed = 1600
         self.is_attack = False
-        # self.energy = 0
-        # self.health = 100
-        self.kill_recover = 5
+        self.energy = int(0)
+        self.health = int(1000)
+        self.kill_recover = int(5)
         self.explosion_damage = 20
         # self.money = 0
         self.luck = 6
 
         # For testing
         self.money = int(100000)
-        self.health = int(100000)
-        self.energy = int(100000)
 
         # Player body sprite
         self.body.texture = self.body_texture
