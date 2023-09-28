@@ -328,7 +328,8 @@ class Shop:
         return True
 
     def increase_shotgun_speed(self, item: Item, player: Player) -> bool:
-        self.shotgun.cd_max = max(self.shotgun.cd_max - item.value, Utils.CD_MIN)
+        self.shotgun.cd_max = max(
+            self.shotgun.cd_max - item.value, Utils.CD_MIN)
         return True
 
     def increase_shotgun_range(self, item: Item, player: Player) -> bool:
@@ -380,9 +381,9 @@ class Shop:
         for i in self.rocket_item_list:
             self.cur_item_list.remove(i)
         self.cur_item_list.append(self.add_rocket_item)
-        
+
         if (player.weapons.count(self.barrel) == 0 and
-            player.weapons.count(self.mine) == 0):
+                player.weapons.count(self.mine) == 0):
             for i in self.explosion_item_list:
                 self.cur_item_list.remove(i)
             self.is_explosion_added = False
@@ -440,7 +441,7 @@ class Shop:
         self.cur_item_list.append(self.add_barrel_item)
 
         if (player.weapons.count(self.rocket) == 0 and
-            player.weapons.count(self.mine) == 0):
+                player.weapons.count(self.mine) == 0):
             for i in self.explosion_item_list:
                 self.cur_item_list.remove(i)
             self.is_explosion_added = False
@@ -470,7 +471,7 @@ class Shop:
         self.cur_item_list.append(self.add_mine_item)
 
         if (player.weapons.count(self.barrel) == 0 and
-            player.weapons.count(self.rocket) == 0):
+                player.weapons.count(self.rocket) == 0):
             for i in self.explosion_item_list:
                 self.cur_item_list.remove(i)
             self.is_explosion_added = False

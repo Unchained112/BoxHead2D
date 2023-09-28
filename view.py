@@ -139,6 +139,9 @@ class StartView(FadingView):
         self.camera_sprites = arcade.Camera(self.w, self.h)
 
     def setup(self) -> None:
+        # Play start view BGM
+        self.window.play_start_music(0)
+
         # Create the physics engine
         damping = 0.01
         gravity = (0, 0)
@@ -728,11 +731,13 @@ class OptionView(arcade.View):
         self.window.music_volume = min(20, self.window.music_volume + 1)
         self.music_volume_text.text = str(self.window.music_volume)
         self.window.play_button_sound()
+        self.window.update_music_volume()
 
     def on_click_music_volume_down(self, event) -> None:
         self.window.music_volume = max(0, self.window.music_volume - 1)
         self.music_volume_text.text = str(self.window.music_volume)
         self.window.play_button_sound()
+        self.window.update_music_volume()
 
     def on_click_fullscreen(self, event) -> None:
         self.window.set_fullscreen(not self.window.fullscreen)
@@ -832,6 +837,9 @@ class GameView(FadingView):
 
     def setup(self, player: character.Player, map: room.Room) -> None:
         """Set up the game and initialize the variables."""
+
+        # Play game BGM
+        self.window.play_game_music(1)
 
         # Gameplay set up
         self.round: int = 0
@@ -1956,6 +1964,7 @@ class ShopView(arcade.View):
             text += "- CD: " + str(self.shop.uzi.cd_max) + "\n"
             text += "- Attack range: " + str(self.shop.uzi.life_span) + "\n"
             text += "- Energy cost: " + str(self.shop.uzi.cost) + "\n"
+            text += "\n"
 
         if self.player.weapons.count(self.shop.shotgun) > 0:
             text += "Shotgun:\n"

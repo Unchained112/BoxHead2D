@@ -233,7 +233,7 @@ class Uzi(Weapon):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__("graphics/weapon/Uzi.png", x, y)
-        self.cd_max = int(20) # 20/60 s
+        self.cd_max = int(20)  # 20/60 s
         self.cost = 4
         self.damage = 30
         self.life_span = 25
@@ -270,7 +270,7 @@ class Rocket(Weapon):
     def get_bullet(self) -> arcade.SpriteList:
         bullets = arcade.SpriteList()
         for i in range(1, self.bullet_num + 1):
-            angle = (-0.02 + 0.04 / (self.bullet_num+1) * i) * self.bullet_num
+            angle = (-0.05 + 0.01 / (self.bullet_num+1) * i) * self.bullet_num
             bullet = self.bullet()
             bullet.life_span = self.life_span
             bullet.center_x = self.center_x - 10
