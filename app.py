@@ -1,24 +1,29 @@
 import arcade
 import view
-
-SPRITE_SCALING = 0.5
-
-SCREEN_WIDTH = 1280
-SCREEN_HEIGHT = 720
-SCREEN_TITLE = "Box Head 2D: Survivor"
-
+import pickle
 
 class BoxHead2d(arcade.Window):
     """ Main application class. """
 
-    def __init__(self, width: int, height: int, title: str):
-        super().__init__(width, height, title)
-        self.effect_volume = 2
-        self.music_volume = 2
-        self.state = 0  # game state
+    def __init__(self):
+        with open("data/settings.bin", "rb") as setting_file:
+            settings = pickle.load(setting_file)
+        self.effect_volume = settings.effect_volume
+        self.music_volume = settings.music_volume
+        self.res_index = settings.res_index
         self.w_scale = [1024, 1280, 1440, 1920]
         self.h_scale = [600, 720, 900, 1080]
-        self.res_index = 1
+        super().__init__(self.w_scale[self.res_index],
+                         self.h_scale[self.res_index],
+                         "Box Head 2D: Survivor")
+        self.set_fullscreen(settings.fullscreen)
+        self.start_view = None
+        self.option_view = None
+        self.select_view = None
+        self.game_view = None
+
+    def set_up(self) -> None:
+        # Load sound and music
         self.button_sound = arcade.Sound("audio/ui_click.wav")
         self.explosion_sound = arcade.Sound("audio/explosion_2.wav")
         self.cur_music_idx = 0
@@ -26,12 +31,8 @@ class BoxHead2d(arcade.Window):
             "audio/the-best-jazz-club-in-new-orleans-164472.wav")
         self.game_music = arcade.Sound(
             "audio/electronic-rock-king-around-here-15045.wav")
-        self.start_view = None
-        self.option_view = None
-        self.select_view = None
-        self.game_view = None
 
-    def set_up(self) -> None:
+        # Set game views
         self.option_view = view.OptionView()
         self.select_view = view.SelectionView()
         self.shop_view = view.ShopView()
@@ -68,7 +69,7 @@ def main():
     arcade.load_font("fonts/DottedSongtiSquareRegular.otf")
     arcade.load_font("fonts/SourceHanSansOLD-Normal-2.otf")
 
-    game = BoxHead2d(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    game = BoxHead2d()
     game.set_up()
     default = view.DefaultView()
     default.setup()

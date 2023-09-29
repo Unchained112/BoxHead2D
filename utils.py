@@ -1,6 +1,7 @@
 
 from pyglet.math import Vec2
 import arcade.gui
+import pickle
 
 
 class Color:
@@ -36,7 +37,7 @@ class Utils:
     WALL_SIZE = 30
     HALF_WALL_SIZE = 15
 
-    # Minimum CD for guns, 
+    # Minimum CD for guns,
     # might change later for different weapons
     CD_MIN = 4
 
@@ -58,6 +59,16 @@ class Utils:
         for _ in range(0, len(manager.children[0])):
             manager.clear()
         manager.clear()
+
+    @staticmethod
+    def save_settings(window: arcade.Window):
+        with open("data/settings.bin", "wb") as setting_file:
+            settings = Setting(window.effect_volume,
+                               window.music_volume,
+                               window.res_index,
+                               window.fullscreen)
+            pickle.dump(settings, setting_file)
+
 
 class Style:
     """Design styles."""
@@ -89,3 +100,13 @@ class Style:
         "border_color_pressed": Color.WHITE,  # also used when hovered
         "font_color_pressed": Color.BLACK,
     }
+
+
+class Setting:
+    """Game settings."""
+
+    def __init__(self, e_volume: int, m_volume: int, r_idx: int, fullscreen: bool) -> None:
+        self.effect_volume = e_volume
+        self.music_volume = m_volume
+        self.res_index = r_idx
+        self.fullscreen = fullscreen

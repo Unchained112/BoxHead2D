@@ -381,6 +381,7 @@ class StartView(FadingView):
         self.window.show_view(self.window.option_view)
 
     def on_click_quit(self, event) -> None:
+        utils.Utils.save_settings(self.window)
         arcade.exit()
 
 
@@ -796,6 +797,7 @@ class OptionView(arcade.View):
 
     def on_click_quit(self, event) -> None:
         self.window.play_button_sound()
+        utils.Utils.save_settings(self.window)
         arcade.exit()
 
 
@@ -915,6 +917,7 @@ class GameView(FadingView):
             1, 10, utils.Color.YELLOW)
         self.money_pool_ui.center_x = self.w / 2 - 297
         self.money_pool_ui.center_y = 60
+        self.money_pool_ui.visible = False
 
         self.ui_sprite_list.append(self.money_ui)
         self.ui_sprite_list.append(self.money_container)
@@ -1453,7 +1456,9 @@ class GameView(FadingView):
         # Update money pool
         self.money_pool += int(score_change / 10)
         money_pool_len = 594.0 * float(self.money_pool) / float(self.round*100)
-        money_pool_len = min(594, money_pool_len)
+        money_pool_len = min(594.0, money_pool_len)
+        if money_pool_len > 1.0:
+            self.money_pool_ui.visible = True
         money_pool_x = self.w/2 - 297 + (money_pool_len/2)
         self.money_pool_ui.width = money_pool_len
         self.money_pool_ui.center_x = money_pool_x
@@ -1781,7 +1786,7 @@ class ShopView(arcade.View):
         self.last_view.money_pool = 0
         self.last_view.money_ui.alpha = 0
         self.last_view.buy_text.text = ""
-        self.last_view.money_pool_ui.width = 1
+        self.last_view.money_pool_ui.visible = False
 
         # UI
         self.w, self.h = self.window.get_size()
