@@ -30,6 +30,7 @@ class BoxHead2d(arcade.Window):
         self.refresh_sound = arcade.Sound("audio/ui_refresh.wav")
         self.purchase_sound = arcade.Sound("audio/ui_purchase.wav")
         self.purchase_fail_sound = arcade.Sound("audio/ui_purchase_fail.wav")
+        self.round_start_sound = arcade.Sound("audio/round_start.wav")
 
         self.start_music = arcade.Sound(
             "audio/the-best-jazz-club-in-new-orleans-164472.wav")
@@ -41,10 +42,10 @@ class BoxHead2d(arcade.Window):
         self.select_view = view.SelectionView()
         self.shop_view = view.ShopView()
         self.start_music_player = self.start_music.play(
-            volume=self.effect_volume/20, loop=True)
+            volume=self.music_volume/20, loop=True)
         self.start_music_player.pause()
         self.game_music_player = self.game_music.play(
-            volume=self.effect_volume/20, loop=True)
+            volume=self.music_volume/20, loop=True)
         self.game_music_player.pause()
 
     def play_button_sound(self) -> None:
@@ -61,6 +62,9 @@ class BoxHead2d(arcade.Window):
 
     def play_purchase_fail_sound(self) -> None:
         self.purchase_fail_sound.play(volume=self.effect_volume/20)
+
+    def play_round_start_sound(self) -> None:
+        self.round_start_sound.play(volume=self.effect_volume/20)
 
     def update_music_volume(self) -> None:
         self.start_music_player.volume = self.music_volume/20

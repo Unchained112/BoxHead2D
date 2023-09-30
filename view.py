@@ -187,7 +187,10 @@ class StartView(FadingView):
         self.start_sprite_list = arcade.SpriteList()
         self.start_sprite_list.append(
             arcade.Sprite(
-                filename="graphics/ui/MoveGuide.png", scale=0.3, center_x=200, center_y=200
+                filename="graphics/ui/MoveGuide.png",
+                scale=0.3,
+                center_x=200,
+                center_y=200
             )
         )
         self.start_sprite_list.append(
@@ -214,6 +217,22 @@ class StartView(FadingView):
                 center_y=self.h - 200,
             )
         )
+        self.start_sprite_list.append(
+            arcade.Sprite(
+                filename="graphics/ui/ShopGuide.png",
+                scale=0.3,
+                center_x=self.w - 200,
+                center_y=self.h - 100,
+            )
+        )
+        # self.start_sprite_list.append(
+        #     arcade.Sprite(
+        #         filename="graphics/ui/CreatedByBosen.png",
+        #         scale=0.3,
+        #         center_x=self.w / 2,
+        #         center_y=100,
+        #     )
+        # )
 
         # Add UI elements
         self.manager = arcade.gui.UIManager()
@@ -1553,6 +1572,7 @@ class GameView(FadingView):
             self.round_text.text = "Round: 1"
             self.round = 1
             self.spawn_cnt = 1
+            self.window.play_round_start_sound()
 
         # Score multiplier
         if self.total_time - self.last_kill_time > 1.0 and self.multiplier > 1:
@@ -1571,6 +1591,7 @@ class GameView(FadingView):
             self.round += 1
             self.round_text.text = "Round: " + str(self.round)
             self.spawn_cnt = self.round
+            self.window.play_round_start_sound()
 
         # Update enemies
         self.enemy_white_list.update()
