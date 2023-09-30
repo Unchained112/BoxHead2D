@@ -2,6 +2,7 @@ import arcade
 import view
 import pickle
 
+
 class BoxHead2d(arcade.Window):
     """ Main application class. """
 
@@ -26,7 +27,10 @@ class BoxHead2d(arcade.Window):
         # Load sound and music
         self.button_sound = arcade.Sound("audio/ui_click.wav")
         self.explosion_sound = arcade.Sound("audio/explosion_2.wav")
-        self.cur_music_idx = 0
+        self.refresh_sound = arcade.Sound("audio/ui_refresh.wav")
+        self.purchase_sound = arcade.Sound("audio/ui_purchase.wav")
+        self.purchase_fail_sound = arcade.Sound("audio/ui_purchase_fail.wav")
+
         self.start_music = arcade.Sound(
             "audio/the-best-jazz-club-in-new-orleans-164472.wav")
         self.game_music = arcade.Sound(
@@ -48,6 +52,15 @@ class BoxHead2d(arcade.Window):
 
     def play_explosion_sound(self) -> None:
         self.explosion_sound.play(volume=self.effect_volume/20)
+
+    def play_refresh_sound(self) -> None:
+        self.refresh_sound.play(volume=self.effect_volume/20)
+
+    def play_purchase_sound(self) -> None:
+        self.purchase_sound.play(volume=self.effect_volume/20)
+
+    def play_purchase_fail_sound(self) -> None:
+        self.purchase_fail_sound.play(volume=self.effect_volume/20)
 
     def update_music_volume(self) -> None:
         self.start_music_player.volume = self.music_volume/20

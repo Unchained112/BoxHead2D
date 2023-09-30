@@ -2070,6 +2070,7 @@ class ShopView(arcade.View):
         if self.player.money < self.items[index].cost:
             # Not enough money
             self.update_purchase_text(1)
+            self.window.play_purchase_fail_sound()
             return
 
         if self.items[index].equip(self.items[index], self.player):
@@ -2085,16 +2086,20 @@ class ShopView(arcade.View):
             self.player.money -= self.items[index].cost
             self.update_purchase_text(0)
             self.item_button_enables[index] = False
+            self.window.play_purchase_sound()
         else:
             # Purchase failed
             self.update_purchase_text(1)
+            self.window.play_purchase_fail_sound()
 
     def on_click_refresh(self, event) -> None:
         if self.player.money < self.refresh_cost:
             self.update_purchase_text(2)
+            self.window.play_purchase_fail_sound()
             return
         self.player.money -= self.refresh_cost
         self.refresh_cost += self.last_view.round
+        self.window.play_refresh_sound()
 
         # Clear item list
         self.item_bg_list.clear()

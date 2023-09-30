@@ -180,11 +180,8 @@ class Player(Character):
         self.health = int(1000)
         self.kill_recover = int(5)
         self.explosion_damage = 20
-        # self.money = 0
+        self.money = 100
         self.luck = 6
-
-        # For testing
-        self.money = int(100000)
 
         # Player body sprite
         self.body.texture = self.body_texture
