@@ -69,10 +69,10 @@ class DefaultView(FadingView):
         arcade.set_background_color(utils.Color.GROUND_WHITE)
         self.w, self.h = self.window.get_size()
         self.title = arcade.Sprite(
-            filename="graphics/ui/Title.png",
-            scale=2,
+            filename="graphics/ui/TitleLogo.png",
+            scale=1,
             center_x=self.w / 2,
-            center_y=self.h / 2 - 20,
+            center_y=self.h / 2 + 20,
         )
         self.text_alpha = 250
         self.text_fading = -5  # must be divisible by 250
@@ -225,22 +225,28 @@ class StartView(FadingView):
                 center_y=self.h - 100,
             )
         )
-        # self.start_sprite_list.append(
-        #     arcade.Sprite(
-        #         filename="graphics/ui/CreatedByBosen.png",
-        #         scale=0.3,
-        #         center_x=self.w / 2,
-        #         center_y=100,
-        #     )
-        # )
+        self.about_text = arcade.Text("Created by Unchain.",
+                                      self.w - 600,
+                                      120,
+                                      color=utils.Color.DARK_GRAY,
+                                      font_size=14,
+                                      font_name="FFF Forward",
+                                      anchor_x="center")
+        self.about_text_shadow = arcade.Text("Created by Unchain.",
+                                      self.w - 602,
+                                      120,
+                                      color=utils.Color.LIGHT_GRAY,
+                                      font_size=14,
+                                      font_name="FFF Forward",
+                                      anchor_x="center")
 
         # Add UI elements
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
         self.vertical_box = arcade.gui.UIBoxLayout(x=200)
-        title = arcade.Sprite(filename="graphics/ui/Title.png", scale=2)
+        title = arcade.Sprite(filename="graphics/ui/TitleLogo.png", scale=1)
         title_ui = arcade.gui.UISpriteWidget(
-            sprite=title, width=400, height=300)
+            sprite=title, width=400, height=200)
         self.vertical_box.add(title_ui.with_space_around(bottom=0))
 
         start_button = arcade.gui.UIFlatButton(
@@ -277,6 +283,8 @@ class StartView(FadingView):
         self.player.draw()
         self.player_bullet_list.draw()
         self.manager.draw()
+        self.about_text_shadow.draw()
+        self.about_text.draw()
 
     def on_update(self, delta_time: float) -> None:
         self.update_fade()
