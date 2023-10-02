@@ -1547,7 +1547,7 @@ class GameView(FadingView):
             bullet.damage = self.player.explosion_damage
             self.player_bullet_list.append(bullet)
 
-        smoke = effect.Smoke(20)
+        smoke = effect.Smoke(12)
         smoke.position = position
         self.explosions_list.append(smoke)
 

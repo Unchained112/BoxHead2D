@@ -306,8 +306,6 @@ class EnemyWhite(Character):
         force = player_pos - current_pos
         tmp = Vec2(0, 0)
 
-        # TODO: Add some randomization
-
         if self.last_force.distance(force) < 0.1:
             if abs(self.last_force.x - force.x) < 0.1:
                 tmp.x = self.l_or_r
@@ -333,8 +331,8 @@ class EnemyRed(Character):
         self.is_walking = True
         self.hit_damage = int(20)
         self.last_force = Vec2(0, 0)
-        self.shoot_range = 280
-        self.cd_max = int(60)
+        self.shoot_range = 200
+        self.cd_max = int(90)
         self.bullet = weapon.FireBall
         self.body.texture = arcade.load_texture("graphics/character/EnemyRed.png")
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
@@ -347,8 +345,6 @@ class EnemyRed(Character):
         player_pos = Vec2(self.player.center_x, self.player.center_y)
         force = player_pos - current_pos
         tmp = Vec2(0, 0)
-
-        # TODO: Add some randomization
 
         if current_pos.distance(player_pos) < self.shoot_range:
             self.is_walking = False
@@ -410,8 +406,6 @@ class EnemyCrack(Character):
         force = player_pos - current_pos
         tmp = Vec2(0, 0)
 
-        # TODO: Add some randomization
-
         if self.last_force.distance(force) < 0.1:
             if abs(self.last_force.x - force.x) < 0.1:
                 tmp.x = self.l_or_r
@@ -437,8 +431,8 @@ class EnemyBigMouth(Character):
         self.is_walking = True
         self.hit_damage = int(20)
         self.last_force = Vec2(0, 0)
-        self.shoot_range = 500
-        self.cd_max = int(50)
+        self.shoot_range = 300
+        self.cd_max = int(70)
         self.bullet = weapon.FireBall
         self.body.texture = arcade.load_texture("graphics/character/BigMouth.png")
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
@@ -451,8 +445,6 @@ class EnemyBigMouth(Character):
         player_pos = Vec2(self.player.center_x, self.player.center_y)
         force = player_pos - current_pos
         tmp = Vec2(0, 0)
-
-        # TODO: Add some randomization
 
         if current_pos.distance(player_pos) < self.shoot_range:
             self.is_walking = False
@@ -532,8 +524,6 @@ class EnemyCrash(Character):
         force = player_pos - current_pos
         tmp = Vec2(0, 0)
 
-        # TODO: Add some randomization
-
         if current_pos.distance(player_pos) < self.shoot_range:
             self.is_walking = False
             return
@@ -570,7 +560,7 @@ class EnemyTank(Character):
         self.health_max = int(400)
         self.is_walking = True
         self.last_force = Vec2(0, 0)
-        self.hit_damage = int(40)
+        self.hit_damage = int(60)
         self.body.texture = arcade.load_texture("graphics/character/Tank.png")
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
         self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
@@ -585,8 +575,6 @@ class EnemyTank(Character):
         player_pos = Vec2(self.player.center_x, self.player.center_y)
         force = player_pos - current_pos
         tmp = Vec2(0, 0)
-
-        # TODO: Add some randomization
 
         if current_pos.distance(player_pos) < self.shoot_range:
             self.is_walking = False

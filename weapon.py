@@ -205,7 +205,7 @@ class Shotgun(Weapon):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__("graphics/weapon/Shotgun.png", x, y)
         self.cd_max = int(50)  # 50/60 s
-        self.cost = 8
+        self.cost = 12
         self.damage = 40
         self.life_span = 10
         self.bullet_num = 3
@@ -234,9 +234,10 @@ class Uzi(Weapon):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__("graphics/weapon/Uzi.png", x, y)
         self.cd_max = int(20)  # 20/60 s
-        self.cost = 4
+        self.cost = 3
         self.damage = 30
         self.life_span = 25
+        self.bullet_speed = 30
         self.bullet = EnergyBullet
         self.sound = arcade.Sound("audio/wpn_fire_p90.wav")
 
@@ -258,7 +259,7 @@ class Rocket(Weapon):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__("graphics/weapon/Rocket.png", x, y)
-        self.cd_max = int(30)  # 1/6 s
+        self.cd_max = int(40)  # 1/6 s
         self.cost = 20
         self.damage = 0
         self.bullet = Missile
@@ -318,7 +319,6 @@ class Barrel(Weapon):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__()
         self.is_gun = False
-        self.damage = 30
         self.cd_max = int(0)  # 1/6 s
         self.pos = Vec2(x, y)
         self.aim_pos = Vec2(0, 0)
@@ -347,7 +347,6 @@ class Mine(Weapon):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__()
         self.is_gun = False
-        self.damage = 30
         self.cd_max = int(0)  # 1/6 s
         self.pos = Vec2(x, y)
         self.aim_pos = Vec2(0, 0)

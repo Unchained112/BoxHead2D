@@ -19,7 +19,7 @@ class Smoke(arcade.SpriteCircle):
 
     def __init__(self, size: int) -> None:
         super().__init__(size, arcade.color.DARK_GRAY, soft=True)
-        self.scale = 0.66  # smoke scale
+        self.scale = 1  # smoke scale
 
     def update(self) -> None:
         """ Update this particle """
