@@ -390,9 +390,9 @@ class Shop:
 
         return True
 
-    def increase_rocket_bullets(self, item: Item, player: Player) -> bool:
-        self.rocket.bullet_num += item.value
-        return True
+    # def increase_rocket_bullets(self, item: Item, player: Player) -> bool:
+    #     self.rocket.bullet_num += item.value
+    #     return True
 
     # PlacedWall items
 

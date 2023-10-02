@@ -125,33 +125,6 @@ class Character(arcade.Sprite):
     def update(self) -> None:
         self.move()
 
-        # Body animation
-        if self.body_move_frames == 0:  # reset frames
-            self.body_move_frames = self.body_move_frames_max
-            self.body_move_up = not self.body_move_up
-
-        self.body_move_frames -= 1
-        self.body.center_y += BODY_ANIM[self.body_move_frames]
-
-        # Feet animation
-        if self.walking_frames == 0:  # reset frames
-            self.walking_frames = self.walking_frames_max
-
-        self.walking_frames -= 1
-
-        if self.is_walking:
-            self.foot_l.center_x += L_WALK_X[self.walking_frames]
-            self.foot_l.center_y += L_WALK_Y[self.walking_frames]
-            self.foot_r.center_x += R_WALK_X[self.walking_frames]
-            self.foot_r.center_y += R_WALK_Y[self.walking_frames]
-        else:
-            # reset the walking animation
-            self.foot_l.center_x = self.foot_l_pos.x + self.pos.x
-            self.foot_l.center_y = self.foot_l_pos.y + self.pos.y
-            self.foot_r.center_x = self.foot_r_pos.x + self.pos.x
-            self.foot_r.center_y = self.foot_r_pos.y + self.pos.y
-            self.walking_frames = self.walking_frames_max
-
         self.get_damage_len -= 1
 
         if self.get_damage_len > 0:
@@ -244,6 +217,33 @@ class Player(Character):
             self.change_weapon(1)
 
         super().update()
+
+        # Body animation
+        if self.body_move_frames == 0:  # reset frames
+            self.body_move_frames = self.body_move_frames_max
+            self.body_move_up = not self.body_move_up
+
+        self.body_move_frames -= 1
+        self.body.center_y += BODY_ANIM[self.body_move_frames]
+
+        # Feet animation
+        if self.walking_frames == 0:  # reset frames
+            self.walking_frames = self.walking_frames_max
+
+        self.walking_frames -= 1
+
+        if self.is_walking:
+            self.foot_l.center_x += L_WALK_X[self.walking_frames]
+            self.foot_l.center_y += L_WALK_Y[self.walking_frames]
+            self.foot_r.center_x += R_WALK_X[self.walking_frames]
+            self.foot_r.center_y += R_WALK_Y[self.walking_frames]
+        else:
+            # reset the walking animation
+            self.foot_l.center_x = self.foot_l_pos.x + self.pos.x
+            self.foot_l.center_y = self.foot_l_pos.y + self.pos.y
+            self.foot_r.center_x = self.foot_r_pos.x + self.pos.x
+            self.foot_r.center_y = self.foot_r_pos.y + self.pos.y
+            self.walking_frames = self.walking_frames_max
 
         if self.current_weapon.is_right:
             self.weapon_pos = Vec2(16, -2)

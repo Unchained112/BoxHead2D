@@ -290,7 +290,7 @@ class PlacedWall(Weapon):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__()
         self.is_gun = False
-        self.cd_max = int(0)  # 1/6 s
+        self.cd_max = int(4)  # 1/6 s
         self.pos = Vec2(x, y)
         self.aim_pos = Vec2(0, 0)
         self.cost = 5
@@ -319,7 +319,7 @@ class Barrel(Weapon):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__()
         self.is_gun = False
-        self.cd_max = int(0)  # 1/6 s
+        self.cd_max = int(4)  # 1/6 s
         self.pos = Vec2(x, y)
         self.aim_pos = Vec2(0, 0)
         self.cost = 20
@@ -347,7 +347,7 @@ class Mine(Weapon):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__()
         self.is_gun = False
-        self.cd_max = int(0)  # 1/6 s
+        self.cd_max = int(4)  # 1/6 s
         self.pos = Vec2(x, y)
         self.aim_pos = Vec2(0, 0)
         self.cost = 20

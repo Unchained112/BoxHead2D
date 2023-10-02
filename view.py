@@ -1139,7 +1139,7 @@ class GameView(FadingView):
         # Pick a random direction
         shake_direction = random.random() * 2 * math.pi
         # How 'far' to shake
-        shake_amplitude = 6
+        shake_amplitude = 3
         # Calculate a vector based on that
         shake_vector = Vec2(
             math.cos(shake_direction) * shake_amplitude,
