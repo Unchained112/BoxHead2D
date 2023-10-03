@@ -1707,6 +1707,13 @@ class GameView(FadingView):
                                        collision_type="enemy")
         self.spawn_cnt -= 1
 
+    def generate_enemy(self, is_single, enemy_type, enemy_list) -> None:
+        if is_single:
+            pos = random.sample(self.round.spawn_pos, 1)
+            self.set_one_enemy(pos, enemy_type, enemy_list)
+        else:
+            for pos in self.room.spawn_pos:
+                self.set_one_enemy(pos, enemy_type, enemy_list)
 
     def spawn_enemy_white(self) -> None:
         # Enemy white
