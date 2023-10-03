@@ -110,3 +110,13 @@ class Setting:
         self.music_volume = m_volume
         self.res_index = r_idx
         self.fullscreen = fullscreen
+
+
+class Language:
+    """Language settings."""
+
+    class EN:
+        START = "Start"
+
+    class CN:
+        START = "开始"

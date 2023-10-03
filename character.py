@@ -125,6 +125,14 @@ class Character(arcade.Sprite):
     def update(self) -> None:
         self.move()
 
+        # Body animation
+        if self.body_move_frames == 0:  # reset frames
+            self.body_move_frames = self.body_move_frames_max
+            self.body_move_up = not self.body_move_up
+
+        self.body_move_frames -= 1
+        self.body.center_y += BODY_ANIM[self.body_move_frames]
+
         self.get_damage_len -= 1
 
         if self.get_damage_len > 0:
@@ -217,14 +225,6 @@ class Player(Character):
             self.change_weapon(1)
 
         super().update()
-
-        # Body animation
-        if self.body_move_frames == 0:  # reset frames
-            self.body_move_frames = self.body_move_frames_max
-            self.body_move_up = not self.body_move_up
-
-        self.body_move_frames -= 1
-        self.body.center_y += BODY_ANIM[self.body_move_frames]
 
         # Feet animation
         if self.walking_frames == 0:  # reset frames

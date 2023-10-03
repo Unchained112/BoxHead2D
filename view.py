@@ -887,7 +887,7 @@ class GameView(FadingView):
                                       15, 2, "left", "FFF Forward")
 
         self.window.set_mouse_visible(False)
-        self.counter: int = 0  # assume 60 frames -> 60 = 1s
+        self.counter: int = -250  # assume 60 frames -> 60 = 1s
         self.total_time = 0
         self.last_kill_time = 0
         self.shop_enabled = False  # Enable if money_pool >= round * 100
@@ -1568,15 +1568,15 @@ class GameView(FadingView):
 
     def manage_level(self) -> None:
         # Round
-        if self.counter <= 60:
+        if self.counter <= -190:
             self.round_text.text = "3"
-        elif self.counter > 60 and self.counter <= 120:
+        elif self.counter > -190 and self.counter <= -130:
             self.round_text.text = "2"
-        elif self.counter > 120 and self.counter <= 180:
+        elif self.counter > -130 and self.counter <= -70:
             self.round_text.text = "1"
-        elif self.counter > 180 and self.counter < 240:
+        elif self.counter > -70 and self.counter < -10:
             self.round_text.text = "Start !!!"
-        if self.counter == 250:
+        if self.counter == 0:
             self.round_text.text = "Round: 1"
             self.round = 1
             self.spawn_cnt = 1
@@ -1598,7 +1598,8 @@ class GameView(FadingView):
         if len(self.enemy_sprite_list) == 0 and self.spawn_cnt == 0:
             self.round += 1
             self.round_text.text = "Round: " + str(self.round)
-            self.spawn_cnt = self.round
+            self.counter = 0 # reset the counter
+            self.spawn_cnt = self.round * 12 # num of enemies: round * 12
             self.window.play_round_start_sound()
 
         # Update enemies
@@ -1613,7 +1614,6 @@ class GameView(FadingView):
         """Spawn enemy with different rounds."""
 
         # Limit the number of enemies for performance issue
-        # TODO: Optimized the performance
         if len(self.enemy_sprite_list) >= 800:
             return
 
@@ -1692,9 +1692,21 @@ class GameView(FadingView):
                 self.spawn_enemy_red()
                 self.spawn_cnt -= 1
 
-        # if self.round > 15 and self.round <= 18:
-        #     # Add boss
-        #     pass
+    def set_one_enemy(self, pos, enemy_type, enemy_list) -> None:
+        """Set up a single enemy."""
+        if self.spawn_cnt <= 0:
+            return
+        enemy = enemy_type(
+                pos.x, pos.y, self.physics_engine, self.player)
+        enemy_list.append(enemy)
+        self.enemy_sprite_list.extend(enemy.parts)
+        self.physics_engine.add_sprite(enemy,
+                                       friction=0,
+                                       moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+                                       damping=0.001,
+                                       collision_type="enemy")
+        self.spawn_cnt -= 1
+
 
     def spawn_enemy_white(self) -> None:
         # Enemy white
@@ -1782,7 +1794,12 @@ class GameOverView(arcade.View):
 
     def __init__(self):
         super().__init__()
+        self.manager = None
+        self.last_view = None
 
+    def on_show_view(self) -> None:
+        arcade.set_background_color(utils.Color.GROUND_WHITE)
+        self.window.set_mouse_visible(True)
 
 class GameWinView(arcade.View):
     """Game win view."""

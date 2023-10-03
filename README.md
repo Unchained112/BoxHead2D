@@ -1,35 +1,56 @@
 # BoxHead2D
 
-A simple BoxHead Survivor game in 2D with [Python Arcade](https://api.arcade.academy/en/latest/index.html).
+A simple BoxHead Survivor game in 2D with [Python Arcade](https://api.arcade.academy/en/latest/index.html). 
+
+This is a "rogue-lite", "top-down shooter" game. The core gameplay is a combination of an old 3D BoxHead zombie game and a recent popular survivor-style game.
+
+Requirements for running in the terminal:
+
+- Python 3.6+
+- Arcade library `pip install arcade` or `pip3 install arcade`
+
+Run the game with the command:
+```python
+python app.py # Windows environment
+python3 app.py # Linux or Mac
+```
 
 ### Design Document
 
-Player:
-- Health: 100
-- Energy: 200
-- Health recover: 5 (after kill one enemy)
+#### Player
 
-Enemy White:
-- Health: 100
-- Collide damage: 20
+| Characters | Health | Energy | Money | Speed | Kill recover | Explosion Damage | Luck |
+|------------|--------|--------|-------|-------|--------------|------------------|------|
+| Player     |   1000 |      0 |     0 |  1600 |            5 |               20 |    6 |
 
-Enemy Red:
-- Health: 200
-- Collide damage: 20
-- Shoot damage: 30
+#### Weapons
 
-Weapons:
-| Name       | Damage  | Attack Speed | Cost | CD (*/60 s) | Attack Range (life span) |
-|------------|---------|--------------|------|-------------|--------------------------|
-| Pistol     | 40      | 25           | 0    | 20          | 20                       |
-| Uzi        | 30      | 30           | 2    | 10 or less? | 30                       |
-| Shotgun    | 40 * 3  | 30           | 8    | 30          | 12                       |
-| PlacedWall | 0       | \            | 6    | 10          | \                        |
-| Barrel     | 10 * 24 | \            | 9    | 10          | \                        |
+| Weapons    | Damage           | Energy cost | CD | Attack range (bullet life span) | Bullet speed | Bullet number | Health |
+|------------|------------------|-------------|----|---------------------------------|--------------|---------------|--------|
+| Pistol     |               30 |           0 | 30 |                              20 |           25 | \             | \      |
+| Uzi        |               30 |           3 | 20 |                              25 |           30 | \             | \      |
+| Shotgun    | 40*3             |          12 | 50 |                              10 |           25 |             3 | \      |
+| Rocket     | explosion damage |          20 | 40 |                              15 |           32 |             1 | \      |
+| PlacedWall | \                |           5 |  4 |                                 | \            | \             |    200 |
+| Barrel     | explosion damage |          20 |  4 |                                 | \            | \             |      0 |
+| Mine       | explosion damage |          20 |  4 |                                 | \            | \             |      0 |
 
-### Developer Notes
+#### Enemies
 
-There is no game over as the gameplay design is not done yet.
+| Enemies   | Health | Hit Damage | Bullet damage | Speed | CD  | Attack range | Bullet speed |
+|-----------|--------|------------|---------------|-------|-----|--------------|--------------|
+| White     |    100 |         20 | \             |   800 | \   | \            | \            |
+| Red       |    300 |         20 |            30 |   800 | 120 |          200 |            6 |
+| Crack     |    200 |         40 | \             |  1000 | \   | \            | \            |
+| Big Mouth |    150 |         20 | 50*2          |   800 |  70 |          300 |            7 |
+| Crash     |    100 |         40 | \             |  1000 | \   |          200 | \            |
+| Tank      |    400 |         60 | \             |   600 | \   |          200 | \            |
+
+#### Items
+
+#### Round
+
+
 
 
 ### Notes:
