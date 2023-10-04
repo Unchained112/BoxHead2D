@@ -158,7 +158,7 @@ class Player(Character):
         self.speed = 1600
         self.is_attack = False
         self.energy = int(0)
-        self.health = int(1000)
+        self.health = int(500)
         self.kill_recover = int(5)
         self.explosion_damage = 20
         self.money = 100
@@ -294,7 +294,8 @@ class EnemyWhite(Character):
         self.is_walking = True
         self.last_force = Vec2(0, 0)
         self.hit_damage = int(20)
-        self.body.texture = arcade.load_texture("graphics/character/EnemyWhite.png")
+        self.body.texture = arcade.load_texture(
+            "graphics/character/EnemyWhite.png")
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
         self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
@@ -334,7 +335,8 @@ class EnemyRed(Character):
         self.shoot_range = 200
         self.cd_max = int(90)
         self.bullet = weapon.FireBall
-        self.body.texture = arcade.load_texture("graphics/character/EnemyRed.png")
+        self.body.texture = arcade.load_texture(
+            "graphics/character/EnemyRed.png")
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
         self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
@@ -434,7 +436,8 @@ class EnemyBigMouth(Character):
         self.shoot_range = 300
         self.cd_max = int(70)
         self.bullet = weapon.FireBall
-        self.body.texture = arcade.load_texture("graphics/character/BigMouth.png")
+        self.body.texture = arcade.load_texture(
+            "graphics/character/BigMouth.png")
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
         self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player

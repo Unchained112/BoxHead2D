@@ -233,12 +233,12 @@ class StartView(FadingView):
                                       font_name="FFF Forward",
                                       anchor_x="center")
         self.about_text_shadow = arcade.Text("Created by Unchain.",
-                                      self.w - 602,
-                                      120,
-                                      color=utils.Color.LIGHT_GRAY,
-                                      font_size=14,
-                                      font_name="FFF Forward",
-                                      anchor_x="center")
+                                             self.w - 602,
+                                             120,
+                                             color=utils.Color.LIGHT_GRAY,
+                                             font_size=14,
+                                             font_name="FFF Forward",
+                                             anchor_x="center")
 
         # Add UI elements
         self.manager = arcade.gui.UIManager()
@@ -876,6 +876,7 @@ class GameView(FadingView):
         self.score: int = 0
         self.money_pool: int = 0
         self.spawn_cnt: int = -1
+        self.pool_size: int = 0
         self.round_text = arcade.Text("", self.w / 2,
                                       self.h - 50, utils.Color.BLACK,
                                       15, 2, "left", "FFF Forward")
@@ -1482,14 +1483,14 @@ class GameView(FadingView):
 
         # Update money pool
         self.money_pool += int(score_change / 10)
-        money_pool_len = 594.0 * float(self.money_pool) / float(self.round*100)
+        money_pool_len = 594.0 * float(self.money_pool) / float(self.pool_size)
         money_pool_len = min(594.0, money_pool_len)
         if money_pool_len > 1.0:
             self.money_pool_ui.visible = True
         money_pool_x = self.w/2 - 297 + (money_pool_len/2)
         self.money_pool_ui.width = money_pool_len
         self.money_pool_ui.center_x = money_pool_x
-        if self.money_pool >= self.round * 100:
+        if self.money_pool >= self.pool_size:
             self.shop_enabled = True
             self.money_ui.alpha = 255
             self.buy_text.text = "[B]"
@@ -1577,10 +1578,7 @@ class GameView(FadingView):
         elif self.counter > -70 and self.counter < -10:
             self.round_text.text = "Start !!!"
         if self.counter == 0:
-            self.round_text.text = "Round: 1"
-            self.round = 1
-            self.spawn_cnt = 12
-            self.window.play_round_start_sound()
+            self.spawn_cnt = 0
 
         # Score multiplier
         if self.total_time - self.last_kill_time > 1.0 and self.multiplier > 1:
@@ -1598,8 +1596,9 @@ class GameView(FadingView):
         if len(self.enemy_sprite_list) == 0 and self.spawn_cnt == 0:
             self.round += 1
             self.round_text.text = "Round: " + str(self.round)
-            self.counter = 0 # reset the counter
-            self.spawn_cnt = self.round * 12 # num of enemies: round * 12
+            self.counter = 0  # reset the counter
+            self.spawn_cnt = self.round * 8  # num of enemies: round * 8
+            self.pool_size = (self.round * self.round) * 80
             self.window.play_round_start_sound()
 
         # Update enemies
@@ -1618,86 +1617,25 @@ class GameView(FadingView):
             return
 
         if self.round <= 3:
-            if self.counter % 10 == 0:
+            if self.counter % 30 == 0:
                 self.generate_enemy(1, character.EnemyWhite,
                                     self.enemy_white_list)
 
         if self.round > 3 and self.round <= 6:
-            if self.counter % 60 == 0 and self.spawn_cnt > 0:
-                self.spawn_enemy_white()
-                self.spawn_cnt -= 1
-            if self.counter % 60 == 30 and self.spawn_cnt > 0:
-                self.spawn_enemy_red()
-                self.spawn_cnt -= 1
-
-        if self.round > 6 and self.round <= 9:
-            if self.counter % 60 == 0 and self.spawn_cnt > 0:
-                self.spawn_enemy_white()
-                self.spawn_cnt -= 1
-            if self.counter % 60 == 30 and self.spawn_cnt > 0:
-                self.spawn_enemy_crack()
-                self.spawn_cnt -= 1
-            if self.counter % 120 == 1 and self.spawn_cnt > 0:
-                self.spawn_enemy_red()
-                self.spawn_cnt -= 1
-
-        if self.round > 9 and self.round <= 12:
-            if self.counter % 40 == 0 and self.spawn_cnt > 0:
-                self.spawn_enemy_crack()
-                self.spawn_cnt -= 1
-            if self.counter % 60 == 0 and self.spawn_cnt > 0:
-                self.spawn_enemy_big_mouth()
-                self.spawn_cnt -= 1
-            if self.counter % 120 == 0 and self.spawn_cnt > 0:
-                self.spawn_enemy_white()
-                self.spawn_cnt -= 1
-            if self.counter % 120 == 50 and self.spawn_cnt > 0:
-                self.spawn_enemy_red()
-                self.spawn_cnt -= 1
-
-        if self.round > 12 and self.round <= 15:
-            if self.counter % 40 == 0 and self.spawn_cnt > 0:
-                self.spawn_enemy_crack()
-                self.spawn_cnt -= 1
-            if self.counter % 60 == 32 and self.spawn_cnt > 0:
-                self.spawn_enemy_crash()
-                self.spawn_cnt -= 1
-            if self.counter % 60 == 50 and self.spawn_cnt > 0:
-                self.spawn_enemy_big_mouth()
-                self.spawn_cnt -= 1
-            if self.counter % 150 == 5 and self.spawn_cnt > 0:
-                self.spawn_enemy_white()
-                self.spawn_cnt -= 1
-            if self.counter % 180 == 10 and self.spawn_cnt > 0:
-                self.spawn_enemy_red()
-                self.spawn_cnt -= 1
-
-        if self.round > 15:
-            if self.counter % 40 == 0 and self.spawn_cnt > 0:
-                self.spawn_enemy_crack()
-                self.spawn_cnt -= 1
-            if self.counter % 60 == 32 and self.spawn_cnt > 0:
-                self.spawn_enemy_crash()
-                self.spawn_cnt -= 1
-            if self.counter % 60 == 56 and self.spawn_cnt > 0:
-                self.spawn_enemy_big_mouth()
-                self.spawn_cnt -= 1
-            if self.counter % 90 == 3 and self.spawn_cnt > 0:
-                self.spawn_enemy_tank()
-                self.spawn_cnt -= 2
-            if self.counter % 150 == 5 and self.spawn_cnt > 0:
-                self.spawn_enemy_white()
-                self.spawn_cnt -= 1
-            if self.counter % 180 == 10 and self.spawn_cnt > 0:
-                self.spawn_enemy_red()
-                self.spawn_cnt -= 1
+            if self.counter % 30 == 0:
+                if self.counter < 3600 and self.spawn_cnt > self.round:
+                    self.generate_enemy(1, character.EnemyWhite,
+                                        self.enemy_white_list)
+                else:
+                    self.generate_enemy(1, character.EnemyRed,
+                                        self.enemy_red_list)
 
     def set_one_enemy(self, pos, enemy_type, enemy_list) -> None:
         """Set up a single enemy."""
         if self.spawn_cnt <= 0:
             return
         enemy = enemy_type(
-                pos.x, pos.y, self.physics_engine, self.player)
+            pos.x, pos.y, self.physics_engine, self.player)
         enemy_list.append(enemy)
         self.enemy_sprite_list.extend(enemy.parts)
         self.physics_engine.add_sprite(enemy,
@@ -1708,97 +1646,17 @@ class GameView(FadingView):
         self.spawn_cnt -= 1
 
     def generate_enemy(self, spawn_mode, enemy_type, enemy_list) -> None:
-        if spawn_mode == 1: # generate one enemy
+        if spawn_mode == 1:  # generate one enemy
             pos = random.choice(self.room.spawn_pos)
             self.set_one_enemy(pos, enemy_type, enemy_list)
-        elif spawn_mode == 2: # generate at random place
+        elif spawn_mode == 2:  # generate at random place
             pos = Vec2(0, 0)
             pos.x = random.randrange(60, self.room.width - 60)
             pos.y = random.randrange(60, self.room.height - 60)
             self.set_one_enemy(pos, enemy_type, enemy_list)
-        else: # generate one wave of enemies
+        else:  # generate one wave of enemies
             for pos in self.room.spawn_pos:
                 self.set_one_enemy(pos, enemy_type, enemy_list)
-
-    def spawn_enemy_white(self) -> None:
-        # Enemy white
-        for pos in self.room.spawn_pos:
-            enemy = character.EnemyWhite(
-                pos.x, pos.y, self.physics_engine, self.player)
-            self.enemy_white_list.append(enemy)
-            self.enemy_sprite_list.extend(enemy.parts)
-            self.physics_engine.add_sprite(enemy,
-                                           friction=0,
-                                           moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
-                                           damping=0.001,
-                                           collision_type="enemy")
-
-    def spawn_enemy_red(self) -> None:
-        # Enemy Red
-        for pos in self.room.spawn_pos:
-            enemy = character.EnemyRed(
-                pos.x, pos.y, self.physics_engine, self.player)
-            self.enemy_red_list.append(enemy)
-            self.enemy_sprite_list.extend(enemy.parts)
-            self.physics_engine.add_sprite(enemy,
-                                           friction=0,
-                                           moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
-                                           damping=0.001,
-                                           collision_type="enemy")
-
-    def spawn_enemy_crack(self) -> None:
-        # Enemy Crack
-        for _ in range(0, 16):
-            pos_x = random.randrange(60, self.room.width - 60)
-            pos_y = random.randrange(60, self.room.height - 60)
-            enemy = character.EnemyCrack(
-                pos_x, pos_y, self.physics_engine, self.player)
-            self.enemy_crack_list.append(enemy)
-            self.enemy_sprite_list.extend(enemy.parts)
-            self.physics_engine.add_sprite(enemy,
-                                           friction=0,
-                                           moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
-                                           damping=0.001,
-                                           collision_type="enemy")
-
-    def spawn_enemy_big_mouth(self) -> None:
-        # Enemy Big Mouth
-        for pos in self.room.spawn_pos:
-            enemy = character.EnemyBigMouth(
-                pos.x, pos.y, self.physics_engine, self.player)
-            self.enemy_big_mouth_list.append(enemy)
-            self.enemy_sprite_list.extend(enemy.parts)
-            self.physics_engine.add_sprite(enemy,
-                                           friction=0,
-                                           moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
-                                           damping=0.001,
-                                           collision_type="enemy")
-
-    def spawn_enemy_crash(self) -> None:
-        # Enemy Crash
-        for pos in self.room.spawn_pos:
-            enemy = character.EnemyCrash(
-                pos.x, pos.y, self.physics_engine, self.player)
-            self.enemy_crash_list.append(enemy)
-            self.enemy_sprite_list.extend(enemy.parts)
-            self.physics_engine.add_sprite(enemy,
-                                           friction=0,
-                                           moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
-                                           damping=0.05,
-                                           collision_type="enemy")
-
-    def spawn_enemy_tank(self) -> None:
-        # Enemy Tank
-        for pos in self.room.spawn_pos:
-            enemy = character.EnemyTank(
-                pos.x, pos.y, self.physics_engine, self.player)
-            self.enemy_tank_list.append(enemy)
-            self.enemy_sprite_list.extend(enemy.parts)
-            self.physics_engine.add_sprite(enemy,
-                                           friction=0,
-                                           moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
-                                           damping=0.001,
-                                           collision_type="enemy")
 
 
 class GameOverView(arcade.View):
@@ -1812,6 +1670,7 @@ class GameOverView(arcade.View):
     def on_show_view(self) -> None:
         arcade.set_background_color(utils.Color.GROUND_WHITE)
         self.window.set_mouse_visible(True)
+
 
 class GameWinView(arcade.View):
     """Game win view."""
@@ -1837,7 +1696,7 @@ class ShopView(arcade.View):
         self.player = last_view.player
         self.shop = last_view.shop
         self.cnt = 0
-        self.refresh_cost = self.last_view.round + 4
+        self.refresh_cost = last_view.round * last_view.round
         self.player.money += self.last_view.money_pool
 
         # Reset money pool of the game view
@@ -1845,6 +1704,9 @@ class ShopView(arcade.View):
         self.last_view.money_ui.alpha = 0
         self.last_view.buy_text.text = ""
         self.last_view.money_pool_ui.visible = False
+
+        # Add items based on the current round
+        self.shop.update_item_list(self.last_view.round, self.player)
 
         # UI
         self.w, self.h = self.window.get_size()
@@ -1985,6 +1847,9 @@ class ShopView(arcade.View):
         self.refresh_cost_text.draw()
 
     def on_click_continue(self, event) -> None:
+        # Update player weapon reference
+        self.player.change_weapon(0)
+
         # Clear the game view reference
         self.player = None
         self.shop = None
@@ -2009,43 +1874,56 @@ class ShopView(arcade.View):
         text = self.window.cur_lang.PLAYER_STATUS + "\n"
         text += self.window.cur_lang.HEALTH + str(self.player.health) + "\n"
         text += self.window.cur_lang.ENERGY + str(self.player.energy) + "\n"
-        text += self.window.cur_lang.KILL_RECOVER + str(self.player.kill_recover) + "\n"
+        text += self.window.cur_lang.KILL_RECOVER + \
+            str(self.player.kill_recover) + "\n"
         text += self.window.cur_lang.LUCK + str(self.player.luck) + "\n"
         text += self.window.cur_lang.EXPLOSION_DAMAGE + \
             str(self.player.explosion_damage) + "\n"
         text += "\n"
 
         text += self.window.cur_lang.PISTOL + "\n"
-        text += self.window.cur_lang.DAMAGE + str(self.shop.pistol.damage) + "\n"
+        text += self.window.cur_lang.DAMAGE + \
+            str(self.shop.pistol.damage) + "\n"
         text += self.window.cur_lang.CD + str(self.shop.pistol.cd_max) + "\n"
-        text += self.window.cur_lang.ATTACK_RANGE + str(self.shop.pistol.life_span) + "\n"
+        text += self.window.cur_lang.ATTACK_RANGE + \
+            str(self.shop.pistol.life_span) + "\n"
         text += "\n"
 
         if self.player.weapons.count(self.shop.uzi) > 0:
             text += self.window.cur_lang.UZI + "\n"
-            text += self.window.cur_lang.DAMAGE + str(self.shop.uzi.damage) + "\n"
+            text += self.window.cur_lang.DAMAGE + \
+                str(self.shop.uzi.damage) + "\n"
             text += self.window.cur_lang.CD + str(self.shop.uzi.cd_max) + "\n"
-            text += self.window.cur_lang.ATTACK_RANGE + str(self.shop.uzi.life_span) + "\n"
-            text += self.window.cur_lang.ENERGY_COST + str(self.shop.uzi.cost) + "\n"
+            text += self.window.cur_lang.ATTACK_RANGE + \
+                str(self.shop.uzi.life_span) + "\n"
+            text += self.window.cur_lang.ENERGY_COST + \
+                str(self.shop.uzi.cost) + "\n"
             text += "\n"
 
         if self.player.weapons.count(self.shop.shotgun) > 0:
             text += self.window.cur_lang.SHOTGUN + "\n"
-            text += self.window.cur_lang.DAMAGE + str(self.shop.shotgun.damage) + "\n"
-            text += self.window.cur_lang.CD + str(self.shop.shotgun.cd_max) + "\n"
+            text += self.window.cur_lang.DAMAGE + \
+                str(self.shop.shotgun.damage) + "\n"
+            text += self.window.cur_lang.CD + \
+                str(self.shop.shotgun.cd_max) + "\n"
             text += self.window.cur_lang.ATTACK_RANGE + \
                 str(self.shop.shotgun.life_span) + "\n"
-            text += self.window.cur_lang.ENERGY_COST + str(self.shop.shotgun.cost) + "\n"
+            text += self.window.cur_lang.ENERGY_COST + \
+                str(self.shop.shotgun.cost) + "\n"
             text += self.window.cur_lang.BULLET_NUMBER + \
                 str(self.shop.shotgun.bullet_num) + "\n"
             text += "\n"
 
         if self.player.weapons.count(self.shop.rocket) > 0:
             text += self.window.cur_lang.ROCKET + "\n"
-            text += self.window.cur_lang.DAMAGE + str(self.shop.rocket.damage) + "\n"
-            text += self.window.cur_lang.CD + str(self.shop.rocket.cd_max) + "\n"
-            text += self.window.cur_lang.ATTACK_RANGE + str(self.shop.rocket.life_span) + "\n"
-            text += self.window.cur_lang.ENERGY_COST + str(self.shop.rocket.cost) + "\n"
+            text += self.window.cur_lang.DAMAGE + \
+                str(self.shop.rocket.damage) + "\n"
+            text += self.window.cur_lang.CD + \
+                str(self.shop.rocket.cd_max) + "\n"
+            text += self.window.cur_lang.ATTACK_RANGE + \
+                str(self.shop.rocket.life_span) + "\n"
+            text += self.window.cur_lang.ENERGY_COST + \
+                str(self.shop.rocket.cost) + "\n"
             # TODO: Fix for rocket bullet
             # text += "- Bullet numbers: " + \
             #     str(self.shop.rocket.bullet_num) + "\n"
@@ -2053,18 +1931,22 @@ class ShopView(arcade.View):
 
         if self.player.weapons.count(self.shop.wall) > 0:
             text += self.window.cur_lang.WALL + "\n"
-            text += self.window.cur_lang.ENERGY_COST + str(self.shop.wall.cost) + "\n"
-            text += self.window.cur_lang.HEALTH + str(self.shop.wall.health_max) + "\n"
+            text += self.window.cur_lang.ENERGY_COST + \
+                str(self.shop.wall.cost) + "\n"
+            text += self.window.cur_lang.HEALTH + \
+                str(self.shop.wall.health_max) + "\n"
             text += "\n"
 
         if self.player.weapons.count(self.shop.barrel) > 0:
             text += self.window.cur_lang.BARREL + "\n"
-            text += self.window.cur_lang.ENERGY_COST + str(self.shop.barrel.cost) + "\n"
+            text += self.window.cur_lang.ENERGY_COST + \
+                str(self.shop.barrel.cost) + "\n"
             text += "\n"
 
         if self.player.weapons.count(self.shop.mine) > 0:
             text += self.window.cur_lang.MINE + "\n"
-            text += self.window.cur_lang.ENERGY_COST + str(self.shop.mine.cost) + "\n"
+            text += self.window.cur_lang.ENERGY_COST + \
+                str(self.shop.mine.cost) + "\n"
             text += "\n"
 
         self.player_text.text = text

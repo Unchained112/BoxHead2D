@@ -89,9 +89,8 @@ class BoxHead2d(arcade.Window):
 def main():
     """ Main function """
     arcade.load_font("fonts/FFFFORWA.ttf")
-    arcade.load_font("fonts/Minercraftory.ttf")
-    arcade.load_font("fonts/DottedSongtiSquareRegular.otf")
     arcade.load_font("fonts/SourceHanSansOLD-Normal-2.otf")
+    arcade.load_font("fonts/Cubic_11_1.013_R.ttf")
 
     game = BoxHead2d()
     game.set_up()

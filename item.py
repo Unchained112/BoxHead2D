@@ -90,7 +90,7 @@ class Shop:
         self.uzi = weapon.Uzi()
         self.shotgun = weapon.Shotgun()
         self.rocket = weapon.Rocket()
-        self.placed_wall = weapon.PlacedWall()
+        self.wall = weapon.PlacedWall()
         self.barrel = weapon.Barrel()
         self.mine = weapon.Mine()
         self.add_uzi_item = Item("", "Get Uzi", 0, 30, -1, self.add_uzi)
@@ -106,7 +106,7 @@ class Shop:
             "", "Get Mine", 0, 49, -1, self.add_mine)
 
         self.default_item_list = [
-            Item("", "Sell health: ", 50, -18, 1, minus_health),
+            Item("", "Sell health: ", 100, -18, 1, minus_health),
             Item("", "Sell energy: ", 50, -12, 1, minus_energy),
             Item("", "Add speed: ", 100, 15, 1, increase_speed),
             Item("", "Sell speed: ", 100, -25, 1, minus_speed),
@@ -116,24 +116,25 @@ class Shop:
                  5, 12, 1, increase_kill_recover),
             Item("", "Increase Pistol damage: ",
                  10, 9, 1, self.increase_pistol_damage),
+            Item("", "Increase Pistol damage: ",
+                 10, 9, 1, self.increase_pistol_damage),
             Item("", "Reduce Pistol CD: ",
                  2, 14, 1, self.increase_pistol_speed),
             Item("", "Increase Pistol attack range: ",
                  5, 16, 1, self.increase_pistol_range),
             self.add_uzi_item,
-            self.add_shotgun_item,
-            self.add_rocket_item,
-            self.add_wall_item,
-            self.add_barrel_item,
-            self.add_mine_item,
         ]
 
         self.is_explosion_added = False
         self.explosion_item_list = [
             Item("", "Add explosion damage: ",
                  5, 30, 1, increase_explosion_damage),
+            Item("", "Add explosion damage: ",
+                 5, 30, 1, increase_explosion_damage),
         ]
         self.uzi_item_list = [
+            Item("", "Increase Uzi damage: ", 10,
+                 21, 1, self.increase_uzi_damage),
             Item("", "Increase Uzi damage: ", 10,
                  21, 1, self.increase_uzi_damage),
             Item("", "Reduce Uzi CD: ", 2, 19, 1, self.increase_uzi_speed),
@@ -141,9 +142,11 @@ class Shop:
                  5, 20, 1, self.increase_uzi_range),
             Item("", "Reduce Uzi energy cost: ",
                  1, 18, 1, self.reduce_uzi_cost),
-            Item("", "Sell Uzi", 0, -280, -1, self.sell_uzi),
+            Item("", "Sell Uzi", 0, -30, -1, self.sell_uzi),
         ]
         self.shotgun_item_list = [
+            Item("", "Increase Shotgun damage: ", 10,
+                 36, 1, self.increase_shotgun_damage),
             Item("", "Increase Shotgun damage: ", 10,
                  36, 1, self.increase_shotgun_damage),
             Item("", "Reduce Shotgun CD: ", 2, 21,
@@ -152,7 +155,7 @@ class Shop:
                  5, 28, 1, self.increase_shotgun_range),
             Item("", "Reduce Shotgun energy cost: ",
                  1, 24, 1, self.reduce_shotgun_cost),
-            Item("", "Sell Shotgun", 0, -400, -1, self.sell_shotgun),
+            Item("", "Sell Shotgun", 0, -42, -1, self.sell_shotgun),
             Item("", "Increase Shotgun bullets: ", 1,
                  26, 1, self.increase_shotgun_bullets)
         ]
@@ -163,14 +166,14 @@ class Shop:
                  5, 35, 1, self.increase_rocket_range),
             Item("", "Reduce Rocket energy cost: ",
                  1, 28, 1, self.reduce_rocket_cost),
-            Item("", "Sell Rocket", 0, -500, -1, self.sell_rocket),
+            Item("", "Sell Rocket", 0, -56, -1, self.sell_rocket),
             # Item("", "Increase Rocket bullets:", 1,
             #      52, 1, self.increase_rocket_bullets)
         ]
         self.wall_item_list = [
             Item("", "Reduce Wall cost: ", 1, 16,
                  1, self.reduce_wall_cost),
-            Item("", "Sell Wall: ", 2, -200,
+            Item("", "Sell Wall: ", 2, -28,
                  -1, self.sell_wall),
             Item("", "Increase Wall durability: ", 20, 24,
                  1, self.add_wall_durability),
@@ -178,13 +181,13 @@ class Shop:
         self.barrel_item_list = [
             Item("", "Reduce Barrel cost: ", 1, 35,
                  1, self.reduce_barrel_cost),
-            Item("", "Sell Barrel: ", 2, -400,
+            Item("", "Sell Barrel: ", 2, -52
                  -1, self.sell_barrel),
         ]
         self.mine_item_list = [
             Item("", "Reduce Mine cost: ", 1, 28,
                  1, self.reduce_mine_cost),
-            Item("", "Sell Mine: ", 2, -360,
+            Item("", "Sell Mine: ", 2, -49,
                  -1, self.sell_mine),
         ]
 
@@ -193,10 +196,7 @@ class Shop:
 
     def generate_item(self, item: Item, wave: int, player: Player) -> Item:
         # Calculate the actual cost
-        if item.cost > 0:
-            actual_cost = item.cost + wave + int(item.cost * wave * 0.1)
-        else:
-            actual_cost = item.cost - wave + int(item.cost * wave * 0.1)
+        actual_cost = item.cost * wave * 2
 
         # Deal with no-quality items
         if item.quality == -1:
@@ -236,6 +236,23 @@ class Shop:
         for i in tmp_list:
             items.append(self.generate_item(i, wave, player))
         return items
+
+    def update_item_list(self, wave: int, player: Player) -> None:
+        if (wave >= 3 and player.weapons.count(self.shotgun) == 0
+                and self.cur_item_list.count(self.add_shotgun_item) == 0):
+            self.cur_item_list.append(self.add_shotgun_item)
+        if (wave >= 4 and player.weapons.count(self.wall) == 0
+                and self.cur_item_list.count(self.add_wall_item) == 0):
+            self.cur_item_list.append(self.add_wall_item)
+        if (wave >= 5 and player.weapons.count(self.barrel) == 0
+                and self.cur_item_list.count(self.add_barrel_item) == 0):
+            self.cur_item_list.append(self.add_barrel_item)
+        if (wave >= 6 and player.weapons.count(self.mine) == 0
+                and self.cur_item_list.count(self.add_mine_item) == 0):
+            self.cur_item_list.append(self.add_mine_item)
+        if (wave >= 7 and player.weapons.count(self.rocket) == 0
+                and self.cur_item_list.count(self.add_rocket_item) == 0):
+            self.cur_item_list.append(self.add_rocket_item)
 
     # Pistol items
 
@@ -366,7 +383,7 @@ class Shop:
     # PlacedWall items
 
     def add_wall(self, item: Item, player: Player) -> bool:
-        player.add_weapon(self.placed_wall)
+        player.add_weapon(self.wall)
         self.cur_item_list.remove(self.add_wall_item)
         self.cur_item_list.extend(self.wall_item_list)
         return True

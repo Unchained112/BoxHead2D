@@ -74,8 +74,8 @@ class Style:
     """Design styles."""
 
     BUTTON_DEFAULT = {
-        "font_name": ("FFF Forward"),
-        "font_size": 10,
+        "font_name": ("Cubic 11"),
+        "font_size": 16,
         "font_color": Color.WHITE,
         "border_width": 2,
         "border_color": Color.BLACK,
