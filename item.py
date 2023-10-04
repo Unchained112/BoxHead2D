@@ -27,16 +27,6 @@ class Item:
         self.quality = quality
 
 
-def increase_health(item: Item, player: Player) -> bool:
-    player.health += item.value
-    return True
-
-
-def increase_energy(item: Item, player: Player) -> bool:
-    player.energy += item.value
-    return True
-
-
 def increase_speed(item: Item, player: Player) -> bool:
     player.speed += item.value
     return True
@@ -92,22 +82,6 @@ def minus_speed(item: Item, player: Player) -> bool:
         return False
 
 
-def minus_explosion_damage(item: Item, player: Player) -> bool:
-    if player.explosion_damage >= item.value:
-        player.explosion_damage -= item.value
-        return True
-    else:
-        return False
-
-
-def minus_kill_recover(item: Item, player: Player) -> bool:
-    if player.kill_recover >= item.value:
-        player.kill_recover -= item.value
-        return True
-    else:
-        return False
-
-
 class Shop:
     """Shop instance class."""
 
@@ -132,9 +106,7 @@ class Shop:
             "", "Get Mine", 0, 49, -1, self.add_mine)
 
         self.default_item_list = [
-            Item("", "Add health: ", 50, 10, 1, increase_health),
             Item("", "Sell health: ", 50, -18, 1, minus_health),
-            Item("", "Add energy: ", 50, 6, 1, increase_energy),
             Item("", "Sell energy: ", 50, -12, 1, minus_energy),
             Item("", "Add speed: ", 100, 15, 1, increase_speed),
             Item("", "Sell speed: ", 100, -25, 1, minus_speed),
@@ -142,8 +114,6 @@ class Shop:
             Item("", "Sell luck: ", 2, -32, 1, minus_luck),
             Item("", "Add health recover after kill: ",
                  5, 12, 1, increase_kill_recover),
-            Item("", "Sell health recover after kill: ",
-                 5, -24, 1, minus_kill_recover),
             Item("", "Increase Pistol damage: ",
                  10, 9, 1, self.increase_pistol_damage),
             Item("", "Reduce Pistol CD: ",
@@ -162,8 +132,6 @@ class Shop:
         self.explosion_item_list = [
             Item("", "Add explosion damage: ",
                  5, 30, 1, increase_explosion_damage),
-            Item("", "Sell explosion damage: ",
-                 5, -40, 1, minus_explosion_damage),
         ]
         self.uzi_item_list = [
             Item("", "Increase Uzi damage: ", 10,
@@ -185,7 +153,7 @@ class Shop:
             Item("", "Reduce Shotgun energy cost: ",
                  1, 24, 1, self.reduce_shotgun_cost),
             Item("", "Sell Shotgun", 0, -400, -1, self.sell_shotgun),
-            Item("", "Increase Shotgun bullets:", 1,
+            Item("", "Increase Shotgun bullets: ", 1,
                  26, 1, self.increase_shotgun_bullets)
         ]
         self.rocket_item_list = [
@@ -196,8 +164,8 @@ class Shop:
             Item("", "Reduce Rocket energy cost: ",
                  1, 28, 1, self.reduce_rocket_cost),
             Item("", "Sell Rocket", 0, -500, -1, self.sell_rocket),
-            Item("", "Increase Rocket bullets:", 1,
-                 52, 1, self.increase_rocket_bullets)
+            # Item("", "Increase Rocket bullets:", 1,
+            #      52, 1, self.increase_rocket_bullets)
         ]
         self.wall_item_list = [
             Item("", "Reduce Wall cost: ", 1, 16,
@@ -390,6 +358,7 @@ class Shop:
 
         return True
 
+    # TODO: add fix or limit for the rocket
     # def increase_rocket_bullets(self, item: Item, player: Player) -> bool:
     #     self.rocket.bullet_num += item.value
     #     return True

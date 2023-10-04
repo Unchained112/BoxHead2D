@@ -250,13 +250,13 @@ class StartView(FadingView):
         self.vertical_box.add(title_ui.with_space_around(bottom=0))
 
         start_button = arcade.gui.UIFlatButton(
-            text="Start", width=150, style=utils.Style.BUTTON_DEFAULT
+            text=self.window.cur_lang.START, width=150, style=utils.Style.BUTTON_DEFAULT
         )
         option_button = arcade.gui.UIFlatButton(
-            text="Option", width=150, style=utils.Style.BUTTON_DEFAULT
+            text=self.window.cur_lang.OPTION, width=150, style=utils.Style.BUTTON_DEFAULT
         )
         quit_button = arcade.gui.UIFlatButton(
-            text="Quit", width=150, style=utils.Style.BUTTON_DEFAULT
+            text=self.window.cur_lang.QUIT, width=150, style=utils.Style.BUTTON_DEFAULT
         )
 
         self.vertical_box.add(start_button.with_space_around(bottom=20))
@@ -474,10 +474,10 @@ class SelectionView(FadingView):
 
         # Rest buttons
         back_button = arcade.gui.UIFlatButton(
-            text="Back", width=120, style=utils.Style.BUTTON_DEFAULT
+            text=self.window.cur_lang.BACK, width=120, style=utils.Style.BUTTON_DEFAULT
         )
         next_button = arcade.gui.UIFlatButton(
-            text="Next", width=120, style=utils.Style.BUTTON_DEFAULT
+            text=self.window.cur_lang.NEXT, width=120, style=utils.Style.BUTTON_DEFAULT
         )
         self.rest_box.add(back_button.with_space_around(right=200))
         self.rest_box.add(next_button.with_space_around(right=0))
@@ -574,7 +574,7 @@ class OptionView(arcade.View):
 
         # Effect volume settings
         effect_volume_label = arcade.gui.UITextArea(
-            text="Effect Volume",
+            text=self.window.cur_lang.EFFECT_VOLUME,
             width=300,
             height=40,
             font_size=20,
@@ -609,7 +609,7 @@ class OptionView(arcade.View):
 
         # Music volume settings
         music_volume_label = arcade.gui.UITextArea(
-            text="Music Volume",
+            text=self.window.cur_lang.MUSIC_VOLUME,
             width=300,
             height=40,
             font_size=20,
@@ -643,7 +643,7 @@ class OptionView(arcade.View):
 
         # Screen settings
         fullscreen_label = arcade.gui.UITextArea(
-            text="Fullscreen: ",
+            text=self.window.cur_lang.FULLSCREEN,
             width=200,
             height=40,
             font_size=20,
@@ -659,7 +659,7 @@ class OptionView(arcade.View):
             font_name="FFF Forward",
         )
         fullscreen_button = arcade.gui.UIFlatButton(
-            text="Switch", width=120, style=utils.Style.BUTTON_DEFAULT
+            text=self.window.cur_lang.SWITCH, width=120, style=utils.Style.BUTTON_DEFAULT
         )
         self.screen_box.add(fullscreen_label.with_space_around(right=20))
         self.screen_box.add(self.fullscreen_text.with_space_around(right=20))
@@ -668,7 +668,7 @@ class OptionView(arcade.View):
 
         # Resolution settings
         resolution_label = arcade.gui.UITextArea(
-            text="Resolution",
+            text=self.window.cur_lang.RESOLUTION,
             width=200,
             height=40,
             font_size=20,
@@ -695,7 +695,7 @@ class OptionView(arcade.View):
         self.resolution_box.add(
             self.resolution_text.with_space_around(right=0))
         if self.window.fullscreen:
-            self.resolution_text.text = "Fullscreen"
+            self.resolution_text.text = self.window.cur_lang.FULLSCREEN
         else:
             self.resolution_text.text = str(
                 self.window.w_scale[self.window.res_index]) + " x " + str(self.window.h_scale[self.window.res_index])
@@ -706,13 +706,13 @@ class OptionView(arcade.View):
 
         # Rest buttons
         back_button = arcade.gui.UIFlatButton(
-            text="Back", width=120, style=utils.Style.BUTTON_DEFAULT
+            text=self.window.cur_lang.BACK, width=120, style=utils.Style.BUTTON_DEFAULT
         )
         start_view_button = arcade.gui.UIFlatButton(
-            text="Start Menu", width=180, style=utils.Style.BUTTON_DEFAULT
+            text=self.window.cur_lang.START_MENU, width=180, style=utils.Style.BUTTON_DEFAULT
         )
         quit_button = arcade.gui.UIFlatButton(
-            text="Quit", width=120, style=utils.Style.BUTTON_DEFAULT
+            text=self.window.cur_lang.QUIT, width=120, style=utils.Style.BUTTON_DEFAULT
         )
         self.rest_box.add(back_button.with_space_around(right=100))
         self.rest_box.add(start_view_button.with_space_around(right=100))
@@ -773,7 +773,7 @@ class OptionView(arcade.View):
         width, height = self.window.get_size()
         self.window.set_viewport(0, width, 0, height)
         if self.window.fullscreen:
-            self.resolution_text.text = "Fullscreen"
+            self.resolution_text.text = self.window.cur_lang.FULLSCREEN
         else:
             self.resolution_text.text = str(
                 self.window.w_scale[self.window.res_index]) + " x " + str(self.window.h_scale[self.window.res_index])
@@ -1579,7 +1579,7 @@ class GameView(FadingView):
         if self.counter == 0:
             self.round_text.text = "Round: 1"
             self.round = 1
-            self.spawn_cnt = 1
+            self.spawn_cnt = 12
             self.window.play_round_start_sound()
 
         # Score multiplier
@@ -1617,10 +1617,10 @@ class GameView(FadingView):
         if len(self.enemy_sprite_list) >= 800:
             return
 
-        if self.spawn_cnt > 0 and self.round <= 3:
-            if self.counter % 60 == 0:
-                self.spawn_enemy_white()
-                self.spawn_cnt -= 1
+        if self.round <= 3:
+            if self.counter % 10 == 0:
+                self.generate_enemy(1, character.EnemyWhite,
+                                    self.enemy_white_list)
 
         if self.round > 3 and self.round <= 6:
             if self.counter % 60 == 0 and self.spawn_cnt > 0:
@@ -1707,11 +1707,16 @@ class GameView(FadingView):
                                        collision_type="enemy")
         self.spawn_cnt -= 1
 
-    def generate_enemy(self, is_single, enemy_type, enemy_list) -> None:
-        if is_single:
-            pos = random.sample(self.round.spawn_pos, 1)
+    def generate_enemy(self, spawn_mode, enemy_type, enemy_list) -> None:
+        if spawn_mode == 1: # generate one enemy
+            pos = random.choice(self.room.spawn_pos)
             self.set_one_enemy(pos, enemy_type, enemy_list)
-        else:
+        elif spawn_mode == 2: # generate at random place
+            pos = Vec2(0, 0)
+            pos.x = random.randrange(60, self.room.width - 60)
+            pos.y = random.randrange(60, self.room.height - 60)
+            self.set_one_enemy(pos, enemy_type, enemy_list)
+        else: # generate one wave of enemies
             for pos in self.room.spawn_pos:
                 self.set_one_enemy(pos, enemy_type, enemy_list)
 
@@ -1900,16 +1905,16 @@ class ShopView(arcade.View):
         # Item buttons
         self.item_button_enables = [True, True, True, True]
         item_button_0 = arcade.gui.UIFlatButton(
-            text="Buy", width=80, style=utils.Style.BUTTON_DEFAULT
+            text=self.window.cur_lang.BUY, width=80, style=utils.Style.BUTTON_DEFAULT
         )
         item_button_1 = arcade.gui.UIFlatButton(
-            text="Buy", width=80, style=utils.Style.BUTTON_DEFAULT
+            text=self.window.cur_lang.BUY, width=80, style=utils.Style.BUTTON_DEFAULT
         )
         item_button_2 = arcade.gui.UIFlatButton(
-            text="Buy", width=80, style=utils.Style.BUTTON_DEFAULT
+            text=self.window.cur_lang.BUY, width=80, style=utils.Style.BUTTON_DEFAULT
         )
         item_button_3 = arcade.gui.UIFlatButton(
-            text="Buy", width=80, style=utils.Style.BUTTON_DEFAULT
+            text=self.window.cur_lang.BUY, width=80, style=utils.Style.BUTTON_DEFAULT
         )
         self.item_box.add(item_button_0.with_space_around(left=80, right=80))
         self.item_box.add(item_button_1.with_space_around(right=80))
@@ -1928,7 +1933,7 @@ class ShopView(arcade.View):
                                              font_size=12,
                                              font_name="FFF Forward",
                                              anchor_x="center")
-        refresh_button = arcade.gui.UIFlatButton(text="Refresh (D)",
+        refresh_button = arcade.gui.UIFlatButton(text=self.window.cur_lang.REFRESH + " [D]",
                                                  x=self.w/2 + 120,
                                                  y=self.h/2 - 170,
                                                  width=120,
@@ -1938,10 +1943,10 @@ class ShopView(arcade.View):
 
         # Rest buttons
         start_view_button = arcade.gui.UIFlatButton(
-            text="Start Menu", width=180, style=utils.Style.BUTTON_DEFAULT
+            text=self.window.cur_lang.START_MENU, width=180, style=utils.Style.BUTTON_DEFAULT
         )
         continue_button = arcade.gui.UIFlatButton(
-            text="Continue", width=120, style=utils.Style.BUTTON_DEFAULT
+            text=self.window.cur_lang.CONTINUE, width=120, style=utils.Style.BUTTON_DEFAULT
         )
         self.rest_box.add(start_view_button.with_space_around(right=280))
         self.rest_box.add(continue_button.with_space_around(right=0))
@@ -2001,48 +2006,65 @@ class ShopView(arcade.View):
         self.window.play_button_sound()
 
     def get_player_text(self) -> None:
-        text = "Player status:\n"
-        text += "- Health: " + str(self.player.health) + "\n"
-        text += "- Energy: " + str(self.player.energy) + "\n"
-        text += "- Recover after kill: " + str(self.player.kill_recover) + "\n"
-        text += "- Luck: " + str(self.player.luck) + "\n"
-        text += "- Explosion damage: " + \
+        text = self.window.cur_lang.PLAYER_STATUS + "\n"
+        text += self.window.cur_lang.HEALTH + str(self.player.health) + "\n"
+        text += self.window.cur_lang.ENERGY + str(self.player.energy) + "\n"
+        text += self.window.cur_lang.KILL_RECOVER + str(self.player.kill_recover) + "\n"
+        text += self.window.cur_lang.LUCK + str(self.player.luck) + "\n"
+        text += self.window.cur_lang.EXPLOSION_DAMAGE + \
             str(self.player.explosion_damage) + "\n"
         text += "\n"
 
-        text += "Pistol:\n"
-        text += "- Damage: " + str(self.shop.pistol.damage) + "\n"
-        text += "- CD: " + str(self.shop.pistol.cd_max) + "\n"
-        text += "- Attack range: " + str(self.shop.pistol.life_span) + "\n"
+        text += self.window.cur_lang.PISTOL + "\n"
+        text += self.window.cur_lang.DAMAGE + str(self.shop.pistol.damage) + "\n"
+        text += self.window.cur_lang.CD + str(self.shop.pistol.cd_max) + "\n"
+        text += self.window.cur_lang.ATTACK_RANGE + str(self.shop.pistol.life_span) + "\n"
         text += "\n"
 
         if self.player.weapons.count(self.shop.uzi) > 0:
-            text += "Uzi:\n"
-            text += "- Damage: " + str(self.shop.uzi.damage) + "\n"
-            text += "- CD: " + str(self.shop.uzi.cd_max) + "\n"
-            text += "- Attack range: " + str(self.shop.uzi.life_span) + "\n"
-            text += "- Energy cost: " + str(self.shop.uzi.cost) + "\n"
+            text += self.window.cur_lang.UZI + "\n"
+            text += self.window.cur_lang.DAMAGE + str(self.shop.uzi.damage) + "\n"
+            text += self.window.cur_lang.CD + str(self.shop.uzi.cd_max) + "\n"
+            text += self.window.cur_lang.ATTACK_RANGE + str(self.shop.uzi.life_span) + "\n"
+            text += self.window.cur_lang.ENERGY_COST + str(self.shop.uzi.cost) + "\n"
             text += "\n"
 
         if self.player.weapons.count(self.shop.shotgun) > 0:
-            text += "Shotgun:\n"
-            text += "- Damage: " + str(self.shop.shotgun.damage) + "\n"
-            text += "- CD: " + str(self.shop.shotgun.cd_max) + "\n"
-            text += "- Attack range: " + \
+            text += self.window.cur_lang.SHOTGUN + "\n"
+            text += self.window.cur_lang.DAMAGE + str(self.shop.shotgun.damage) + "\n"
+            text += self.window.cur_lang.CD + str(self.shop.shotgun.cd_max) + "\n"
+            text += self.window.cur_lang.ATTACK_RANGE + \
                 str(self.shop.shotgun.life_span) + "\n"
-            text += "- Energy cost: " + str(self.shop.shotgun.cost) + "\n"
-            text += "- Bullet numbers: " + \
+            text += self.window.cur_lang.ENERGY_COST + str(self.shop.shotgun.cost) + "\n"
+            text += self.window.cur_lang.BULLET_NUMBER + \
                 str(self.shop.shotgun.bullet_num) + "\n"
             text += "\n"
 
         if self.player.weapons.count(self.shop.rocket) > 0:
-            text += "Rocket:\n"
-            text += "- Damage: " + str(self.shop.rocket.damage) + "\n"
-            text += "- CD: " + str(self.shop.rocket.cd_max) + "\n"
-            text += "- Attack range: " + str(self.shop.rocket.life_span) + "\n"
-            text += "- Energy cost: " + str(self.shop.rocket.cost) + "\n"
-            text += "- Bullet numbers: " + \
-                str(self.shop.rocket.bullet_num) + "\n"
+            text += self.window.cur_lang.ROCKET + "\n"
+            text += self.window.cur_lang.DAMAGE + str(self.shop.rocket.damage) + "\n"
+            text += self.window.cur_lang.CD + str(self.shop.rocket.cd_max) + "\n"
+            text += self.window.cur_lang.ATTACK_RANGE + str(self.shop.rocket.life_span) + "\n"
+            text += self.window.cur_lang.ENERGY_COST + str(self.shop.rocket.cost) + "\n"
+            # TODO: Fix for rocket bullet
+            # text += "- Bullet numbers: " + \
+            #     str(self.shop.rocket.bullet_num) + "\n"
+            text += "\n"
+
+        if self.player.weapons.count(self.shop.wall) > 0:
+            text += self.window.cur_lang.WALL + "\n"
+            text += self.window.cur_lang.ENERGY_COST + str(self.shop.wall.cost) + "\n"
+            text += self.window.cur_lang.HEALTH + str(self.shop.wall.health_max) + "\n"
+            text += "\n"
+
+        if self.player.weapons.count(self.shop.barrel) > 0:
+            text += self.window.cur_lang.BARREL + "\n"
+            text += self.window.cur_lang.ENERGY_COST + str(self.shop.barrel.cost) + "\n"
+            text += "\n"
+
+        if self.player.weapons.count(self.shop.mine) > 0:
+            text += self.window.cur_lang.MINE + "\n"
+            text += self.window.cur_lang.ENERGY_COST + str(self.shop.mine.cost) + "\n"
             text += "\n"
 
         self.player_text.text = text
@@ -2108,13 +2130,13 @@ class ShopView(arcade.View):
 
     def update_purchase_text(self, sign: int) -> None:
         if sign == 0:  # purchase success
-            self.purchase_text.text = "Purchase succeeded."
+            self.purchase_text.text = self.window.cur_lang.BUY_SUCCESS
             self.purchase_text.color = utils.Color.BRIGHT_GREEN
         elif sign == 1:  # purchase failed
-            self.purchase_text.text = "Purchase failed."
+            self.purchase_text.text = self.window.cur_lang.BUY_FAIL
             self.purchase_text.color = utils.Color.HEALTH_RED
         elif sign == 2:  # refresh failed
-            self.purchase_text.text = "Refresh failed."
+            self.purchase_text.text = self.window.cur_lang.REFRESH_FAIL
             self.purchase_text.color = utils.Color.HEALTH_RED
 
         self.cnt = 60
@@ -2162,6 +2184,10 @@ class ShopView(arcade.View):
         self.item_button_enables = [True, True, True, True]
 
         self.get_items()
+
+    def on_key_press(self, key, modifiers) -> None:
+        if key == arcade.key.D:
+            self.on_click_refresh(event=None)
 
     def on_click_item_0(self, event) -> None:
         if self.item_button_enables[0]:
