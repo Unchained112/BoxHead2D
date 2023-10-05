@@ -205,7 +205,7 @@ class Shotgun(Weapon):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__("graphics/weapon/Shotgun.png", x, y)
         self.cd_max = int(50)  # 50/60 s
-        self.cost = 12
+        self.cost = 15
         self.damage = 40
         self.life_span = 10
         self.bullet_num = 3
@@ -234,7 +234,7 @@ class Uzi(Weapon):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__("graphics/weapon/Uzi.png", x, y)
         self.cd_max = int(20)  # 20/60 s
-        self.cost = 3
+        self.cost = 4
         self.damage = 30
         self.life_span = 25
         self.bullet_speed = 30
@@ -260,7 +260,7 @@ class Rocket(Weapon):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__("graphics/weapon/Rocket.png", x, y)
         self.cd_max = int(40)  # 1/6 s
-        self.cost = 20
+        self.cost = 30
         self.damage = 0
         self.bullet = Missile
         self.bullet_speed = 32
@@ -322,7 +322,7 @@ class Barrel(Weapon):
         self.cd_max = int(4)  # 1/6 s
         self.pos = Vec2(x, y)
         self.aim_pos = Vec2(0, 0)
-        self.cost = 20
+        self.cost = 25
         self.is_right = True
         self.texture_list = [
             arcade.load_texture("graphics/weapon/Barrel.png"),
@@ -350,7 +350,7 @@ class Mine(Weapon):
         self.cd_max = int(4)  # 1/6 s
         self.pos = Vec2(x, y)
         self.aim_pos = Vec2(0, 0)
-        self.cost = 20
+        self.cost = 25
         self.is_right = True
         self.texture_list = [
             arcade.load_texture("graphics/weapon/Mine.png"),

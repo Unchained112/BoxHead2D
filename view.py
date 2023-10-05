@@ -77,12 +77,12 @@ class DefaultView(FadingView):
         self.text_alpha = 250
         self.text_fading = -5  # must be divisible by 250
         self.title_text = arcade.Text(
-            "Press any key to proceed...",
+            self.window.cur_lang.PRESS_ANY_KEY,
             self.w / 2,
-            self.h / 2 - 80,
+            self.h / 2 - 100,
             color=(0, 0, 0, 250),
-            font_size=16,
-            font_name="FFF Forward",
+            font_size=24,
+            font_name="Cubic 11",
             anchor_x="center",
         )
 
@@ -230,14 +230,14 @@ class StartView(FadingView):
                                       120,
                                       color=utils.Color.DARK_GRAY,
                                       font_size=14,
-                                      font_name="FFF Forward",
+                                      font_name="Cubic 11",
                                       anchor_x="center")
         self.about_text_shadow = arcade.Text("Created by Unchain.",
                                              self.w - 602,
                                              120,
                                              color=utils.Color.LIGHT_GRAY,
                                              font_size=14,
-                                             font_name="FFF Forward",
+                                             font_name="Cubic 11",
                                              anchor_x="center")
 
         # Add UI elements
@@ -566,20 +566,56 @@ class OptionView(arcade.View):
 
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
+        self.lang_box = arcade.gui.UIBoxLayout(vertical=False)
         self.effect_volume_box = arcade.gui.UIBoxLayout(vertical=False)
         self.music_volume_box = arcade.gui.UIBoxLayout(vertical=False)
         self.screen_box = arcade.gui.UIBoxLayout(vertical=False)
         self.resolution_box = arcade.gui.UIBoxLayout(vertical=False)
         self.rest_box = arcade.gui.UIBoxLayout(vertical=False)
 
+        # Language settings
+        lang_label = arcade.gui.UITextArea(
+            text=self.window.cur_lang.LANG,
+            width=200,
+            height=40,
+            font_size=24,
+            text_color=utils.Color.BLACK,
+            font_name="Cubic 11",
+        )
+        lang_left_button = arcade.gui.UIFlatButton(
+            text="<", width=60, style=utils.Style.BUTTON_DEFAULT
+        )
+        lang_text = arcade.gui.UITextArea(
+            text=self.window.cur_lang.CUR_LANG,
+            width=120,
+            height=40,
+            font_size=24,
+            text_color=utils.Color.BLACK,
+            font_name="Cubic 11",
+        )
+        lang_right_button = arcade.gui.UIFlatButton(
+            text=">", width=60, style=utils.Style.BUTTON_DEFAULT
+        )
+        self.lang_box.add(
+            lang_label.with_space_around(right=20))
+        self.lang_box.add(
+            lang_left_button.with_space_around(right=20)
+        )
+        self.lang_box.add(
+            lang_text.with_space_around(right=10))
+        self.lang_box.add(
+            lang_right_button.with_space_around(right=0))
+        lang_left_button.on_click = self.on_click_lang_left
+        lang_right_button.on_click = self.on_click_lang_right
+
         # Effect volume settings
         effect_volume_label = arcade.gui.UITextArea(
             text=self.window.cur_lang.EFFECT_VOLUME,
             width=300,
             height=40,
-            font_size=20,
+            font_size=24,
             text_color=utils.Color.BLACK,
-            font_name="FFF Forward",
+            font_name="Cubic 11",
         )
         effect_volume_down_button = arcade.gui.UIFlatButton(
             text="-", width=60, style=utils.Style.BUTTON_DEFAULT
@@ -588,9 +624,9 @@ class OptionView(arcade.View):
             text=str(self.window.effect_volume),
             width=40,
             height=40,
-            font_size=20,
+            font_size=24,
             text_color=utils.Color.BLACK,
-            font_name="FFF Forward",
+            font_name="Cubic 11",
         )
         effect_volume_up_button = arcade.gui.UIFlatButton(
             text="+", width=60, style=utils.Style.BUTTON_DEFAULT
@@ -612,9 +648,9 @@ class OptionView(arcade.View):
             text=self.window.cur_lang.MUSIC_VOLUME,
             width=300,
             height=40,
-            font_size=20,
+            font_size=24,
             text_color=utils.Color.BLACK,
-            font_name="FFF Forward",
+            font_name="Cubic 11",
         )
         music_volume_down_button = arcade.gui.UIFlatButton(
             text="-", width=60, style=utils.Style.BUTTON_DEFAULT
@@ -623,9 +659,9 @@ class OptionView(arcade.View):
             text=str(self.window.music_volume),
             width=40,
             height=40,
-            font_size=20,
+            font_size=24,
             text_color=utils.Color.BLACK,
-            font_name="FFF Forward",
+            font_name="Cubic 11",
         )
         music_volume_up_button = arcade.gui.UIFlatButton(
             text="+", width=60, style=utils.Style.BUTTON_DEFAULT
@@ -646,17 +682,17 @@ class OptionView(arcade.View):
             text=self.window.cur_lang.FULLSCREEN,
             width=200,
             height=40,
-            font_size=20,
+            font_size=24,
             text_color=utils.Color.BLACK,
-            font_name="FFF Forward",
+            font_name="Cubic 11",
         )
         self.fullscreen_text = arcade.gui.UITextArea(
             text=str(self.window.fullscreen),
             width=120,
             height=40,
-            font_size=20,
+            font_size=24,
             text_color=utils.Color.BLACK,
-            font_name="FFF Forward",
+            font_name="Cubic 11",
         )
         fullscreen_button = arcade.gui.UIFlatButton(
             text=self.window.cur_lang.SWITCH, width=120, style=utils.Style.BUTTON_DEFAULT
@@ -671,9 +707,9 @@ class OptionView(arcade.View):
             text=self.window.cur_lang.RESOLUTION,
             width=200,
             height=40,
-            font_size=20,
+            font_size=24,
             text_color=utils.Color.BLACK,
-            font_name="FFF Forward",
+            font_name="Cubic 11",
         )
         resolution_down_button = arcade.gui.UIFlatButton(
             text="<", width=60, style=utils.Style.BUTTON_DEFAULT
@@ -682,9 +718,9 @@ class OptionView(arcade.View):
             text="1280 x 720",
             width=200,
             height=40,
-            font_size=20,
+            font_size=24,
             text_color=utils.Color.BLACK,
-            font_name="FFF Forward",
+            font_name="Cubic 11",
         )
         resolution_up_button = arcade.gui.UIFlatButton(
             text=">", width=60, style=utils.Style.BUTTON_DEFAULT
@@ -724,13 +760,17 @@ class OptionView(arcade.View):
         # Add box layouts
         self.manager.add(
             arcade.gui.UIAnchorWidget(
-                align_y=200, child=self.effect_volume_box)
+                align_y=220, child=self.lang_box)
         )
         self.manager.add(
-            arcade.gui.UIAnchorWidget(align_y=100, child=self.music_volume_box)
+            arcade.gui.UIAnchorWidget(
+                align_y=140, child=self.effect_volume_box)
+        )
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(align_y=60, child=self.music_volume_box)
         )
         self.manager.add(arcade.gui.UIAnchorWidget(
-            align_y=0, child=self.screen_box))
+            align_y=-20, child=self.screen_box))
         self.manager.add(
             arcade.gui.UIAnchorWidget(align_y=-100, child=self.resolution_box)
         )
@@ -827,6 +867,18 @@ class OptionView(arcade.View):
         utils.Utils.save_settings(self.window)
         arcade.exit()
 
+    def on_click_lang_left(self, event) -> None:
+        idx = self.window.lang_idx - 1
+        idx = idx % len(self.window.lang)
+        self.window.set_cur_lang(idx)
+        self.setup(self.last_view)
+
+    def on_click_lang_right(self, event) -> None:
+        idx = self.window.lang_idx + 1
+        idx = idx % len(self.window.lang)
+        self.window.set_cur_lang(idx)
+        self.setup(self.last_view)
+
 
 class GameView(FadingView):
     """Main game view."""
@@ -879,13 +931,13 @@ class GameView(FadingView):
         self.pool_size: int = 0
         self.round_text = arcade.Text("", self.w / 2,
                                       self.h - 50, utils.Color.BLACK,
-                                      15, 2, "left", "FFF Forward")
+                                      15, 2, "left", "Cubic 11")
         self.multiplier_text = arcade.Text("", self.w - 200,
                                            self.h - 140, utils.Color.MUL_GREEN,
-                                           30, 2, "left", "FFF Forward")
+                                           30, 2, "left", "Cubic 11")
         self.score_text = arcade.Text("Score: " + str(self.score), self.w - 240,
                                       self.h - 50, utils.Color.BLACK,
-                                      15, 2, "left", "FFF Forward")
+                                      15, 2, "left", "Cubic 11")
 
         self.window.set_mouse_visible(False)
         self.counter: int = -250  # assume 60 frames -> 60 = 1s
@@ -932,7 +984,7 @@ class GameView(FadingView):
         self.money_ui.alpha = 0
         self.buy_text = arcade.Text("", self.w/2 + 340,
                                     52, utils.Color.BLACK,
-                                    10, 2, "left", "FFF Forward")
+                                    10, 2, "left", "Cubic 11")
         self.money_container = arcade.SpriteSolidColor(
             600, 16, utils.Color.BLACK)
         self.money_container.center_x = self.w / 2
@@ -1188,7 +1240,7 @@ class GameView(FadingView):
                          font_size=12,
                          width=2,
                          align="left",
-                         font_name="FFF Forward")
+                         font_name="Cubic 11")
 
         # Energy
         arcade.draw_text(text=int(self.player.energy),
@@ -1198,7 +1250,7 @@ class GameView(FadingView):
                          font_size=12,
                          width=2,
                          align="left",
-                         font_name="FFF Forward")
+                         font_name="Cubic 11")
 
         # Weapon slot
         wp_size = len(self.player.weapons)
@@ -1535,7 +1587,7 @@ class GameView(FadingView):
                            mine.grid_idx[1]] = 0
 
     def set_explosion(self, position: arcade.Point) -> None:
-        for _ in range(12):
+        for _ in range(20):
             particle = effect.Particle(self.explosions_list)
             particle.position = position
             self.explosions_list.append(particle)
@@ -1556,7 +1608,7 @@ class GameView(FadingView):
         self.window.play_explosion_sound()
 
         # Set explosion traces
-        for _ in range(20):
+        for _ in range(16):
             blood = effect.ExplosionTrace()
             blood.position = position
             self.blood_list.append(blood)
@@ -1616,12 +1668,12 @@ class GameView(FadingView):
         if len(self.enemy_sprite_list) >= 800:
             return
 
-        if self.round <= 3:
+        if self.round <= 2:
             if self.counter % 30 == 0:
                 self.generate_enemy(1, character.EnemyWhite,
                                     self.enemy_white_list)
 
-        if self.round > 3 and self.round <= 6:
+        if self.round > 2 and self.round <= 4:
             if self.counter % 30 == 0:
                 if self.counter < 3600 and self.spawn_cnt > self.round:
                     self.generate_enemy(1, character.EnemyWhite,
@@ -1724,7 +1776,8 @@ class ShopView(arcade.View):
                                                  width=250,
                                                  height=400,
                                                  text="",
-                                                 text_color=(0, 0, 0, 255))
+                                                 text_color=(0, 0, 0, 255),
+                                                 font_name="Cubic 11")
         self.get_player_text()
 
         self.manager.add(
@@ -1745,14 +1798,14 @@ class ShopView(arcade.View):
                                       self.h/2 + 270,
                                       color=utils.Color.BLACK,
                                       font_size=12,
-                                      font_name="FFF Forward",
+                                      font_name="Cubic 11",
                                       anchor_x="center")
         self.purchase_text = arcade.Text("",
                                          self.w/2,
                                          self.h/2 + 280,
                                          color=utils.Color.BLACK,
                                          font_size=12,
-                                         font_name="FFF Forward",
+                                         font_name="Cubic 11",
                                          anchor_x="center")
 
         # Items
@@ -1793,12 +1846,12 @@ class ShopView(arcade.View):
                                              start_y=self.h/2 - 160,
                                              color=utils.Color.BLACK,
                                              font_size=12,
-                                             font_name="FFF Forward",
+                                             font_name="Cubic 11",
                                              anchor_x="center")
         refresh_button = arcade.gui.UIFlatButton(text=self.window.cur_lang.REFRESH + " [D]",
                                                  x=self.w/2 + 120,
                                                  y=self.h/2 - 170,
-                                                 width=120,
+                                                 width=160,
                                                  style=utils.Style.BUTTON_DEFAULT)
         self.manager.add(refresh_button)
         refresh_button.on_click = self.on_click_refresh
@@ -1952,7 +2005,9 @@ class ShopView(arcade.View):
         self.player_text.text = text
 
     def get_items(self) -> None:
-        self.items = self.shop.get_items(self.last_view.round, self.player)
+        self.items = self.shop.get_items(self.last_view.round, 
+                                         self.player,
+                                         self.window.cur_lang)
         for i in range(0, 4):
             # Item background
             bg = arcade.Sprite()
@@ -1984,7 +2039,7 @@ class ShopView(arcade.View):
                 width=120,
                 color=utils.Color.BLACK,
                 font_size=14,
-                font_name="Source Han Sans Old Style Normal",
+                font_name="Cubic 11",
                 anchor_x="center",
                 align="center",
                 multiline=True,
@@ -2002,8 +2057,8 @@ class ShopView(arcade.View):
                 self.ref_pos.y - 60,
                 width=120,
                 color=cost_color,
-                font_size=12,
-                font_name="FFF Forward",
+                font_size=16,
+                font_name="Cubic 11",
                 anchor_x="center",
                 align="center",
                 multiline=True,

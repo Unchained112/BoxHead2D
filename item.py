@@ -171,36 +171,35 @@ class Shop:
             #      52, 1, self.increase_rocket_bullets)
         ]
         self.wall_item_list = [
-            Item("", "Reduce Wall cost: ", 1, 16,
+            Item("", "Reduce Wall energy cost: ", 1, 16,
                  1, self.reduce_wall_cost),
-            Item("", "Sell Wall: ", 2, -28,
+            Item("", "Sell Wall", 0, -28,
                  -1, self.sell_wall),
             Item("", "Increase Wall durability: ", 20, 24,
                  1, self.add_wall_durability),
         ]
         self.barrel_item_list = [
-            Item("", "Reduce Barrel cost: ", 1, 35,
+            Item("", "Reduce Barrel energy cost: ", 1, 35,
                  1, self.reduce_barrel_cost),
-            Item("", "Sell Barrel: ", 2, -52
-                 -1, self.sell_barrel),
+            Item("", "Sell Barrel", 0, -52, -1, self.sell_barrel),
         ]
         self.mine_item_list = [
-            Item("", "Reduce Mine cost: ", 1, 28,
+            Item("", "Reduce Mine energy cost: ", 1, 28,
                  1, self.reduce_mine_cost),
-            Item("", "Sell Mine: ", 2, -49,
-                 -1, self.sell_mine),
+            Item("", "Sell Mine: ", 0, -49, -1, self.sell_mine),
         ]
 
         self.cur_item_list = []
         self.cur_item_list.extend(self.default_item_list)
 
-    def generate_item(self, item: Item, wave: int, player: Player) -> Item:
+    def generate_item(self, item: Item, wave: int, player: Player, lang) -> Item:
         # Calculate the actual cost
         actual_cost = item.cost * wave * 2
+        description = lang.ItemText[item.description]
 
         # Deal with no-quality items
         if item.quality == -1:
-            return Item(item.image_path, item.description, item.value,
+            return Item(item.image_path, description, item.value,
                         actual_cost, item.quality, item.equip)
 
         # Randomly generate quality with luck
@@ -223,18 +222,18 @@ class Shop:
             real_value = item.value * 4
 
         return Item(item.image_path,
-                    item.description + str(real_value),
+                    description + str(real_value),
                     real_value,
                     actual_cost,
                     actual_quality,
                     item.equip
                     )
 
-    def get_items(self, wave: int, player: Player) -> list:
+    def get_items(self, wave: int, player: Player, lang) -> list:
         tmp_list = random.sample(self.cur_item_list, 4)
         items = []
         for i in tmp_list:
-            items.append(self.generate_item(i, wave, player))
+            items.append(self.generate_item(i, wave, player, lang))
         return items
 
     def update_item_list(self, wave: int, player: Player) -> None:

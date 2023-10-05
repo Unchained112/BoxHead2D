@@ -132,6 +132,7 @@ class Language:
         FULLSCREEN = "Fullscreen"
         RESOLUTION = "Resolution"
         SWITCH = "Switch"
+        PRESS_ANY_KEY = "Press any key to proceed..."
 
         # Shop
         REFRESH = "Refresh"
@@ -145,7 +146,7 @@ class Language:
         KILL_RECOVER = "- Recover after kill: "
         LUCK = "- Luck: "
         EXPLOSION_DAMAGE = "- Explosion damage: "
-        PISTOL = "Pistol:"
+        PISTOL = "Pistol"
         UZI = "Uzi"
         SHOTGUN = "Shotgun"
         ROCKET = "Rocket"
@@ -159,45 +160,131 @@ class Language:
         BULLET_NUMBER = "- Bullet numbers: "
 
         # Item
-        GET_UZI = "Get Uzi"
-        GET_SHOTGUN = "Get Shotgun"
-        GET_ROCKET = "Get Rocket"
-        GET_WALL = "Get Wall"
-        GET_BARREL = "Get Barrel"
-        GET_MINE = "Get Mine"
-        SELL_HEALTH = "Sell health: "
-        SELL_ENERGY = "Sell energy: "
-        ADD_SPEED = "Add speed: "
-        SELL_SPEED = "Sell speed: "
-        ADD_LUCK = "Increase luck: "
-        SELL_LUCK = "Sell luck: "
-        ADD_HEALTH_RECOVER = "Add health recover after kill: "
-        ADD_EXPLOSION_DAMAGE = "Add explosion damage: "
-        PISTOL_DAMAGE = "Increase Pistol damage: "
-        PISTOL_CD = "Reduce Pistol CD: "
-        PISTOL_RANGE = "Increase Pistol attack range: "
-        UZI_DAMAGE = "Increase Uzi damage: "
-        UZI_CD = "Reduce Uzi CD: "
-        UZI_RANGE = "Increase Uzi attack range: "
-        UZI_COST = "Reduce Uzi energy cost: "
-        SELL_UZI = "Sell Uzi"
-        SHOTGUN_DAMAGE = "Increase Shotgun damage: "
-        SHOTGUN_CD = "Reduce Shotgun CD: "
-        SHOTGUN_RANGE = "Increase Shotgun attack range: "
-        SHOTGUN_COST = "Reduce Shotgun energy cost: "
-        SELL_SHOTGUN = "Sell Shotgun"
-        SHOTGUN_BULLET = "Increase Shotgun bullets: "
-        ROCKET_CD = "Reduce Rocket CD: "
-        ROCKET_RANGE = "Increase Rocket attack range: "
-        ROCKET_COST = "Reduce Rocket energy cost: "
-        SELL_ROCKET = "Sell Rocket"
-        WALL_COST = "Reduce Wall energy cost: "
-        WALL_HEALTH = "Increase Wall durability: "
-        SELL_WALL = "Sell Wall"
-        BARREL_COST = "Reduce Barrel energy cost: "
-        SELL_BARREL = "Sell Barrel"
-        MINE_COST = "Reduce Mine energy cost: "
-        SELL_MINE = "Sell Mine"
+        ItemText = {
+        "Get Uzi": "Get Uzi",
+        "Get Shotgun": "Get Shotgun",
+        "Get Rocket": "Get Rocket",
+        "Get Wall": "Get Wall",
+        "Get Barrel": "Get Barrel",
+        "Get Mine": "Get Mine",
+        "Sell health: ": "Sell health: ",
+        "Sell energy: ": "Sell energy: ",
+        "Add speed: ": "Add speed: ",
+        "Sell speed: ": "Sell speed: ",
+        "Increase luck: ": "Increase luck: ",
+        "Sell luck: ": "Sell luck: ",
+        "Add health recover after kill: ": "Add health recover after kill: ",
+        "Add explosion damage: ": "Add explosion damage: ",
+        "Increase Pistol damage: ": "Increase Pistol damage: ",
+        "Reduce Pistol CD: ": "Reduce Pistol CD: ",
+        "Increase Pistol attack range: ": "Increase Pistol attack range: ",
+        "Increase Uzi damage: ": "Increase Uzi damage: ",
+        "Reduce Uzi CD: ": "Reduce Uzi CD: ",
+        "Increase Uzi attack range: ": "Increase Uzi attack range: ",
+        "Reduce Uzi energy cost: ": "Reduce Uzi energy cost: ",
+        "Sell Uzi": "Sell Uzi",
+        "Increase Shotgun damage: ": "Increase Shotgun damage: ",
+        "Reduce Shotgun CD: ": "Reduce Shotgun CD: ",
+        "Increase Shotgun attack range: ": "Increase Shotgun attack range: ",
+        "Reduce Shotgun energy cost: ": "Reduce Shotgun energy cost: ",
+        "Sell Shotgun": "Sell Shotgun",
+        "Increase Shotgun bullets: ": "Increase Shotgun bullets: ",
+        "Reduce Rocket CD: ": "Reduce Rocket CD: ",
+        "Increase Rocket attack range: ": "Increase Rocket attack range: ",
+        "Reduce Rocket energy cost: ": "Reduce Rocket energy cost: ",
+        "Sell Rocket": "Sell Rocket",
+        "Reduce Wall energy cost: ": "Reduce Wall energy cost: ",
+        "Increase Wall durability: ": "Increase Wall durability: ",
+        "Sell Wall": "Sell Wall",
+        "Reduce Barrel energy cost: ": "Reduce Barrel energy cost: ",
+        "Sell Barrel": "Sell Barrel",
+        "Reduce Mine energy cost: ": "Reduce Mine energy cost: ",
+        "Sell Mine": "Sell Mine",
+        }
 
     class CN:
+        # Basic
+        TITLE = "僵尸危机幸存者"
         START = "开始"
+        OPTION = "设置"
+        QUIT = "退出"
+        BACK = "返回"
+        NEXT = "下一项"
+        START_MENU = "开始菜单"
+        CONTINUE = "继续"
+        EFFECT_VOLUME = "音效音量"
+        MUSIC_VOLUME = "音乐音量"
+        LANG = "语言"
+        CUR_LANG = "中文"
+        FULLSCREEN = "全屏"
+        RESOLUTION = "分辨率"
+        SWITCH = "开关"
+        PRESS_ANY_KEY = "按任意键继续..."
+
+        # Shop
+        REFRESH = "刷新"
+        BUY = "购买"
+        BUY_SUCCESS = "购买成功"
+        BUY_FAIL = "购买失败"
+        REFRESH_FAIL = "刷新失败"
+        PLAYER_STATUS = "角色状态"
+        HEALTH = "- 生命: "
+        ENERGY = "- 能量: "
+        KILL_RECOVER = "- 杀敌恢复生命: "
+        LUCK = "- 幸运: "
+        EXPLOSION_DAMAGE = "- 爆炸伤害: "
+        PISTOL = "手枪"
+        UZI = "冲锋枪"
+        SHOTGUN = "霰弹枪"
+        ROCKET = "火箭筒"
+        WALL = "墙"
+        BARREL = "油桶"
+        MINE = "地雷"
+        DAMAGE = "- 伤害: "
+        CD = "- 冷却: "
+        ATTACK_RANGE = "- 攻击范围: "
+        ENERGY_COST = "- 能量消耗: "
+        BULLET_NUMBER = "- 子弹数: "
+
+        # Item
+        ItemText = {
+        "Get Uzi": "冲锋枪",
+        "Get Shotgun": "霰弹枪",
+        "Get Rocket": "火箭筒",
+        "Get Wall": "墙",
+        "Get Barrel": "油桶",
+        "Get Mine": "地雷",
+        "Sell health: ": "卖血: ",
+        "Sell energy: ": "出售能量: ",
+        "Add speed: ": "增加移速: ",
+        "Sell speed: ": "出售移速: ",
+        "Increase luck: ": "增加幸运: ",
+        "Sell luck: ": "出售幸运: ",
+        "Add health recover after kill: ": "增加击杀后恢复: ",
+        "Add explosion damage: ": "增加爆炸伤害: ",
+        "Increase Pistol damage: ": "增加手枪伤害: ",
+        "Reduce Pistol CD: ": "减少手枪冷却: ",
+        "Increase Pistol attack range: ": "增加手枪射程: ",
+        "Increase Uzi damage: ": "增加冲锋枪伤害: ",
+        "Reduce Uzi CD: ": "减少冲锋枪冷却: ",
+        "Increase Uzi attack range: ": "增加冲锋枪射程: ",
+        "Reduce Uzi energy cost: ": "减少冲锋枪能量消耗: ",
+        "Sell Uzi": "出售冲锋枪",
+        "Increase Shotgun damage: ": "增加霰弹枪伤害: ",
+        "Reduce Shotgun CD: ": "减少霰弹枪冷却: ",
+        "Increase Shotgun attack range: ": "增加霰弹枪射程: ",
+        "Reduce Shotgun energy cost: ": "减少霰弹枪能量消耗: ",
+        "Sell Shotgun": "出售霰弹枪",
+        "Increase Shotgun bullets: ": "增加霰弹枪子弹数: ",
+        "Reduce Rocket CD: ": "减少火箭筒冷却: ",
+        "Increase Rocket attack range: ": "增加火箭筒射程: ",
+        "Reduce Rocket energy cost: ": "减少火箭筒能量消耗: ",
+        "Sell Rocket": "出售火箭筒",
+        "Reduce Wall energy cost: ": "减少墙能量消耗: ",
+        "Increase Wall durability: ": "增加墙耐久度: ",
+        "Sell Wall": "出售墙",
+        "Reduce Barrel energy cost: ": "减少油桶能量消耗: ",
+        "Sell Barrel": "出售油桶",
+        "Reduce Mine energy cost: ": "减少地雷能量消耗: ",
+        "Sell Mine": "出售地雷",
+        }
