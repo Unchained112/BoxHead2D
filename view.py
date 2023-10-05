@@ -931,13 +931,13 @@ class GameView(FadingView):
         self.pool_size: int = 0
         self.round_text = arcade.Text("", self.w / 2,
                                       self.h - 50, utils.Color.BLACK,
-                                      15, 2, "left", "Cubic 11")
+                                      16, 2, "left", "Cubic 11")
         self.multiplier_text = arcade.Text("", self.w - 200,
                                            self.h - 140, utils.Color.MUL_GREEN,
-                                           30, 2, "left", "Cubic 11")
+                                           40, 2, "left", "Cubic 11")
         self.score_text = arcade.Text("Score: " + str(self.score), self.w - 240,
                                       self.h - 50, utils.Color.BLACK,
-                                      15, 2, "left", "Cubic 11")
+                                      16, 2, "left", "Cubic 11")
 
         self.window.set_mouse_visible(False)
         self.counter: int = -250  # assume 60 frames -> 60 = 1s
@@ -984,7 +984,7 @@ class GameView(FadingView):
         self.money_ui.alpha = 0
         self.buy_text = arcade.Text("", self.w/2 + 340,
                                     52, utils.Color.BLACK,
-                                    10, 2, "left", "Cubic 11")
+                                    14, 2, "left", "Cubic 11")
         self.money_container = arcade.SpriteSolidColor(
             600, 16, utils.Color.BLACK)
         self.money_container.center_x = self.w / 2
@@ -1237,7 +1237,7 @@ class GameView(FadingView):
                          start_x=100,
                          start_y=self.h - 50,
                          color=utils.Color.HEALTH_RED,
-                         font_size=12,
+                         font_size=16,
                          width=2,
                          align="left",
                          font_name="Cubic 11")
@@ -1247,7 +1247,7 @@ class GameView(FadingView):
                          start_x=100,
                          start_y=self.h - 80,
                          color=utils.Color.ENERGY_BLUE,
-                         font_size=12,
+                         font_size=16,
                          width=2,
                          align="left",
                          font_name="Cubic 11")
@@ -1777,7 +1777,8 @@ class ShopView(arcade.View):
                                                  height=400,
                                                  text="",
                                                  text_color=(0, 0, 0, 255),
-                                                 font_name="Cubic 11")
+                                                 font_name="Cubic 11",
+                                                 font_size=16)
         self.get_player_text()
 
         self.manager.add(
@@ -1797,7 +1798,7 @@ class ShopView(arcade.View):
                                       self.w/2 - 420,
                                       self.h/2 + 270,
                                       color=utils.Color.BLACK,
-                                      font_size=12,
+                                      font_size=16,
                                       font_name="Cubic 11",
                                       anchor_x="center")
         self.purchase_text = arcade.Text("",
@@ -1845,7 +1846,7 @@ class ShopView(arcade.View):
                                              start_x=self.w/2 + 100,
                                              start_y=self.h/2 - 160,
                                              color=utils.Color.BLACK,
-                                             font_size=12,
+                                             font_size=16,
                                              font_name="Cubic 11",
                                              anchor_x="center")
         refresh_button = arcade.gui.UIFlatButton(text=self.window.cur_lang.REFRESH + " [D]",
@@ -2005,7 +2006,7 @@ class ShopView(arcade.View):
         self.player_text.text = text
 
     def get_items(self) -> None:
-        self.items = self.shop.get_items(self.last_view.round, 
+        self.items = self.shop.get_items(self.last_view.round,
                                          self.player,
                                          self.window.cur_lang)
         for i in range(0, 4):
@@ -2038,7 +2039,7 @@ class ShopView(arcade.View):
                 self.ref_pos.y + 60,
                 width=120,
                 color=utils.Color.BLACK,
-                font_size=14,
+                font_size=12,
                 font_name="Cubic 11",
                 anchor_x="center",
                 align="center",
@@ -2057,7 +2058,7 @@ class ShopView(arcade.View):
                 self.ref_pos.y - 60,
                 width=120,
                 color=cost_color,
-                font_size=16,
+                font_size=20,
                 font_name="Cubic 11",
                 anchor_x="center",
                 align="center",

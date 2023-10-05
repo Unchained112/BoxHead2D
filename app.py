@@ -14,7 +14,7 @@ class BoxHead2d(arcade.Window):
         self.music_volume = settings.music_volume
         self.res_index = settings.res_index
         self.lang = [utils.Language.EN, utils.Language.CN]
-        self.lang_idx = 0
+        self.lang_idx = settings.lang_idx
         self.cur_lang = self.lang[self.lang_idx]
         self.w_scale = [1024, 1280, 1440, 1920]
         self.h_scale = [600, 720, 900, 1080]
