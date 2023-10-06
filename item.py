@@ -93,25 +93,27 @@ class Shop:
         self.wall = weapon.PlacedWall()
         self.barrel = weapon.Barrel()
         self.mine = weapon.Mine()
-        self.add_uzi_item = Item("", "Get Uzi", 0, 30, -1, self.add_uzi)
+        self.add_uzi_item = Item("graphics/item/GetUzi.png",
+                                 "Get Uzi", 0, 30, -1, self.add_uzi)
         self.add_shotgun_item = Item(
-            "", "Get Shotgun", 0, 42, -1, self.add_shotgun)
+            "graphics/item/GetShotgun.png", "Get Shotgun", 0, 42, -1, self.add_shotgun)
         self.add_rocket_item = Item(
-            "", "Get Rocket", 0, 56, -1, self.add_rocket)
+            "graphics/item/GetRocket.png", "Get Rocket", 0, 56, -1, self.add_rocket)
         self.add_wall_item = Item(
-            "", "Get Wall", 0, 28, -1, self.add_wall)
+            "graphics/item/GetWall.png", "Get Wall", 0, 28, -1, self.add_wall)
         self.add_barrel_item = Item(
-            "", "Get Barrel", 0, 52, -1, self.add_barrel)
+            "graphics/item/GetBarrel.png", "Get Barrel", 0, 52, -1, self.add_barrel)
         self.add_mine_item = Item(
-            "", "Get Mine", 0, 49, -1, self.add_mine)
+            "graphics/item/GetMine.png", "Get Mine", 0, 49, -1, self.add_mine)
 
         self.default_item_list = [
-            Item("", "Sell health: ", 100, -18, 1, minus_health),
-            Item("", "Sell energy: ", 50, -12, 1, minus_energy),
+            Item("graphics/item/SellHealth.png", "Sell health: ",
+                 100, -18, 1, minus_health),
+            Item("graphics/item/SellEnergy.png", "Sell energy: ", 50, -12, 1, minus_energy),
             Item("", "Add speed: ", 100, 15, 1, increase_speed),
             Item("", "Sell speed: ", 100, -25, 1, minus_speed),
-            Item("", "Increase luck: ", 2, 18, 1, increase_luck),
-            Item("", "Sell luck: ", 2, -32, 1, minus_luck),
+            Item("graphics/item/AddLuck.png", "Increase luck: ", 2, 18, 1, increase_luck),
+            Item("graphics/item/SellLuck.png", "Sell luck: ", 2, -32, 1, minus_luck),
             Item("", "Add health recover after kill: ",
                  5, 12, 1, increase_kill_recover),
             Item("", "Increase Pistol damage: ",
@@ -142,7 +144,7 @@ class Shop:
                  5, 20, 1, self.increase_uzi_range),
             Item("", "Reduce Uzi energy cost: ",
                  1, 18, 1, self.reduce_uzi_cost),
-            Item("", "Sell Uzi", 0, -30, -1, self.sell_uzi),
+            Item("graphics/item/SellUzi.png", "Sell Uzi", 0, -30, -1, self.sell_uzi),
         ]
         self.shotgun_item_list = [
             Item("", "Increase Shotgun damage: ", 10,
@@ -155,7 +157,8 @@ class Shop:
                  5, 28, 1, self.increase_shotgun_range),
             Item("", "Reduce Shotgun energy cost: ",
                  1, 24, 1, self.reduce_shotgun_cost),
-            Item("", "Sell Shotgun", 0, -42, -1, self.sell_shotgun),
+            Item("graphics/item/SellShotgun.png", "Sell Shotgun",
+                 0, -42, -1, self.sell_shotgun),
             Item("", "Increase Shotgun bullets: ", 1,
                  26, 1, self.increase_shotgun_bullets)
         ]
@@ -166,14 +169,15 @@ class Shop:
                  5, 35, 1, self.increase_rocket_range),
             Item("", "Reduce Rocket energy cost: ",
                  1, 28, 1, self.reduce_rocket_cost),
-            Item("", "Sell Rocket", 0, -56, -1, self.sell_rocket),
+            Item("graphics/item/SellRocket.png", "Sell Rocket",
+                 0, -56, -1, self.sell_rocket),
             # Item("", "Increase Rocket bullets:", 1,
             #      52, 1, self.increase_rocket_bullets)
         ]
         self.wall_item_list = [
             Item("", "Reduce Wall energy cost: ", 1, 16,
                  1, self.reduce_wall_cost),
-            Item("", "Sell Wall", 0, -28,
+            Item("graphics/item/SellWall.png", "Sell Wall", 0, -28,
                  -1, self.sell_wall),
             Item("", "Increase Wall durability: ", 20, 24,
                  1, self.add_wall_durability),
@@ -181,12 +185,14 @@ class Shop:
         self.barrel_item_list = [
             Item("", "Reduce Barrel energy cost: ", 1, 35,
                  1, self.reduce_barrel_cost),
-            Item("", "Sell Barrel", 0, -52, -1, self.sell_barrel),
+            Item("graphics/item/SellBarrel.png", "Sell Barrel",
+                 0, -52, -1, self.sell_barrel),
         ]
         self.mine_item_list = [
             Item("", "Reduce Mine energy cost: ", 1, 28,
                  1, self.reduce_mine_cost),
-            Item("", "Sell Mine: ", 0, -49, -1, self.sell_mine),
+            Item("graphics/item/SellMine.png", "Sell Mine: ",
+                 0, -49, -1, self.sell_mine),
         ]
 
         self.cur_item_list = []

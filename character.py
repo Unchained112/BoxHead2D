@@ -161,7 +161,7 @@ class Player(Character):
         self.health = int(500)
         self.kill_recover = int(5)
         self.explosion_damage = 30
-        self.money = 100
+        self.money = 150
         self.luck = 6
 
         # Player body sprite
