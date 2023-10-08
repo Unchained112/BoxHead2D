@@ -2027,10 +2027,10 @@ class ShopView(arcade.View):
 
             # Item logo
             logo = arcade.Sprite()
-            if i.image_path == "":
+            if self.items[i].image_path == "":
                 logo.texture = arcade.load_texture("graphics/item/PlaceHolder.png")
             else:
-                logo.texture = arcade.load_texture(i.image_path)
+                logo.texture = arcade.load_texture(self.items[i].image_path)
             logo.center_x = self.ref_pos.x + i*160
             logo.center_y = self.ref_pos.y + 120
             self.item_logo_list.append(logo)
