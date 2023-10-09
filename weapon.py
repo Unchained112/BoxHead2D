@@ -204,7 +204,7 @@ class Shotgun(Weapon):
 
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__("graphics/weapon/Shotgun.png", x, y)
-        self.cd_max = int(50)  # 50/60 s
+        self.cd_max = int(40)  # 40/60 s
         self.cost = 15
         self.damage = 40
         self.life_span = 10

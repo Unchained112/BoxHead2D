@@ -1650,7 +1650,7 @@ class GameView(FadingView):
             self.round_text.text = "Round: " + str(self.round)
             self.counter = 0  # reset the counter
             self.spawn_cnt = self.round * 8  # num of enemies: round * 8
-            self.pool_size = (self.round * self.round) * 80
+            self.pool_size = 200 * self.round - 120
             self.window.play_round_start_sound()
 
         # Update enemies
