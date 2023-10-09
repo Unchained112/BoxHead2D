@@ -96,6 +96,8 @@ class Blood(arcade.SpriteSolidColor):
     def __init__(self) -> None:
         super().__init__(random.randint(4, 12), random.randint(4, 12), utils.Color.DARK_RED)
         self.my_alpha = 255
+        self.counter = 600
+
         # Set direction/speed
         speed = random.random() * 8
         direction = random.randrange(360)
@@ -109,6 +111,10 @@ class Blood(arcade.SpriteSolidColor):
             self.center_x += self.change_x
             self.center_y += self.change_y
 
+        if self.counter <= 0:
+            self.remove_from_sprite_lists()
+        self.counter -= 1
+
 
 class ExplosionTrace(arcade.SpriteSolidColor):
     """Explosion traces particle. """
@@ -116,6 +122,8 @@ class ExplosionTrace(arcade.SpriteSolidColor):
     def __init__(self) -> None:
         super().__init__(random.randint(6, 12), random.randint(6, 12), utils.Color.BLACK)
         self.my_alpha = 255
+        self.counter = 600
+
         # Set direction/speed
         speed = random.random() * 12
         direction = random.randrange(360)
@@ -128,3 +136,7 @@ class ExplosionTrace(arcade.SpriteSolidColor):
             self.alpha = self.my_alpha
             self.center_x += self.change_x
             self.center_y += self.change_y
+
+        if self.counter <= 0:
+            self.remove_from_sprite_lists()
+        self.counter -= 1

@@ -934,7 +934,7 @@ class GameView(FadingView):
                                       16, 2, "left", "Cubic 11")
         self.multiplier_text = arcade.Text("", self.w - 200,
                                            self.h - 140, utils.Color.MUL_GREEN,
-                                           40, 2, "left", "Cubic 11")
+                                           40, 2, "left", "FFF Forward")
         self.score_text = arcade.Text("Score: " + str(self.score), self.w - 240,
                                       self.h - 50, utils.Color.BLACK,
                                       16, 2, "left", "Cubic 11")
@@ -1438,6 +1438,7 @@ class GameView(FadingView):
         for enemy in self.enemy_crack_list:
             self.check_hit_player(enemy)
             self.check_trigger_mine(enemy)
+            self.check_hit_wall(enemy)
 
         # Enemy Big Mouth
         for enemy in self.enemy_big_mouth_list:
@@ -1466,6 +1467,7 @@ class GameView(FadingView):
         for enemy in self.enemy_tank_list:
             self.check_hit_player(enemy)
             self.check_trigger_mine(enemy)
+            self.check_hit_wall(enemy)
             if enemy.is_walking == False:
                 if enemy.cd == enemy.cd_max:
                     enemy.cd = 0
@@ -1586,6 +1588,16 @@ class GameView(FadingView):
             self.room.grid[mine.grid_idx[0],
                            mine.grid_idx[1]] = 0
 
+    def check_hit_wall(self, enemy: character.Character) -> None:
+        hit_list = arcade.check_for_collision_with_list(
+            enemy, self.wall_list)
+        for wall in hit_list:
+            wall.health -= enemy.hit_damage
+            if wall.health <= 0:
+                self.room.grid[wall.grid_idx[0],
+                               wall.grid_idx[1]] = 0
+                wall.remove_from_sprite_lists()
+
     def set_explosion(self, position: arcade.Point) -> None:
         for _ in range(20):
             particle = effect.Particle(self.explosions_list)
@@ -1631,6 +1643,7 @@ class GameView(FadingView):
             self.round_text.text = "Start !!!"
         if self.counter == 0:
             self.spawn_cnt = 0
+            self.pool_size = 80
 
         # Score multiplier
         if self.total_time - self.last_kill_time > 1.0 and self.multiplier > 1:
@@ -1650,7 +1663,6 @@ class GameView(FadingView):
             self.round_text.text = "Round: " + str(self.round)
             self.counter = 0  # reset the counter
             self.spawn_cnt = self.round * 8  # num of enemies: round * 8
-            self.pool_size = 200 * self.round - 120
             self.window.play_round_start_sound()
 
         # Update enemies
@@ -1682,6 +1694,42 @@ class GameView(FadingView):
                     self.generate_enemy(1, character.EnemyRed,
                                         self.enemy_red_list)
 
+        if self.round == 5:
+            if self.counter % 30 == 0:
+                if self.counter < 3600 and self.spawn_cnt > 8:
+                    self.generate_enemy(1, character.EnemyWhite,
+                                        self.enemy_white_list)
+                elif self.spawn_cnt > 2:
+                    self.generate_enemy(1, character.EnemyRed,
+                                        self.enemy_red_list)
+                else:
+                    self.set_mini_boss(character.EnemyBigMouth,
+                                       self.enemy_big_mouth_list)
+
+        if self.round > 5 and self.round <= 7:
+            if self.counter % 30 == 0:
+                if self.counter < 1800 and self.spawn_cnt > 20:
+                    self.generate_enemy(1, character.EnemyWhite,
+                                        self.enemy_white_list)
+                else:
+                    self.generate_enemy(
+                        2, character.EnemyCrack, self.enemy_crack_list)
+            if self.counter % 80 == 0:
+                self.generate_enemy(1, character.EnemyRed,
+                                    self.enemy_red_list)
+
+        if self.round > 7 and self.round <= 9:
+            if self.counter % 30 == 0:
+                if self.counter < 1800 and self.spawn_cnt > 20:
+                    self.generate_enemy(1, character.EnemyWhite,
+                                        self.enemy_white_list)
+                else:
+                    self.generate_enemy(
+                        2, character.EnemyCrack, self.enemy_crack_list)
+            if self.counter % 80 == 0:
+                self.generate_enemy(1, character.EnemyRed,
+                                    self.enemy_red_list)
+
     def set_one_enemy(self, pos, enemy_type, enemy_list) -> None:
         """Set up a single enemy."""
         if self.spawn_cnt <= 0:
@@ -1709,6 +1757,25 @@ class GameView(FadingView):
         else:  # generate one wave of enemies
             for pos in self.room.spawn_pos:
                 self.set_one_enemy(pos, enemy_type, enemy_list)
+
+    def set_mini_boss(self, enemy_type, enemy_list) -> None:
+        """Set up a mini boss."""
+        if self.spawn_cnt <= 0:
+            return
+        pos = random.choice(self.room.spawn_pos)
+        enemy = enemy_type(
+            pos.x, pos.y, self.physics_engine, self.player)
+        enemy.health *= 4
+        enemy.speed += 200
+        enemy.cd_max -= 20
+        enemy_list.append(enemy)
+        self.enemy_sprite_list.extend(enemy.parts)
+        self.physics_engine.add_sprite(enemy,
+                                       friction=0,
+                                       moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+                                       damping=0.001,
+                                       collision_type="enemy")
+        self.spawn_cnt -= 1
 
 
 class GameOverView(arcade.View):
@@ -1749,6 +1816,7 @@ class ShopView(arcade.View):
         self.shop = last_view.shop
         self.cnt = 0
         self.refresh_cost = last_view.round * last_view.round
+        self.last_view.pool_size = 200 * last_view.round - 180
         self.player.money += self.last_view.money_pool
 
         # Reset money pool of the game view
@@ -1928,6 +1996,7 @@ class ShopView(arcade.View):
         text = self.window.cur_lang.PLAYER_STATUS + "\n"
         text += self.window.cur_lang.HEALTH + str(self.player.health) + "\n"
         text += self.window.cur_lang.ENERGY + str(self.player.energy) + "\n"
+        text += self.window.cur_lang.SPEED + str(self.player.speed) + "\n"
         text += self.window.cur_lang.KILL_RECOVER + \
             str(self.player.kill_recover) + "\n"
         text += self.window.cur_lang.LUCK + str(self.player.luck) + "\n"
@@ -2028,7 +2097,8 @@ class ShopView(arcade.View):
             # Item logo
             logo = arcade.Sprite()
             if self.items[i].image_path == "":
-                logo.texture = arcade.load_texture("graphics/item/PlaceHolder.png")
+                logo.texture = arcade.load_texture(
+                    "graphics/item/PlaceHolder.png")
             else:
                 logo.texture = arcade.load_texture(self.items[i].image_path)
             logo.center_x = self.ref_pos.x + i*160

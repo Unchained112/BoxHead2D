@@ -86,6 +86,7 @@ class BoxHead2d(arcade.Window):
         self.lang_idx = lang_idx
         self.cur_lang = self.lang[self.lang_idx]
 
+
 def main():
     """ Main function """
     arcade.load_font("fonts/FFFFORWA.ttf")
