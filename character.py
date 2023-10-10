@@ -428,8 +428,8 @@ class EnemyBigMouth(Character):
                  physics_engine: arcade.PymunkPhysicsEngine = None,
                  player: Player = None) -> None:
         super().__init__(x, y, physics_engine)
-        self.health = int(150)
-        self.health_max = int(150)
+        self.health = int(250)
+        self.health_max = int(250)
         self.is_walking = True
         self.hit_damage = int(20)
         self.last_force = Vec2(0, 0)

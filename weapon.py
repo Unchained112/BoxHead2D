@@ -271,7 +271,7 @@ class Rocket(Weapon):
     def get_bullet(self) -> arcade.SpriteList:
         bullets = arcade.SpriteList()
         for i in range(1, self.bullet_num + 1):
-            angle = (-0.05 + 0.01 / (self.bullet_num+1) * i) * self.bullet_num
+            angle = (-0.1 + 0.2 / (self.bullet_num+1) * i) * self.bullet_num
             bullet = self.bullet()
             bullet.life_span = self.life_span
             bullet.center_x = self.center_x - 10

@@ -195,6 +195,10 @@ class Shop:
                  0, -49, -1, self.sell_mine),
         ]
 
+        # Passive skills
+        # Active skills
+        # TODO: design and add skills
+
         self.cur_item_list = []
         self.cur_item_list.extend(self.default_item_list)
 

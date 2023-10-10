@@ -1572,6 +1572,8 @@ class GameView(FadingView):
         self.last_kill_time = self.total_time
 
     def check_hit_player(self, enemy: character.Character) -> None:
+        if self.counter % 10 != 0: # check every 1/6 s
+            return
         if arcade.check_for_collision(enemy, self.player):
             self.player.health = max(
                 self.player.health - enemy.hit_damage, 0)
@@ -1589,6 +1591,8 @@ class GameView(FadingView):
                            mine.grid_idx[1]] = 0
 
     def check_hit_wall(self, enemy: character.Character) -> None:
+        if self.counter % 10 != 0: # check every 1/6 s
+            return
         hit_list = arcade.check_for_collision_with_list(
             enemy, self.wall_list)
         for wall in hit_list:
@@ -1719,16 +1723,62 @@ class GameView(FadingView):
                                     self.enemy_red_list)
 
         if self.round > 7 and self.round <= 9:
-            if self.counter % 30 == 0:
-                if self.counter < 1800 and self.spawn_cnt > 20:
-                    self.generate_enemy(1, character.EnemyWhite,
+            if self.counter % 30 == 0 and self.spawn_cnt > 30:
+                if self.counter < 1800:
+                    self.generate_enemy(3, character.EnemyWhite,
                                         self.enemy_white_list)
                 else:
                     self.generate_enemy(
-                        2, character.EnemyCrack, self.enemy_crack_list)
+                        3, character.EnemyCrack, self.enemy_crack_list)
             if self.counter % 80 == 0:
                 self.generate_enemy(1, character.EnemyRed,
                                     self.enemy_red_list)
+            if self.counter % 90 == 0:
+                self.generate_enemy(
+                        1, character.EnemyBigMouth, self.enemy_big_mouth_list)
+                self.generate_enemy(
+                        2, character.EnemyCrack, self.enemy_crack_list)
+
+        if self.round == 10:
+            if self.counter % 30 == 0:
+                if self.counter < 3600 and self.spawn_cnt > 20:
+                    self.generate_enemy(1, character.EnemyCrack,
+                                        self.enemy_crack_list)
+                elif self.spawn_cnt > 2:
+                    self.generate_enemy(1, character.EnemyBigMouth,
+                                        self.enemy_big_mouth_list)
+                else:
+                    self.set_mini_boss(character.EnemyTank,
+                                       self.enemy_tank_list)
+
+        if self.round > 10 and self.round <= 12:
+            if self.counter % 30 == 0:
+                if self.counter < 1800 and self.spawn_cnt > 39:
+                    self.generate_enemy(1, character.EnemyCrack,
+                                        self.enemy_crack_list)
+                else:
+                    self.generate_enemy(
+                        1, character.EnemyCrash, self.enemy_crash_list)
+            if self.counter % 100 == 0:
+                self.generate_enemy(1, character.EnemyBigMouth,
+                                    self.enemy_big_mouth_list)
+
+        if self.round > 12 and self.round <= 15:
+            if self.counter % 30 == 0 and self.counter < 3600:
+                if self.spawn_cnt > 60:
+                    self.generate_enemy(
+                        1, character.EnemyCrash, self.enemy_crash_list)
+                elif self.spawn_cnt <= 60 and self.spawn_cnt > 40:
+                    self.generate_enemy(2, character.EnemyCrack,
+                                        self.enemy_crack_list)
+            if self.counter % 100 == 0:
+                self.generate_enemy(1, character.EnemyBigMouth,
+                                    self.enemy_big_mouth_list)
+            if self.counter % 200 == 0 and self.counter >= 3600:
+                self.generate_enemy(3, character.EnemyTank,
+                                    self.enemy_tank_list)
+
+        # TODO: Design a boss and add a boss fight
 
     def set_one_enemy(self, pos, enemy_type, enemy_list) -> None:
         """Set up a single enemy."""
@@ -1765,7 +1815,7 @@ class GameView(FadingView):
         pos = random.choice(self.room.spawn_pos)
         enemy = enemy_type(
             pos.x, pos.y, self.physics_engine, self.player)
-        enemy.health *= 4
+        enemy.health *= 5
         enemy.speed += 200
         enemy.cd_max -= 20
         enemy_list.append(enemy)
@@ -1790,12 +1840,29 @@ class GameOverView(arcade.View):
         arcade.set_background_color(utils.Color.GROUND_WHITE)
         self.window.set_mouse_visible(True)
 
+    def setup(self, item_list) -> None:
+        self.item_list = item_list
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+        self.mission_text = arcade.Text("", self.w / 2,
+                                      self.h - 50, utils.Color.BLACK,
+                                      16, 2, "left", "Cubic 11")
+        self.score_text = arcade.Text("", self.w / 2,
+                                      self.h - 50, utils.Color.BLACK,
+                                      16, 2, "left", "Cubic 11")
+
 
 class GameWinView(arcade.View):
     """Game win view."""
 
     def __init__(self):
         super().__init__()
+        self.manager = None
+        self.last_view = None
+
+    def on_show_view(self) -> None:
+        arcade.set_background_color(utils.Color.GROUND_WHITE)
+        self.window.set_mouse_visible(True)
 
 
 class ShopView(arcade.View):

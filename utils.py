@@ -126,6 +126,8 @@ class Language:
         RESOLUTION = "Resolution"
         SWITCH = "Switch"
         PRESS_ANY_KEY = "Press any key to proceed..."
+        MISSION_FAILED = "Mission Failed"
+        MISSION_SUCCESS = "Mission Success"
 
         # Shop
         REFRESH = "Refresh"
@@ -214,6 +216,8 @@ class Language:
         RESOLUTION = "分辨率"
         SWITCH = "开关"
         PRESS_ANY_KEY = "按任意键继续..."
+        MISSION_FAILED = "任务失败"
+        MISSION_SUCCESS = "任务完成"
 
         # Shop
         REFRESH = "刷新"
