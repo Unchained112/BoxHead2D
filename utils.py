@@ -128,6 +128,7 @@ class Language:
         PRESS_ANY_KEY = "Press any key to proceed..."
         MISSION_FAILED = "Mission Failed"
         MISSION_SUCCESS = "Mission Success"
+        SCORE = "Score: "
 
         # Shop
         REFRESH = "Refresh"
@@ -218,6 +219,7 @@ class Language:
         PRESS_ANY_KEY = "按任意键继续..."
         MISSION_FAILED = "任务失败"
         MISSION_SUCCESS = "任务完成"
+        SCORE = "最终得分: "
 
         # Shop
         REFRESH = "刷新"

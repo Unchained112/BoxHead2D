@@ -944,6 +944,7 @@ class GameView(FadingView):
         self.total_time = 0
         self.last_kill_time = 0
         self.shop_enabled = False  # Enable if money_pool >= round * 100
+        self.all_item_list = []
 
         # UI set up
         self.ui_sprite_list = arcade.SpriteList()
@@ -1142,6 +1143,21 @@ class GameView(FadingView):
         if key == arcade.key.B and self.shop_enabled:
             self.window.shop_view.setup(self)
             self.window.show_view(self.window.shop_view)
+
+        # For testing
+        # if key == arcade.key.B:
+        #     self.window.shop_view.setup(self)
+        #     self.window.show_view(self.window.shop_view)
+
+        if key == arcade.key.X:
+            self.window.game_over_view = GameOverView()
+            self.window.game_over_view.setup(self.all_item_list, self.score)
+            self.window.show_view(self.window.game_over_view)
+
+        # if key == arcade.key.V:
+        #     self.window.game_win_view = GameWinView()
+        #     self.window.game_win_view.setup(self.all_item_list, self.score)
+        #     self.window.show_view(self.window.game_win_view)
 
     def on_key_release(self, key, modifiers) -> None:
 
@@ -1572,7 +1588,7 @@ class GameView(FadingView):
         self.last_kill_time = self.total_time
 
     def check_hit_player(self, enemy: character.Character) -> None:
-        if self.counter % 10 != 0: # check every 1/6 s
+        if self.counter % 10 != 0:  # check every 1/6 s
             return
         if arcade.check_for_collision(enemy, self.player):
             self.player.health = max(
@@ -1591,16 +1607,18 @@ class GameView(FadingView):
                            mine.grid_idx[1]] = 0
 
     def check_hit_wall(self, enemy: character.Character) -> None:
-        if self.counter % 10 != 0: # check every 1/6 s
+        if self.counter % 10 != 0:  # check every 1/6 s
             return
         hit_list = arcade.check_for_collision_with_list(
-            enemy, self.wall_list)
-        for wall in hit_list:
-            wall.health -= enemy.hit_damage
-            if wall.health <= 0:
-                self.room.grid[wall.grid_idx[0],
-                               wall.grid_idx[1]] = 0
-                wall.remove_from_sprite_lists()
+            enemy, self.player_object_list)
+        for obj in hit_list:
+            if obj.object_type != 0:
+                continue
+            obj.health -= enemy.hit_damage
+            if obj.health <= 0:
+                self.room.grid[obj.grid_idx[0],
+                               obj.grid_idx[1]] = 0
+                obj.remove_from_sprite_lists()
 
     def set_explosion(self, position: arcade.Point) -> None:
         for _ in range(20):
@@ -1735,9 +1753,9 @@ class GameView(FadingView):
                                     self.enemy_red_list)
             if self.counter % 90 == 0:
                 self.generate_enemy(
-                        1, character.EnemyBigMouth, self.enemy_big_mouth_list)
+                    1, character.EnemyBigMouth, self.enemy_big_mouth_list)
                 self.generate_enemy(
-                        2, character.EnemyCrack, self.enemy_crack_list)
+                    2, character.EnemyCrack, self.enemy_crack_list)
 
         if self.round == 10:
             if self.counter % 30 == 0:
@@ -1840,16 +1858,52 @@ class GameOverView(arcade.View):
         arcade.set_background_color(utils.Color.GROUND_WHITE)
         self.window.set_mouse_visible(True)
 
-    def setup(self, item_list) -> None:
+    def setup(self, item_list, score) -> None:
+        self.w, self.h = self.window.get_size()
         self.item_list = item_list
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
-        self.mission_text = arcade.Text("", self.w / 2,
-                                      self.h - 50, utils.Color.BLACK,
-                                      16, 2, "left", "Cubic 11")
-        self.score_text = arcade.Text("", self.w / 2,
-                                      self.h - 50, utils.Color.BLACK,
-                                      16, 2, "left", "Cubic 11")
+        self.mission_text = arcade.Text(
+            text=self.window.cur_lang.MISSION_FAILED,
+            start_x=self.w/2,
+            start_y=self.h/2 + 100,
+            width=300,
+            font_size=30,
+            align='center',
+            color=utils.Color.BLACK,
+            font_name="Cubic 11",
+        )
+        self.score_text = arcade.Text(
+            text=self.window.cur_lang.SCORE + str(score),
+            start_x=self.w/2,
+            start_y=self.h/2,
+            width=300,
+            font_size=24,
+            align='center',
+            color=utils.Color.BLACK,
+            font_name="Cubic 11",
+        )
+        continue_button = arcade.gui.UIFlatButton(text=self.window.cur_lang.CONTINUE,
+                                                  width=200,
+                                                  x=self.w/2 + 60,
+                                                  y=self.h/2 - 150,
+                                                  style=utils.Style.BUTTON_DEFAULT)
+        continue_button.on_click = self.on_click_continue
+        self.manager.add(continue_button)
+
+    def on_draw(self):
+        self.clear()
+        self.manager.draw()
+        self.mission_text.draw()
+        self.score_text.draw()
+
+    def on_click_continue(self, event) -> None:
+        utils.Utils.clear_ui_manager(self.manager)
+        self.window.start_view.setup()
+        self.window.start_view.resize_camera(
+            self.window.width, self.window.height)
+        self.window.show_view(self.window.start_view)
+        self.window.play_button_sound()
 
 
 class GameWinView(arcade.View):
@@ -2114,9 +2168,8 @@ class ShopView(arcade.View):
                 str(self.shop.rocket.life_span) + "\n"
             text += self.window.cur_lang.ENERGY_COST + \
                 str(self.shop.rocket.cost) + "\n"
-            # TODO: Fix for rocket bullet
-            # text += "- Bullet numbers: " + \
-            #     str(self.shop.rocket.bullet_num) + "\n"
+            text += "- Bullet numbers: " + \
+                str(self.shop.rocket.bullet_num) + "\n"
             text += "\n"
 
         if self.player.weapons.count(self.shop.wall) > 0:
@@ -2240,6 +2293,9 @@ class ShopView(arcade.View):
             self.update_purchase_text(0)
             self.item_button_enables[index] = False
             self.window.play_purchase_sound()
+            tmp_item = (self.items[index].quality,
+                        self.items[index].image_path)
+            self.last_view.all_item_list.append(tmp_item)
         else:
             # Purchase failed
             self.update_purchase_text(1)

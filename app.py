@@ -26,6 +26,8 @@ class BoxHead2d(arcade.Window):
         self.option_view = None
         self.select_view = None
         self.game_view = None
+        self.game_over_view = None
+        self.game_win_view = None
 
     def set_up(self) -> None:
         # Load sound and music

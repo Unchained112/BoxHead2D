@@ -109,11 +109,16 @@ class Shop:
         self.default_item_list = [
             Item("graphics/item/SellHealth.png", "Sell health: ",
                  100, -18, 1, minus_health),
-            Item("graphics/item/SellEnergy.png", "Sell energy: ", 50, -12, 1, minus_energy),
-            Item("graphics/item/AddSpeed.png", "Add speed: ", 50, 15, 1, increase_speed),
-            Item("graphics/item/SellSpeed.png", "Sell speed: ", 50, -15, 1, minus_speed),
-            Item("graphics/item/AddLuck.png", "Increase luck: ", 2, 18, 1, increase_luck),
-            Item("graphics/item/SellLuck.png", "Sell luck: ", 2, -18, 1, minus_luck),
+            Item("graphics/item/SellEnergy.png",
+                 "Sell energy: ", 50, -12, 1, minus_energy),
+            Item("graphics/item/AddSpeed.png",
+                 "Add speed: ", 50, 15, 1, increase_speed),
+            Item("graphics/item/SellSpeed.png",
+                 "Sell speed: ", 50, -15, 1, minus_speed),
+            Item("graphics/item/AddLuck.png",
+                 "Increase luck: ", 2, 18, 1, increase_luck),
+            Item("graphics/item/SellLuck.png",
+                 "Sell luck: ", 2, -18, 1, minus_luck),
             Item("graphics/item/KillRecover.png", "Add health recover after kill: ",
                  5, 12, 1, increase_kill_recover),
             Item("graphics/item/PistolDamage.png", "Increase Pistol damage: ",
@@ -139,12 +144,14 @@ class Shop:
                  21, 1, self.increase_uzi_damage),
             Item("graphics/item/UziDamage.png", "Increase Uzi damage: ", 10,
                  21, 1, self.increase_uzi_damage),
-            Item("graphics/item/UziCD.png", "Reduce Uzi CD: ", 2, 19, 1, self.increase_uzi_speed),
+            Item("graphics/item/UziCD.png", "Reduce Uzi CD: ",
+                 2, 19, 1, self.increase_uzi_speed),
             Item("graphics/item/UziRange.png", "Increase Uzi attack range: ",
                  5, 20, 1, self.increase_uzi_range),
             Item("graphics/item/UziCost.png", "Reduce Uzi energy cost: ",
                  1, 18, 1, self.reduce_uzi_cost),
-            Item("graphics/item/SellUzi.png", "Sell Uzi", 0, -30, -1, self.sell_uzi),
+            Item("graphics/item/SellUzi.png",
+                 "Sell Uzi", 0, -30, -1, self.sell_uzi),
         ]
         self.shotgun_item_list = [
             Item("graphics/item/ShotgunDamage.png", "Increase Shotgun damage: ", 10,
@@ -159,7 +166,7 @@ class Shop:
                  1, 24, 1, self.reduce_shotgun_cost),
             Item("graphics/item/SellShotgun.png", "Sell Shotgun",
                  0, -42, -1, self.sell_shotgun),
-            Item("", "Increase Shotgun bullets: ", 1,
+            Item("graphics/item/ShotgunBullets.png", "Increase Shotgun bullets: ", 1,
                  26, 1, self.increase_shotgun_bullets)
         ]
         self.rocket_item_list = [
@@ -171,9 +178,10 @@ class Shop:
                  1, 28, 1, self.reduce_rocket_cost),
             Item("graphics/item/SellRocket.png", "Sell Rocket",
                  0, -56, -1, self.sell_rocket),
-            # Item("", "Increase Rocket bullets:", 1,
-            #      52, 1, self.increase_rocket_bullets)
         ]
+        self.rocket_bullet_item = Item("graphics/item/RocketBullets.png",
+                                       "Increase Rocket bullets:", 3,
+                                       100, -1, self.increase_rocket_bullets)
         self.wall_item_list = [
             Item("graphics/item/WallCost.png", "Reduce Wall energy cost: ", 1, 16,
                  1, self.reduce_wall_cost),
@@ -355,6 +363,7 @@ class Shop:
         player.add_weapon(self.rocket)
         self.cur_item_list.remove(self.add_rocket_item)
         self.cur_item_list.extend(self.rocket_item_list)
+        self.cur_item_list.append(self.rocket_bullet_item)
         return True
 
     def increase_rocket_speed(self, item: Item, player: Player) -> bool:
@@ -375,6 +384,8 @@ class Shop:
         for i in self.rocket_item_list:
             self.cur_item_list.remove(i)
         self.cur_item_list.append(self.add_rocket_item)
+        if self.cur_item_list.count(self.rocket_bullet_item) != 0:
+            self.cur_item_list.remove(self.rocket_bullet_item)
 
         if (player.weapons.count(self.barrel) == 0 and
                 player.weapons.count(self.mine) == 0):
@@ -384,10 +395,12 @@ class Shop:
 
         return True
 
-    # TODO: add fix or limit for the rocket
-    # def increase_rocket_bullets(self, item: Item, player: Player) -> bool:
-    #     self.rocket.bullet_num += item.value
-    #     return True
+    def increase_rocket_bullets(self, item: Item, player: Player) -> bool:
+        if self.cur_item_list.count(self.rocket_bullet_item) == 0:
+            return False
+        self.rocket.bullet_num += item.value
+        self.cur_item_list.remove(self.rocket_bullet_item)
+        return True
 
     # PlacedWall items
 
