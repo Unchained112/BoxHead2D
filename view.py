@@ -1115,6 +1115,7 @@ class GameView(FadingView):
         if self.player.health <= 0:
             self.window.game_over_view.setup(self.all_item_list, self.score)
             self.window.show_view(self.window.game_over_view)
+            self.window.play_game_over_sound()
 
     def on_show_view(self) -> None:
         self.window.set_mouse_visible(False)
@@ -1211,14 +1212,14 @@ class GameView(FadingView):
         # Pick a random direction
         shake_direction = random.random() * 2 * math.pi
         # How 'far' to shake
-        shake_amplitude = 3
+        shake_amplitude = 2
         # Calculate a vector based on that
         shake_vector = Vec2(
             math.cos(shake_direction) * shake_amplitude,
             math.sin(shake_direction) * shake_amplitude
         )
         # Frequency of the shake
-        shake_speed = 1.6
+        shake_speed = 1
         # How fast to damp the shake
         shake_damping = 0.9
         # Do the shake
@@ -1393,7 +1394,10 @@ class GameView(FadingView):
 
             if len(hit_list) > 0:
                 if type(bullet) == weapon.Missile:
-                    self.set_explosion(bullet.position)
+                    if self.player.is_rocket_multi:
+                        self.set_multi_explosion(bullet.position)
+                    else:
+                        self.set_explosion(bullet.position)
                 bullet.remove_from_sprite_lists()
                 continue
 
@@ -1411,14 +1415,20 @@ class GameView(FadingView):
                 if object.object_type == 1:  # Barrel object
                     object.health -= bullet.damage
                     if object.health <= 0:
-                        self.set_explosion(object.position)
+                        if self.player.is_barrel_multi:
+                            self.set_multi_explosion(object.position)
+                        else:
+                            self.set_explosion(object.position)
                         self.room.grid[object.grid_idx[0],
                                        object.grid_idx[1]] = 0
                         object.remove_from_sprite_lists()
 
             if len(hit_list) > 0:
                 if type(bullet) == weapon.Missile:
-                    self.set_explosion(bullet.position)
+                    if self.player.is_rocket_multi:
+                        self.set_multi_explosion(bullet.position)
+                    else:
+                        self.set_explosion(bullet.position)
                 bullet.remove_from_sprite_lists()
                 continue
 
@@ -1428,11 +1438,21 @@ class GameView(FadingView):
 
             if len(hit_list) > 0:
                 if type(bullet) == weapon.Missile:
-                    self.set_explosion(bullet.position)
+                    if self.player.is_rocket_multi:
+                        self.set_multi_explosion(bullet.position)
+                    else:
+                        self.set_explosion(bullet.position)
                 bullet.remove_from_sprite_lists()
                 continue
 
             if bullet.life_span <= 0:
+                if type(bullet) == weapon.Missile:
+                    if self.player.is_rocket_multi:
+                        self.set_multi_explosion(bullet.position)
+                    else:
+                        self.set_explosion(bullet.position)
+                if type(bullet) == weapon.ExplosionSeed:
+                    self.set_explosion(bullet.position)
                 bullet.remove_from_sprite_lists()
 
     def update_enemy_attack(self) -> None:
@@ -1523,7 +1543,10 @@ class GameView(FadingView):
                 if object.object_type == 1:  # Barrel object
                     object.health -= bullet.damage
                     if object.health <= 0:
-                        self.set_explosion(object.position)
+                        if self.player.is_barrel_multi:
+                            self.set_multi_explosion(object.position)
+                        else:
+                            self.set_explosion(object.position)
                         self.room.grid[object.grid_idx[0],
                                        object.grid_idx[1]] = 0
                         object.remove_from_sprite_lists()
@@ -1604,7 +1627,10 @@ class GameView(FadingView):
         hit_list = arcade.check_for_collision_with_list(
             enemy, self.player_mine_list)
         for mine in hit_list:
-            self.set_explosion(mine.position)
+            if self.player.is_mine_multi:
+                self.set_multi_explosion(mine.position)
+            else:
+                self.set_explosion(mine.position)
             mine.remove_from_sprite_lists()
             self.room.grid[mine.grid_idx[0],
                            mine.grid_idx[1]] = 0
@@ -1624,7 +1650,7 @@ class GameView(FadingView):
                 obj.remove_from_sprite_lists()
 
     def set_explosion(self, position: arcade.Point) -> None:
-        for _ in range(20):
+        for _ in range(12):
             particle = effect.Particle(self.explosions_list)
             particle.position = position
             self.explosions_list.append(particle)
@@ -1649,6 +1675,21 @@ class GameView(FadingView):
             blood = effect.ExplosionTrace()
             blood.position = position
             self.blood_list.append(blood)
+
+    def set_multi_explosion(self, position: arcade.Point) -> None:
+        self.set_explosion(position)
+        for _ in range(4):
+            speed = 2
+            direction = random.randrange(360)
+            change_x = math.sin(math.radians(direction)) * speed
+            change_y = math.cos(math.radians(direction)) * speed
+            explosion_seed = weapon.ExplosionSeed()
+            explosion_seed.position = position
+            explosion_seed.change_x = change_x
+            explosion_seed.change_y = change_y
+            explosion_seed.life_span = 20
+            explosion_seed.damage = 0
+            self.player_bullet_list.append(explosion_seed)
 
     def set_blood(self, position: arcade.Point) -> None:
         for _ in range(12):
@@ -1689,9 +1730,10 @@ class GameView(FadingView):
             self.counter = 0  # reset the counter
             self.spawn_cnt = self.round * 8  # num of enemies: round * 8
             self.window.play_round_start_sound()
-            if self.round == 16: # Game win
+            if self.round == 16:  # Game win
                 self.window.game_win_view.setup(self.all_item_list, self.score)
                 self.window.show_view(self.window.game_win_view)
+                self.window.play_game_win_sound()
 
         # Update enemies
         self.enemy_white_list.update()

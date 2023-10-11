@@ -160,7 +160,7 @@ class Player(Character):
         self.energy = int(0)
         self.health = int(500)
         self.kill_recover = int(5)
-        self.explosion_damage = 30
+        self.explosion_damage = 50
         self.money = 150
         self.luck = 6
 
@@ -184,6 +184,17 @@ class Player(Character):
         self.add_weapon(pistol)
         self.current_weapon = self.weapons[self.weapon_index]
         self.cd_max = self.current_weapon.cd_max
+
+        # Weapon settings
+        self.is_rocket_multi = False
+        self.is_barrel_multi = False
+        self.is_mine_multi = False
+
+        # For testing
+        # self.energy = 20000
+        # self.money = 100000
+        # rocket = weapon.Rocket()
+        # self.add_weapon(rocket)
 
     def move(self) -> None:
         """Player move by applying force from physics engine."""

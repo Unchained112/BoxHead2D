@@ -64,6 +64,10 @@ class ExplosionParticle(Bullet):
         self.width = 4
 
 
+class ExplosionSeed(Bullet):
+    """Multi-explosion seed. """
+
+
 """
 Objects
 """
