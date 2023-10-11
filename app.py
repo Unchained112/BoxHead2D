@@ -47,6 +47,8 @@ class BoxHead2d(arcade.Window):
         self.option_view = view.OptionView()
         self.select_view = view.SelectionView()
         self.shop_view = view.ShopView()
+        self.game_over_view = view.GameOverView()
+        self.game_win_view = view.GameWinView()
         self.start_music_player = self.start_music.play(
             volume=self.music_volume/20, loop=True)
         self.start_music_player.pause()

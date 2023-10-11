@@ -1111,6 +1111,11 @@ class GameView(FadingView):
 
         self.scroll_to_player()
 
+        # Check game over
+        if self.player.health <= 0:
+            self.window.game_over_view.setup(self.all_item_list, self.score)
+            self.window.show_view(self.window.game_over_view)
+
     def on_show_view(self) -> None:
         self.window.set_mouse_visible(False)
         self.manager = None
@@ -1149,13 +1154,11 @@ class GameView(FadingView):
         #     self.window.shop_view.setup(self)
         #     self.window.show_view(self.window.shop_view)
 
-        if key == arcade.key.X:
-            self.window.game_over_view = GameOverView()
-            self.window.game_over_view.setup(self.all_item_list, self.score)
-            self.window.show_view(self.window.game_over_view)
+        # if key == arcade.key.X:
+        #     self.window.game_over_view.setup(self.all_item_list, self.score)
+        #     self.window.show_view(self.window.game_over_view)
 
         # if key == arcade.key.V:
-        #     self.window.game_win_view = GameWinView()
         #     self.window.game_win_view.setup(self.all_item_list, self.score)
         #     self.window.show_view(self.window.game_win_view)
 
@@ -1686,6 +1689,9 @@ class GameView(FadingView):
             self.counter = 0  # reset the counter
             self.spawn_cnt = self.round * 8  # num of enemies: round * 8
             self.window.play_round_start_sound()
+            if self.round == 16: # Game win
+                self.window.game_win_view.setup(self.all_item_list, self.score)
+                self.window.show_view(self.window.game_win_view)
 
         # Update enemies
         self.enemy_white_list.update()
@@ -1891,11 +1897,33 @@ class GameOverView(arcade.View):
         continue_button.on_click = self.on_click_continue
         self.manager.add(continue_button)
 
+        self.item_sprites = arcade.SpriteList()
+
+        for idx, item in enumerate(self.item_list):
+            x = idx % 10
+            y = math.floor(idx / 10)
+            if item[0] == -1:
+                tmp_bg = arcade.Sprite("graphics/item/Special.png")
+            elif item[0] == 1:
+                tmp_bg = arcade.Sprite("graphics/item/Bronze.png")
+            elif item[0] == 2:
+                tmp_bg = arcade.Sprite("graphics/item/Sliver.png")
+            else:
+                tmp_bg = arcade.Sprite("graphics/item/Gold.png")
+            tmp_bg.center_x = 100 + 50*x
+            tmp_bg.center_y = self.h - 100 - 50*y
+            self.item_sprites.append(tmp_bg)
+            tmp_image = arcade.Sprite(item[1])
+            tmp_image.center_x = 100 + 50*x
+            tmp_image.center_y = self.h - 100 - 50*y
+            self.item_sprites.append(tmp_image)
+
     def on_draw(self):
         self.clear()
         self.manager.draw()
         self.mission_text.draw()
         self.score_text.draw()
+        self.item_sprites.draw()
 
     def on_click_continue(self, event) -> None:
         utils.Utils.clear_ui_manager(self.manager)
@@ -1906,17 +1934,12 @@ class GameOverView(arcade.View):
         self.window.play_button_sound()
 
 
-class GameWinView(arcade.View):
+class GameWinView(GameOverView):
     """Game win view."""
 
-    def __init__(self):
-        super().__init__()
-        self.manager = None
-        self.last_view = None
-
-    def on_show_view(self) -> None:
-        arcade.set_background_color(utils.Color.GROUND_WHITE)
-        self.window.set_mouse_visible(True)
+    def setup(self, item_list, score) -> None:
+        super().setup(item_list, score)
+        self.mission_text.text = self.window.cur_lang.MISSION_SUCCESS
 
 
 class ShopView(arcade.View):
@@ -2293,8 +2316,8 @@ class ShopView(arcade.View):
             self.update_purchase_text(0)
             self.item_button_enables[index] = False
             self.window.play_purchase_sound()
-            tmp_item = (self.items[index].quality,
-                        self.items[index].image_path)
+            tmp_item = (int(self.items[index].quality),
+                        str(self.items[index].image_path))
             self.last_view.all_item_list.append(tmp_item)
         else:
             # Purchase failed
