@@ -197,6 +197,9 @@ class Language:
             "Sell Barrel": "Sell Barrel",
             "Reduce Mine energy cost: ": "Reduce Mine energy cost: ",
             "Sell Mine": "Sell Mine",
+            "Enable Rocket Multi-explosion": "Enable Rocket Multi-explosion",
+            "Enable Barrel Multi-explosion": "Enable Barrel Multi-explosion",
+            "Enable Mine Multi-explosion": "Enable Mine Multi-explosion",
         }
 
     class CN:
@@ -288,4 +291,7 @@ class Language:
             "Sell Barrel": "出售油桶",
             "Reduce Mine energy cost: ": "减少地雷能量消耗: ",
             "Sell Mine": "出售地雷",
+            "Enable Rocket Multi-explosion": "火箭筒连环爆炸",
+            "Enable Barrel Multi-explosion": "油桶连环爆炸",
+            "Enable Mine Multi-explosion": "地雷连环爆炸",
         }

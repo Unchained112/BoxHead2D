@@ -48,10 +48,75 @@ python3 app.py # Linux or Mac
 
 #### Items
 
+Quality:
+
+- Bronze: base value
+- Sliver: 2 * base value
+- Gold: 4 * base value
+
+| Items                        | Base quality | Base value | Base cost |
+|------------------------------|--------------|------------|-----------|
+| Sell health                  |            1 |        100 |       -18 |
+| Sell energy                  |            1 |         50 |       -12 |
+| Add speed                    |            1 |         50 |        15 |
+| Sell speed                   |            1 |         50 |       -15 |
+| Increase luck                |            1 |          2 |        18 |
+| Sell luck                    |            1 |          2 |       -18 |
+| Add kill recover             |            1 |          5 |        12 |
+| Increase explosion damage    |            1 |          5 |        30 |
+| Increase pistol damage       |            1 |         10 |         9 |
+| Reduce pistol CD             |            1 |          2 |        14 |
+| Increase pistol attack range |            1 |          5 |        16 |
+| Add Uzi                      |           -1 | \          |        30 |
+| Add Shotgun                  |           -1 | \          |        42 |
+| Add Rocket                   |           -1 | \          |        56 |
+| Add Wall                     |           -1 | \          |        28 |
+| Add Barrel                   |           -1 | \          |        52 |
+| Add MIne                     |           -1 | \          |        49 |
+|                              |              |            |           |
+| Uzi                          |              |            |           |
+| Add Uzi damage               |            1 |         10 |        21 |
+| Reduce Uzi CD                |            1 |          2 |        19 |
+| Add Uzi range                |            1 |          5 |        20 |
+| Reduce Uzi cost              |            1 |          1 |        18 |
+| Sell Uzi                     |           -1 | \          |       -30 |
+|                              |              |            |           |
+| Shotgun                      |              |            |           |
+| Add Shotgun damage           |            1 |         10 |        36 |
+| Reduce Shotgun CD            |            1 |          2 |        21 |
+| Add Shotgun range            |            1 |          5 |        28 |
+| Reduce Shotgun cost          |            1 |          1 |        24 |
+| Sell Shotgun                 |           -1 | \          |       -42 |
+| Add Shotgun bullets          |            1 |          1 |        26 |
+|                              |              |            |           |
+| Rocket                       |              |            |           |
+| Reduce Rocket CD             |            1 |          2 |        19 |
+| Add Rocket range             |            1 |          5 |        20 |
+| Reduce Rocket cost           |            1 |          1 |        18 |
+| Sell Rocket                  |           -1 | \          |       -30 |
+|                              |              |            |           |
+| Wall                         |              |            |           |
+| Add Wall health              |            1 |         20 |        24 |
+| Sell Wall                    |           -1 | \          |           |
+| Reduce Wall cost             |            1 |          1 |        16 |
+|                              |              |            |           |
+| Barrel                       |              |            |           |
+| Sell Barrel                  |           -1 | \          |       -52 |
+| Reduce Barrel cost           |            1 |          1 |        35 |
+|                              |              |            |           |
+| Mine                         |              |            |           |
+| Sell Mine                    |           -1 | \          |       -49 |
+| Reduce Mine cost             |            1 |          1 |        28 |
+|                              |              |            |           |
+| Rocket multi explosion       |           -1 | \          |        52 |
+| Barrel multi explosion       |           -1 | \          |        45 |
+| Mine multi explosion         |           -1 | \          |        48 |
+
 #### Round
 
+Item actual price = Round * Base Pirce *2
 
-
+Total number of enemy = Round * 8
 
 ### Notes:
 

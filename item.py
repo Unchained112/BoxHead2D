@@ -139,6 +139,16 @@ class Shop:
             Item("graphics/item/Explosion.png", "Add explosion damage: ",
                  5, 30, 1, increase_explosion_damage),
         ]
+        self.rocket_multi_item = Item("graphics/item/RocketExplosion.png",
+                                      "Enable Rocket Multi-explosion",
+                                      0, 52, -1, self.rocket_multi_explosion)
+        self.barrel_multi_item = Item("graphics/item/BarrleExplosion.png",
+                                      "Enable Barrle Multi-explosion",
+                                      0, 45, -1, self.barrel_multi_explosion)
+        self.mine_multi_item = Item("graphics/item/MineExplosion.png",
+                                      "Enable Mine Multi-explosion",
+                                      0, 48, -1, self.mine_multi_explosion)
+
         self.uzi_item_list = [
             Item("graphics/item/UziDamage.png", "Increase Uzi damage: ", 10,
                  21, 1, self.increase_uzi_damage),
@@ -364,6 +374,7 @@ class Shop:
         self.cur_item_list.remove(self.add_rocket_item)
         self.cur_item_list.extend(self.rocket_item_list)
         self.cur_item_list.append(self.rocket_bullet_item)
+        self.cur_item_list.append(self.rocket_multi_item)
         return True
 
     def increase_rocket_speed(self, item: Item, player: Player) -> bool:
@@ -435,6 +446,7 @@ class Shop:
         player.add_weapon(self.barrel)
         self.cur_item_list.remove(self.add_barrel_item)
         self.cur_item_list.extend(self.barrel_item_list)
+        self.cur_item_list.append(self.barrel_multi_item)
         return True
 
     def reduce_barrel_cost(self, item: Item, player: Player) -> bool:
@@ -465,6 +477,7 @@ class Shop:
         player.add_weapon(self.mine)
         self.cur_item_list.remove(self.add_mine_item)
         self.cur_item_list.extend(self.mine_item_list)
+        self.cur_item_list.append(self.mine_multi_item)
         return True
 
     def reduce_mine_cost(self, item: Item, player: Player) -> bool:
@@ -484,4 +497,21 @@ class Shop:
                 self.cur_item_list.remove(i)
             self.is_explosion_added = False
 
+        return True
+
+    # Multi-explosion items
+
+    def rocket_multi_explosion(self, item: Item, player: Player) -> bool:
+        player.is_rocket_multi = True
+        self.cur_item_list.remove(self.rocket_multi_item)
+        return True
+
+    def barrel_multi_explosion(self, item: Item, player: Player) -> bool:
+        player.is_barrel_multi = True
+        self.cur_item_list.remove(self.barrel_multi_item)
+        return True
+
+    def mine_multi_explosion(self, item: Item, player: Player) -> bool:
+        player.is_mine_multi = True
+        self.cur_item_list.remove(self.mine_multi_item)
         return True
