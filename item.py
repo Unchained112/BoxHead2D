@@ -142,8 +142,8 @@ class Shop:
         self.rocket_multi_item = Item("graphics/item/RocketExplosion.png",
                                       "Enable Rocket Multi-explosion",
                                       0, 52, -1, self.rocket_multi_explosion)
-        self.barrel_multi_item = Item("graphics/item/BarrleExplosion.png",
-                                      "Enable Barrle Multi-explosion",
+        self.barrel_multi_item = Item("graphics/item/BarrelExplosion.png",
+                                      "Enable Barrel Multi-explosion",
                                       0, 45, -1, self.barrel_multi_explosion)
         self.mine_multi_item = Item("graphics/item/MineExplosion.png",
                                       "Enable Mine Multi-explosion",
@@ -190,7 +190,7 @@ class Shop:
                  0, -56, -1, self.sell_rocket),
         ]
         self.rocket_bullet_item = Item("graphics/item/RocketBullets.png",
-                                       "Increase Rocket bullets:", 3,
+                                       "Increase Rocket bullets: ", 3,
                                        100, -1, self.increase_rocket_bullets)
         self.wall_item_list = [
             Item("graphics/item/WallCost.png", "Reduce Wall energy cost: ", 1, 16,
@@ -209,7 +209,7 @@ class Shop:
         self.mine_item_list = [
             Item("graphics/item/MineCost.png", "Reduce Mine energy cost: ", 1, 28,
                  1, self.reduce_mine_cost),
-            Item("graphics/item/SellMine.png", "Sell Mine: ",
+            Item("graphics/item/SellMine.png", "Sell Mine",
                  0, -49, -1, self.sell_mine),
         ]
 
@@ -219,6 +219,12 @@ class Shop:
 
         self.cur_item_list = []
         self.cur_item_list.extend(self.default_item_list)
+
+        if Utils.IS_TESTING:
+            self.cur_item_list.append(self.add_rocket_item)
+            self.cur_item_list.append(self.add_barrel_item)
+            self.cur_item_list.append(self.add_mine_item)
+
 
     def generate_item(self, item: Item, wave: int, player: Player, lang) -> Item:
         # Calculate the actual cost
@@ -374,7 +380,8 @@ class Shop:
         self.cur_item_list.remove(self.add_rocket_item)
         self.cur_item_list.extend(self.rocket_item_list)
         self.cur_item_list.append(self.rocket_bullet_item)
-        self.cur_item_list.append(self.rocket_multi_item)
+        if self.cur_item_list.count(self.rocket_multi_item) == 0:
+            self.cur_item_list.append(self.rocket_multi_item)
         return True
 
     def increase_rocket_speed(self, item: Item, player: Player) -> bool:
@@ -446,7 +453,8 @@ class Shop:
         player.add_weapon(self.barrel)
         self.cur_item_list.remove(self.add_barrel_item)
         self.cur_item_list.extend(self.barrel_item_list)
-        self.cur_item_list.append(self.barrel_multi_item)
+        if self.cur_item_list.count(self.barrel_multi_item) == 0:
+            self.cur_item_list.append(self.barrel_multi_item)
         return True
 
     def reduce_barrel_cost(self, item: Item, player: Player) -> bool:
@@ -477,7 +485,8 @@ class Shop:
         player.add_weapon(self.mine)
         self.cur_item_list.remove(self.add_mine_item)
         self.cur_item_list.extend(self.mine_item_list)
-        self.cur_item_list.append(self.mine_multi_item)
+        if self.cur_item_list.count(self.mine_multi_item) == 0:
+            self.cur_item_list.append(self.mine_multi_item)
         return True
 
     def reduce_mine_cost(self, item: Item, player: Player) -> bool:

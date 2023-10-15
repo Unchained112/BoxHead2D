@@ -31,6 +31,8 @@ class Color:
 class Utils:
     """Utility functions."""
 
+    IS_TESTING = False
+
     BULLET_FORCE = 1000
     ENEMY_FORCE = 4000
     GET_DAMAGE_LEN = 8
@@ -189,6 +191,7 @@ class Language:
             "Reduce Rocket CD: ": "Reduce Rocket CD: ",
             "Increase Rocket attack range: ": "Increase Rocket attack range: ",
             "Reduce Rocket energy cost: ": "Reduce Rocket energy cost: ",
+            "Increase Rocket bullets: ": "Increase Rocket bullets: ",
             "Sell Rocket": "Sell Rocket",
             "Reduce Wall energy cost: ": "Reduce Wall energy cost: ",
             "Increase Wall durability: ": "Increase Wall durability: ",
@@ -283,6 +286,7 @@ class Language:
             "Reduce Rocket CD: ": "减少火箭筒冷却: ",
             "Increase Rocket attack range: ": "增加火箭筒射程: ",
             "Reduce Rocket energy cost: ": "减少火箭筒能量消耗: ",
+            "Increase Rocket bullets: ": "增加火箭筒子弹数: ",
             "Sell Rocket": "出售火箭筒",
             "Reduce Wall energy cost: ": "减少墙能量消耗: ",
             "Increase Wall durability: ": "增加墙耐久度: ",

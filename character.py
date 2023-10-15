@@ -190,11 +190,9 @@ class Player(Character):
         self.is_barrel_multi = False
         self.is_mine_multi = False
 
-        # For testing
-        # self.energy = 20000
-        # self.money = 100000
-        # rocket = weapon.Rocket()
-        # self.add_weapon(rocket)
+        if utils.Utils.IS_TESTING:
+            self.energy = 20000
+            self.money = 100000
 
     def move(self) -> None:
         """Player move by applying force from physics engine."""

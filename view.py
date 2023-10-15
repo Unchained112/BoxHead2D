@@ -1150,18 +1150,18 @@ class GameView(FadingView):
             self.window.shop_view.setup(self)
             self.window.show_view(self.window.shop_view)
 
-        # For testing
-        # if key == arcade.key.B:
-        #     self.window.shop_view.setup(self)
-        #     self.window.show_view(self.window.shop_view)
+        if utils.Utils.IS_TESTING:
+            if key == arcade.key.B:
+                self.window.shop_view.setup(self)
+                self.window.show_view(self.window.shop_view)
 
-        # if key == arcade.key.X:
-        #     self.window.game_over_view.setup(self.all_item_list, self.score)
-        #     self.window.show_view(self.window.game_over_view)
+            if key == arcade.key.X:
+                self.window.game_over_view.setup(self.all_item_list, self.score)
+                self.window.show_view(self.window.game_over_view)
 
-        # if key == arcade.key.V:
-        #     self.window.game_win_view.setup(self.all_item_list, self.score)
-        #     self.window.show_view(self.window.game_win_view)
+            if key == arcade.key.V:
+                self.window.game_win_view.setup(self.all_item_list, self.score)
+                self.window.show_view(self.window.game_win_view)
 
     def on_key_release(self, key, modifiers) -> None:
 
@@ -1747,8 +1747,8 @@ class GameView(FadingView):
         """Spawn enemy with different rounds."""
 
         # Limit the number of enemies for performance issue
-        if len(self.enemy_sprite_list) >= 800:
-            return
+        # if len(self.enemy_sprite_list) >= 800:
+        #     return
 
         if self.round <= 2:
             if self.counter % 30 == 0:
