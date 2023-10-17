@@ -999,6 +999,8 @@ class GameView(FadingView):
         self.money_pool_ui.center_x = self.w / 2 - 297
         self.money_pool_ui.center_y = 60
         self.money_pool_ui.visible = False
+        self.money_pool_len = 0
+        self.money_pool_x = 0
 
         self.ui_sprite_list.append(self.money_ui)
         self.ui_sprite_list.append(self.money_container)
@@ -1249,7 +1251,9 @@ class GameView(FadingView):
         self.money_container.center_x = self.w / 2
         self.money_fill.center_x = self.w / 2
         self.money_ui.center_x = self.w/2 + 320
-        self.buy_text.center_x = self.w/2 + 340
+        self.buy_text.x = self.w/2 + 340
+        self.money_pool_x = self.w/2 - 297 + (self.money_pool_len/2)
+        self.money_pool_ui.center_x = self.money_pool_x
 
     def draw_ui(self) -> None:
         # Health
@@ -1579,13 +1583,13 @@ class GameView(FadingView):
 
         # Update money pool
         self.money_pool += int(score_change / 10)
-        money_pool_len = 594.0 * float(self.money_pool) / float(self.pool_size)
-        money_pool_len = min(594.0, money_pool_len)
-        if money_pool_len > 1.0:
+        self.money_pool_len = 594.0 * float(self.money_pool) / float(self.pool_size)
+        self.money_pool_len = min(594.0, self.money_pool_len)
+        if self.money_pool_len > 1.0:
             self.money_pool_ui.visible = True
-        money_pool_x = self.w/2 - 297 + (money_pool_len/2)
-        self.money_pool_ui.width = money_pool_len
-        self.money_pool_ui.center_x = money_pool_x
+        self.money_pool_x = self.w/2 - 297 + (self.money_pool_len/2)
+        self.money_pool_ui.width = self.money_pool_len
+        self.money_pool_ui.center_x = self.money_pool_x
         if self.money_pool >= self.pool_size:
             self.shop_enabled = True
             self.money_ui.alpha = 255
@@ -1671,7 +1675,7 @@ class GameView(FadingView):
         self.window.play_explosion_sound()
 
         # Set explosion traces
-        for _ in range(16):
+        for _ in range(12):
             blood = effect.ExplosionTrace()
             blood.position = position
             self.blood_list.append(blood)

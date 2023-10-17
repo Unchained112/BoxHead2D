@@ -168,7 +168,7 @@ class Shop:
                  36, 1, self.increase_shotgun_damage),
             Item("graphics/item/ShotgunDamage.png", "Increase Shotgun damage: ", 10,
                  36, 1, self.increase_shotgun_damage),
-            Item("graphics/item/ShotgunCD.png", "Reduce Shotgun CD: ", 2, 21,
+            Item("graphics/item/ShotgunCD.png", "Reduce Shotgun CD: ", 3, 21,
                  1, self.increase_shotgun_speed),
             Item("graphics/item/ShotgunRange.png", "Increase Shotgun attack range: ",
                  5, 28, 1, self.increase_shotgun_range),

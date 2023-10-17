@@ -520,7 +520,7 @@ class EnemyCrash(Character):
         self.health_max = int(100)
         self.is_walking = True
         self.last_force = Vec2(0, 0)
-        self.hit_damage = int(40)
+        self.hit_damage = int(80)
         self.body.texture = arcade.load_texture("graphics/character/Crash.png")
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
         self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
@@ -572,7 +572,7 @@ class EnemyTank(Character):
         self.health_max = int(400)
         self.is_walking = True
         self.last_force = Vec2(0, 0)
-        self.hit_damage = int(60)
+        self.hit_damage = int(120)
         self.body.texture = arcade.load_texture("graphics/character/Tank.png")
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
         self.u_or_d = 1 if bool(random.getrandbits(1)) else -1

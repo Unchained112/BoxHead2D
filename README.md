@@ -21,7 +21,7 @@ python3 app.py # Linux or Mac
 
 | Characters | Health | Energy | Money | Speed | Kill recover | Explosion Damage | Luck |
 |------------|--------|--------|-------|-------|--------------|------------------|------|
-| Player     |   1000 |      0 |     0 |  1600 |            5 |               20 |    6 |
+| Player     |    100 |      0 |     0 |  1600 |            5 |               20 |    6 |
 
 #### Weapons
 
@@ -43,8 +43,8 @@ python3 app.py # Linux or Mac
 | Red       |    300 |         20 |            30 |   800 | 120 |          200 |            6 |
 | Crack     |    200 |         40 | \             |  1000 | \   | \            | \            |
 | Big Mouth |    150 |         20 | 50*2          |   800 |  70 |          300 |            7 |
-| Crash     |    100 |         40 | \             |  1000 | \   |          200 | \            |
-| Tank      |    400 |         60 | \             |   600 | \   |          200 | \            |
+| Crash     |    100 |         80 | \             |  1000 | \   |          200 | \            |
+| Tank      |    400 |        120 | \             |   600 | \   |          200 | \            |
 
 #### Items
 
@@ -83,7 +83,7 @@ Quality:
 |                              |              |            |           |
 | Shotgun                      |              |            |           |
 | Add Shotgun damage           |            1 |         10 |        36 |
-| Reduce Shotgun CD            |            1 |          2 |        21 |
+| Reduce Shotgun CD            |            1 |          3 |        21 |
 | Add Shotgun range            |            1 |          5 |        28 |
 | Reduce Shotgun cost          |            1 |          1 |        24 |
 | Sell Shotgun                 |           -1 | \          |       -42 |

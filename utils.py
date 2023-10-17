@@ -31,7 +31,7 @@ class Color:
 class Utils:
     """Utility functions."""
 
-    IS_TESTING = False
+    IS_TESTING = True
 
     BULLET_FORCE = 1000
     ENEMY_FORCE = 4000
