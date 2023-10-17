@@ -1,5 +1,7 @@
 import arcade
 import math
+
+from arcade import Color
 import utils
 from pyglet.math import Vec2
 
@@ -54,14 +56,20 @@ class FireBall(Bullet):
         self.life_span = int(60)
 
 
-class ExplosionParticle(Bullet):
-    """Particle class for explosion."""
+class Explosion(arcade.SpriteCircle):
+    """Explosion collider class."""
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.texture = arcade.load_texture("graphics/weapon/Particle.png")
-        self.height = 4
-        self.width = 4
+    def __init__(self, x: int, y: int):
+        super().__init__(30, utils.Color.WHITE, False)
+        self.life_span = 10
+        self.center_x = x
+        self.center_y = y
+        self.alpha = 0
+
+    def update(self):
+        if self.life_span <= 0:
+            self.remove_from_sprite_lists()
+        self.life_span -= 1
 
 
 class ExplosionSeed(Bullet):

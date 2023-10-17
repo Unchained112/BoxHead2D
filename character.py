@@ -160,7 +160,7 @@ class Player(Character):
         self.energy = int(0)
         self.health = int(500)
         self.kill_recover = int(5)
-        self.explosion_damage = 50
+        self.explosion_damage = 80
         self.money = 150
         self.luck = 6
 

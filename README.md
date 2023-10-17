@@ -21,7 +21,7 @@ python3 app.py # Linux or Mac
 
 | Characters | Health | Energy | Money | Speed | Kill recover | Explosion Damage | Luck |
 |------------|--------|--------|-------|-------|--------------|------------------|------|
-| Player     |    100 |      0 |     0 |  1600 |            5 |               20 |    6 |
+| Player     |    100 |      0 |     0 |  1600 |            5 |               80 |    6 |
 
 #### Weapons
 
