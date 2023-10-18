@@ -1020,6 +1020,21 @@ class GameView(FadingView):
         self.ui_sprite_list.append(self.last_weapon_sprite)
         self.ui_sprite_list.append(self.next_weapon_sprite)
 
+        self.on_damage_filter = arcade.SpriteSolidColor(self.w + 10,
+                                                        self.h + 10,
+                                                        utils.Color.RED_LIGHT_TRANS)
+        self.on_damage_filter.center_x = self.w / 2
+        self.on_damage_filter.center_y = self.h / 2
+        self.on_damage_filter.visible = False
+        self.on_explosion_filter = arcade.SpriteSolidColor(self.w + 10,
+                                                        self.h + 10,
+                                                        utils.Color.WHITE_TRANSPARENT)
+        self.on_explosion_filter.center_x = self.w / 2
+        self.on_explosion_filter.center_y = self.h / 2
+        self.on_explosion_filter.visible = False
+        self.ui_sprite_list.append(self.on_damage_filter)
+        self.ui_sprite_list.append(self.on_explosion_filter)
+
         # GameObject lists
         self.wall_list = arcade.SpriteList()
         self.enemy_white_list = arcade.SpriteList()
@@ -1035,6 +1050,7 @@ class GameView(FadingView):
         self.explosions_list = arcade.SpriteList()
         self.blood_list = arcade.SpriteList()
         self.enemy_sprite_list = arcade.SpriteList()
+        self.explosion_visual_list = arcade.SpriteList()
 
         # Create the physics engine
         damping = 0.01
@@ -1081,6 +1097,7 @@ class GameView(FadingView):
         self.player_object_list.draw()
         self.enemy_bullet_list.draw()
         self.explosions_list.draw()
+        self.explosion_visual_list.draw()
 
         # Select the (un-scrolled) camera for our GUI
         self.camera_gui.use()
@@ -1101,6 +1118,7 @@ class GameView(FadingView):
         self.player.update()
         self.update_player_attack()
         self.process_player_bullet()
+        self.process_player_explosion()
 
         # Update level
         self.manage_level()
@@ -1118,6 +1136,18 @@ class GameView(FadingView):
             self.window.game_over_view.setup(self.all_item_list, self.score)
             self.window.show_view(self.window.game_over_view)
             self.window.play_game_over_sound()
+
+        # Check player getting damage
+        if self.player.get_damage_len > 0:
+            self.on_damage_filter.visible = True
+        else:
+            self.on_damage_filter.visible = False
+
+        # Check explosion
+        if len(self.explosions_list) > 0:
+            self.on_explosion_filter.visible = True
+        else:
+            self.on_explosion_filter.visible = False
 
     def on_show_view(self) -> None:
         self.window.set_mouse_visible(False)
@@ -1255,6 +1285,10 @@ class GameView(FadingView):
         self.buy_text.x = self.w/2 + 340
         self.money_pool_x = self.w/2 - 297 + (self.money_pool_len/2)
         self.money_pool_ui.center_x = self.money_pool_x
+        self.on_damage_filter.width = self.w + 10
+        self.on_damage_filter.height = self.h + 10
+        self.on_explosion_filter.width = self.w + 10
+        self.on_explosion_filter.height = self.h + 10
 
     def draw_ui(self) -> None:
         # Health
@@ -1464,6 +1498,11 @@ class GameView(FadingView):
                         self.set_explosion(bullet.position)
                 bullet.remove_from_sprite_lists()
 
+    def process_player_explosion(self) -> None:
+        # Update explposion visual
+        self.explosion_visual_list.update()
+
+        # Process explosion
         for explosion in self.explosions_list:
             if explosion.life_span == 5:
                 hit_list = arcade.check_for_collision_with_lists(
@@ -1586,6 +1625,7 @@ class GameView(FadingView):
                     self.player, (bullet.aim.x * utils.Utils.BULLET_FORCE,
                                   bullet.aim.y * utils.Utils.BULLET_FORCE))
                 self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
+                self.set_blood(self.player.position)
 
             # check hit with player objects
             hit_list = arcade.check_for_collision_with_list(
@@ -1681,6 +1721,7 @@ class GameView(FadingView):
             push = enemy.last_force.normalize().scale(utils.Utils.ENEMY_FORCE)
             self.physics_engine.apply_force(self.player, (push.x, push.y))
             self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
+            self.set_blood(self.player.position)
 
     def check_trigger_mine(self, enemy: character.Character) -> None:
         hit_list = arcade.check_for_collision_with_list(
@@ -1709,6 +1750,13 @@ class GameView(FadingView):
                 obj.remove_from_sprite_lists()
 
     def set_explosion(self, position: arcade.Point) -> None:
+        # Add explosion visual
+        for _ in range(18):
+            particle = effect.Particle(self.explosion_visual_list)
+            particle.position = position
+            self.explosion_visual_list.append(particle)
+
+        # Add logic explosion
         explosion = weapon.Explosion(position[0], position[1])
         self.explosions_list.append(explosion)
 
@@ -2041,13 +2089,13 @@ class ShopView(arcade.View):
         arcade.set_background_color(utils.Color.GROUND_WHITE)
         self.window.set_mouse_visible(True)
 
-    def setup(self, last_view) -> None:
+    def setup(self, last_view: GameView) -> None:
         self.last_view = last_view
         self.player = last_view.player
         self.shop = last_view.shop
         self.cnt = 0
         self.refresh_cost = last_view.round * last_view.round
-        self.last_view.pool_size = 200 * last_view.round - 180
+        self.last_view.pool_size = 54*last_view.round*last_view.round - 40*last_view.round + 66
         self.player.money += self.last_view.money_pool
 
         # Reset money pool of the game view

@@ -191,6 +191,7 @@ class Player(Character):
         self.is_mine_multi = False
 
         if utils.Utils.IS_TESTING:
+            self.health = 10000
             self.energy = 20000
             self.money = 100000
 

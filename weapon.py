@@ -60,7 +60,7 @@ class Explosion(arcade.SpriteCircle):
     """Explosion collider class."""
 
     def __init__(self, x: int, y: int):
-        super().__init__(30, utils.Color.WHITE, False)
+        super().__init__(25, utils.Color.WHITE, False)
         self.life_span = 10
         self.center_x = x
         self.center_y = y
@@ -283,14 +283,14 @@ class Rocket(Weapon):
     def get_bullet(self) -> arcade.SpriteList:
         bullets = arcade.SpriteList()
         for i in range(1, self.bullet_num + 1):
-            angle = (-0.5 + 1 / (self.bullet_num+1) * i) * self.bullet_num
+            angle = (-0.06 + 0.12 / (self.bullet_num+1) * i) * self.bullet_num
             bullet = self.bullet()
             bullet.life_span = self.life_span
             bullet.center_x = self.center_x - 10
             bullet.center_y = self.center_y
             bullet.speed = self.bullet_speed
-            bullet.aim = bullet.aim.rotate(angle)
-            bullet.aim = self.aim_pos.normalize().scale(bullet.speed)
+            bullet.aim = self.aim_pos.rotate(angle)
+            bullet.aim = bullet.aim.normalize().scale(bullet.speed)
             bullet.damage = self.damage
             bullets.append(bullet)
         return bullets

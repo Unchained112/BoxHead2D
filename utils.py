@@ -16,6 +16,8 @@ class Color:
     DARK_GRAY = (67, 66, 66)
     LIGHT_BLACK = (34, 34, 34)
     RED_TRANSPARENT = (160, 100, 100, 120)
+    RED_LIGHT_TRANS = (200, 50, 50, 40)
+    WHITE_TRANSPARENT = (255, 255, 255, 80)
     HEALTH_RED = (205, 24, 24)
     ENERGY_BLUE = (77, 166, 255)
     DARK_GREEN = (65, 100, 74)
@@ -31,7 +33,7 @@ class Color:
 class Utils:
     """Utility functions."""
 
-    IS_TESTING = True
+    IS_TESTING = False
 
     BULLET_FORCE = 1000
     ENEMY_FORCE = 4000
