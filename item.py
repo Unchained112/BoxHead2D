@@ -146,8 +146,8 @@ class Shop:
                                       "Enable Barrel Multi-explosion",
                                       0, 45, -1, self.barrel_multi_explosion)
         self.mine_multi_item = Item("graphics/item/MineExplosion.png",
-                                      "Enable Mine Multi-explosion",
-                                      0, 48, -1, self.mine_multi_explosion)
+                                    "Enable Mine Multi-explosion",
+                                    0, 48, -1, self.mine_multi_explosion)
 
         self.uzi_item_list = [
             Item("graphics/item/UziDamage.png", "Increase Uzi damage: ", 10,
@@ -226,7 +226,6 @@ class Shop:
             # self.cur_item_list.append(self.add_mine_item)
             # self.cur_item_list.append(self.add_shotgun_item)
 
-
     def generate_item(self, item: Item, wave: int, player: Player, lang) -> Item:
         # Calculate the actual cost
         actual_cost = item.cost * wave * 2
@@ -295,7 +294,8 @@ class Shop:
         return True
 
     def increase_pistol_speed(self, item: Item, player: Player) -> bool:
-        self.pistol.cd_max = max(self.pistol.cd_max - item.value, Utils.CD_MIN)
+        self.pistol.cd_max = max(self.pistol.cd_max - item.value,
+                                 self.pistol.cd_min)
         return True
 
     def increase_pistol_range(self, item: Item, player: Player) -> bool:
@@ -315,7 +315,8 @@ class Shop:
         return True
 
     def increase_uzi_speed(self, item: Item, player: Player) -> bool:
-        self.uzi.cd_max = max(self.uzi.cd_max - item.value, Utils.CD_MIN)
+        self.uzi.cd_max = max(self.uzi.cd_max - item.value,
+                              self.uzi.cd_min)
         return True
 
     def increase_uzi_range(self, item: Item, player: Player) -> bool:
@@ -347,8 +348,8 @@ class Shop:
         return True
 
     def increase_shotgun_speed(self, item: Item, player: Player) -> bool:
-        self.shotgun.cd_max = max(
-            self.shotgun.cd_max - item.value, Utils.CD_MIN)
+        self.shotgun.cd_max = max(self.shotgun.cd_max - item.value,
+                                  self.shotgun.cd_min)
         return True
 
     def increase_shotgun_range(self, item: Item, player: Player) -> bool:
@@ -386,7 +387,8 @@ class Shop:
         return True
 
     def increase_rocket_speed(self, item: Item, player: Player) -> bool:
-        self.rocket.cd_max = max(self.rocket.cd_max - item.value, Utils.CD_MIN)
+        self.rocket.cd_max = max(self.rocket.cd_max - item.value,
+                                 self.rocket.cd_min)
         return True
 
     def increase_rocket_range(self, item: Item, player: Player) -> bool:

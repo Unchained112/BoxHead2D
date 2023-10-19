@@ -1027,8 +1027,8 @@ class GameView(FadingView):
         self.on_damage_filter.center_y = self.h / 2
         self.on_damage_filter.visible = False
         self.on_explosion_filter = arcade.SpriteSolidColor(self.w + 10,
-                                                        self.h + 10,
-                                                        utils.Color.WHITE_TRANSPARENT)
+                                                           self.h + 10,
+                                                           utils.Color.WHITE_TRANSPARENT)
         self.on_explosion_filter.center_x = self.w / 2
         self.on_explosion_filter.center_y = self.h / 2
         self.on_explosion_filter.visible = False
@@ -1499,7 +1499,7 @@ class GameView(FadingView):
                 bullet.remove_from_sprite_lists()
 
     def process_player_explosion(self) -> None:
-        # Update explposion visual
+        # Update explosion visual
         self.explosion_visual_list.update()
 
         # Process explosion
@@ -2095,7 +2095,8 @@ class ShopView(arcade.View):
         self.shop = last_view.shop
         self.cnt = 0
         self.refresh_cost = last_view.round * last_view.round
-        self.last_view.pool_size = 54*last_view.round*last_view.round - 40*last_view.round + 66
+        self.last_view.pool_size = 54*last_view.round * \
+            last_view.round - 40*last_view.round + 66
         self.player.money += self.last_view.money_pool
 
         # Reset money pool of the game view
@@ -2287,6 +2288,8 @@ class ShopView(arcade.View):
         text += self.window.cur_lang.DAMAGE + \
             str(self.shop.pistol.damage) + "\n"
         text += self.window.cur_lang.CD + str(self.shop.pistol.cd_max) + "\n"
+        text += self.window.cur_lang.CD_MIN + \
+            str(self.shop.pistol.cd_min) + "\n"
         text += self.window.cur_lang.ATTACK_RANGE + \
             str(self.shop.pistol.life_span) + "\n"
         text += "\n"
@@ -2296,6 +2299,8 @@ class ShopView(arcade.View):
             text += self.window.cur_lang.DAMAGE + \
                 str(self.shop.uzi.damage) + "\n"
             text += self.window.cur_lang.CD + str(self.shop.uzi.cd_max) + "\n"
+            text += self.window.cur_lang.CD_MIN + \
+                str(self.shop.uzi.cd_min) + "\n"
             text += self.window.cur_lang.ATTACK_RANGE + \
                 str(self.shop.uzi.life_span) + "\n"
             text += self.window.cur_lang.ENERGY_COST + \
@@ -2308,6 +2313,8 @@ class ShopView(arcade.View):
                 str(self.shop.shotgun.damage) + "\n"
             text += self.window.cur_lang.CD + \
                 str(self.shop.shotgun.cd_max) + "\n"
+            text += self.window.cur_lang.CD_MIN + \
+                str(self.shop.shotgun.cd_min) + "\n"
             text += self.window.cur_lang.ATTACK_RANGE + \
                 str(self.shop.shotgun.life_span) + "\n"
             text += self.window.cur_lang.ENERGY_COST + \
@@ -2322,6 +2329,8 @@ class ShopView(arcade.View):
                 str(self.shop.rocket.damage) + "\n"
             text += self.window.cur_lang.CD + \
                 str(self.shop.rocket.cd_max) + "\n"
+            text += self.window.cur_lang.CD_MIN + \
+                str(self.shop.rocket.cd_min) + "\n"
             text += self.window.cur_lang.ATTACK_RANGE + \
                 str(self.shop.rocket.life_span) + "\n"
             text += self.window.cur_lang.ENERGY_COST + \

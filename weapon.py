@@ -154,6 +154,7 @@ class Weapon(arcade.Sprite):
         self.is_right = True
         self.damage = int(30)
         self.cd_max = int(30)  # 30/60 s
+        self.cd_min = int(8)
         self.bullet_speed = 25
         self.cost = int(0)
         self.life_span = int(20)
@@ -217,6 +218,7 @@ class Shotgun(Weapon):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__("graphics/weapon/Shotgun.png", x, y)
         self.cd_max = int(40)  # 40/60 s
+        self.cd_min = int(12)
         self.cost = 15
         self.damage = 40
         self.life_span = 10
@@ -246,6 +248,7 @@ class Uzi(Weapon):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__("graphics/weapon/Uzi.png", x, y)
         self.cd_max = int(20)  # 20/60 s
+        self.cd_min = int(4)
         self.cost = 4
         self.damage = 30
         self.life_span = 25
@@ -272,6 +275,7 @@ class Rocket(Weapon):
     def __init__(self, x: float = 0, y: float = 0) -> None:
         super().__init__("graphics/weapon/Rocket.png", x, y)
         self.cd_max = int(40)  # 1/6 s
+        self.cd_min = int(12)
         self.cost = 30
         self.damage = 0
         self.bullet = Missile

@@ -41,10 +41,6 @@ class Utils:
     WALL_SIZE = 30
     HALF_WALL_SIZE = 15
 
-    # Minimum CD for guns,
-    # might change later for different weapons
-    CD_MIN = 4
-
     @staticmethod
     def get_sin(v: Vec2) -> float:
         """Get sine value of a given vector."""
@@ -159,6 +155,7 @@ class Language:
         ATTACK_RANGE = "- Attack range: "
         ENERGY_COST = "- Energy cost: "
         BULLET_NUMBER = "- Bullet numbers: "
+        CD_MIN = "- CD Minimum: "
 
         # Item
         ItemText = {
@@ -254,6 +251,7 @@ class Language:
         ATTACK_RANGE = "- 攻击范围: "
         ENERGY_COST = "- 能量消耗: "
         BULLET_NUMBER = "- 子弹数: "
+        CD_MIN = "- 最小冷却: "
 
         # Item
         ItemText = {
