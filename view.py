@@ -1376,13 +1376,19 @@ class GameView(FadingView):
                         self.player.current_weapon.aim_pos.normalize().scale(30)
                     grid_x = math.floor(place_point.x / 30)
                     grid_y = math.floor(place_point.y / 30)
+
+                    try:
+                        self.room.grid[grid_x, grid_y]
+                    except KeyError:
+                        return
+
                     if self.room.grid[grid_x, grid_y] != 1:
                         object.center_x = grid_x * 30 + \
                             float(utils.Utils.HALF_WALL_SIZE)
                         object.center_y = grid_y * 30 + \
                             float(utils.Utils.HALF_WALL_SIZE)
                         object.grid_idx = (grid_x, grid_y)
-                        if object.object_type != 2:
+                        if object.object_type != 2: # not a mine
                             self.player_object_list.append(object)
                             self.physics_engine.add_sprite(object,
                                                            friction=0,
@@ -1592,6 +1598,7 @@ class GameView(FadingView):
         for enemy in self.enemy_crash_list:
             self.check_hit_player(enemy)
             self.check_trigger_mine(enemy)
+            self.check_hit_wall(enemy)
             if enemy.is_walking == False:
                 if enemy.cd == enemy.cd_max:
                     enemy.cd = 0
@@ -1617,8 +1624,9 @@ class GameView(FadingView):
         for bullet in self.enemy_bullet_list:
             bullet.life_span -= 1
 
-            # check hit with player
-            if arcade.check_for_collision(bullet, self.player):
+            # Check hit with player
+            chance = random.randrange(0, 100)
+            if chance >= self.player.luck and arcade.check_for_collision(bullet, self.player):
                 self.player.health = max(self.player.health - bullet.damage, 0)
                 bullet.remove_from_sprite_lists()
                 self.physics_engine.apply_force(
@@ -1626,8 +1634,10 @@ class GameView(FadingView):
                                   bullet.aim.y * utils.Utils.BULLET_FORCE))
                 self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
                 self.set_blood(self.player.position)
+                bullet.remove_from_sprite_lists()
+                continue
 
-            # check hit with player objects
+            # Check hit with player objects
             hit_list = arcade.check_for_collision_with_list(
                 bullet, self.player_object_list)
 
@@ -1651,13 +1661,15 @@ class GameView(FadingView):
 
             if len(hit_list) > 0:
                 bullet.remove_from_sprite_lists()
+                continue
 
-             # check hit with room walls
+            # Check hit with room walls
             hit_list = arcade.check_for_collision_with_list(
                 bullet, self.wall_list)
 
             if len(hit_list) > 0:
                 bullet.remove_from_sprite_lists()
+                continue
 
             if bullet.life_span <= 0:
                 bullet.remove_from_sprite_lists()
@@ -1715,6 +1727,13 @@ class GameView(FadingView):
     def check_hit_player(self, enemy: character.Character) -> None:
         if self.counter % 10 != 0:  # check every 1/6 s
             return
+
+        # Check player luck
+        chance = random.randrange(0, 100)
+        if chance < self.player.luck:
+            return
+
+        # Check collision
         if arcade.check_for_collision(enemy, self.player):
             self.player.health = max(
                 self.player.health - enemy.hit_damage, 0)

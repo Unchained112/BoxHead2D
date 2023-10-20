@@ -222,7 +222,7 @@ class Shop:
 
         if Utils.IS_TESTING:
             self.cur_item_list.append(self.add_rocket_item)
-            # self.cur_item_list.append(self.add_barrel_item)
+            self.cur_item_list.append(self.add_barrel_item)
             # self.cur_item_list.append(self.add_mine_item)
             # self.cur_item_list.append(self.add_shotgun_item)
 
