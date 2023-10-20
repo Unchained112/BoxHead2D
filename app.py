@@ -8,8 +8,16 @@ class BoxHead2d(arcade.Window):
     """ Main application class. """
 
     def __init__(self):
-        with open("data/settings.bin", "rb") as setting_file:
-            settings = pickle.load(setting_file)
+        # Load settings
+        try:
+            settings = pickle.load(open("data/settings.bin", "rb"))
+        except (OSError) as e:
+            settings = utils.Setting(e_volume=2,
+                                     m_volume=2,
+                                     r_idx=0,
+                                     fullscreen=True,
+                                     lang_idx=0)
+            pickle.dump(settings, open("data/settings.bin", "wb"))
         self.effect_volume = settings.effect_volume
         self.music_volume = settings.music_volume
         self.res_index = settings.res_index
@@ -22,6 +30,7 @@ class BoxHead2d(arcade.Window):
                          self.h_scale[self.res_index],
                          self.cur_lang.TITLE)
         self.set_fullscreen(settings.fullscreen)
+
         self.start_view = None
         self.option_view = None
         self.select_view = None
@@ -30,6 +39,10 @@ class BoxHead2d(arcade.Window):
         self.game_win_view = None
 
     def set_up(self) -> None:
+        # Load fonts
+        arcade.load_font("fonts/FFFFORWA.ttf")
+        arcade.load_font("fonts/Cubic_11_1.013_R.ttf")
+
         # Load sound and music
         self.button_sound = arcade.Sound("audio/ui_click.wav")
         self.explosion_sound = arcade.Sound("audio/explosion_2.wav")
@@ -101,8 +114,6 @@ class BoxHead2d(arcade.Window):
 
 def main():
     """ Main function """
-    arcade.load_font("fonts/FFFFORWA.ttf")
-    arcade.load_font("fonts/Cubic_11_1.013_R.ttf")
 
     game = BoxHead2d()
     game.set_up()

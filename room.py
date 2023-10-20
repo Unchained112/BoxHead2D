@@ -14,6 +14,7 @@ class Wall(arcade.Sprite):
         self.pos = Vec2(x, y)
         self.grid_idx = (math.floor(x / 30),
                          math.floor(y / 30))
+        self.shadow = None
 
         super().__init__(
             filename=None,
@@ -38,10 +39,6 @@ class WallCorner(Wall):
         self.shadow.texture = arcade.make_soft_square_texture(
             30, utils.Color.LIGHT_BLACK, 150, 150)
 
-    def draw(self) -> None:
-        self.shadow.draw()
-        super().draw()
-
 
 class WallSideHorizontal(Wall):
     """Wall along the horizontal side."""
@@ -56,10 +53,6 @@ class WallSideHorizontal(Wall):
         )
         self.shadow.texture = arcade.make_soft_square_texture(
             30,  utils.Color.LIGHT_BLACK, 150, 150)
-
-    def draw(self) -> None:
-        self.shadow.draw()
-        super().draw()
 
 
 class WallSideVertical(Wall):
@@ -77,10 +70,6 @@ class WallSideVertical(Wall):
         self.shadow.texture = arcade.make_soft_square_texture(
             30, utils.Color.LIGHT_BLACK, 150, 150)
 
-    def draw(self) -> None:
-        self.shadow.draw()
-        super().draw()
-
 
 class Room:
     """Room base class."""
@@ -96,8 +85,13 @@ class Room:
         self.grid = {(i, j): 0 for i in range(self.grid_w)
                      for j in range(self.grid_h)}
 
-        self.walls = []
         self.spawn_pos = []
+        self.walls = arcade.SpriteList()
+        self.shadows = arcade.SpriteList()
+
+    def set_up_shadow(self) -> None:
+        for wall in self.walls:
+            self.shadows.append(wall.shadow)
 
     def draw_ground(self) -> None:
         arcade.draw_rectangle_filled(
@@ -105,6 +99,7 @@ class Room:
         )
 
     def draw_walls(self) -> None:
+        self.shadows.draw()
         self.walls.draw()
 
     def setup_grid(self) -> None:
@@ -145,6 +140,8 @@ class StartRoom(Room):
                 HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
             self.walls.append(WallSideVertical(
                 self.width - HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+
+        self.set_up_shadow()
 
 
 class GameRoom0(Room):
@@ -216,6 +213,8 @@ class GameRoom0(Room):
                 -HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
             self.walls.append(WallCorner(
                 self.width + HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+
+        self.set_up_shadow()
 
 
 class GameRoom1(Room):
@@ -293,3 +292,5 @@ class GameRoom1(Room):
                 -HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
             self.walls.append(WallCorner(
                 self.width + HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+
+        self.set_up_shadow()
