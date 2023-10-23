@@ -1051,6 +1051,7 @@ class GameView(FadingView):
         self.blood_list = arcade.SpriteList()
         self.enemy_sprite_list = arcade.SpriteList()
         self.explosion_visual_list = arcade.SpriteList()
+        self.boss_list = arcade.SpriteList()
 
         # Create the physics engine
         damping = 0.01
@@ -1098,6 +1099,10 @@ class GameView(FadingView):
         self.enemy_bullet_list.draw()
         self.explosions_list.draw()
         self.explosion_visual_list.draw()
+        
+        if utils.Utils.IS_TESTING:
+            for boss in self.boss_list:
+                boss.draw_hit_box()
 
         # Select the (un-scrolled) camera for our GUI
         self.camera_gui.use()
@@ -1855,9 +1860,17 @@ class GameView(FadingView):
         self.enemy_big_mouth_list.update()
         self.enemy_crash_list.update()
         self.enemy_tank_list.update()
+        self.boss_list.update()
 
     def spawn_enemy(self) -> None:
         """Spawn enemy with different rounds."""
+
+        # Testing
+        if utils.Utils.IS_TESTING:
+            if self.spawn_cnt > 0:
+                self.set_boss(character.BossRed)
+                self.spawn_cnt = 0
+            return
 
         # Limit the number of enemies for performance issue
         # if len(self.enemy_sprite_list) >= 1200:
@@ -2010,6 +2023,20 @@ class GameView(FadingView):
                                        damping=0.001,
                                        collision_type="enemy")
         self.spawn_cnt -= 1
+
+    def set_boss(self, enemy_type) -> None:
+        self.spawn_cnt -= 1
+        pos = random.choice(self.room.spawn_pos)
+        boss = enemy_type(
+            pos.x, pos.y, self.physics_engine, self.player)
+        self.enemy_sprite_list.extend(boss.parts)
+        self.boss_list.append(boss)
+        self.physics_engine.add_sprite(boss,
+                                       friction=0,
+                                       moment_of_intertia=PymunkPhysicsEngine.MOMENT_INF,
+                                       damping=0.001,
+                                       collision_type="enemy",
+                                       mass=4)
 
 
 class GameOverView(arcade.View):

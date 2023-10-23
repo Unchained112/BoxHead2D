@@ -617,11 +617,13 @@ class BossRed(arcade.Sprite):
     """Simple Red Boss."""
 
     def __init__(self, x: float = 0, y: float = 0,
-                 physics_engine: arcade.PymunkPhysicsEngine = None) -> None:
+                 physics_engine: arcade.PymunkPhysicsEngine = None,
+                 player: Player = None) -> None:
         # Properties
+        self.health_max = 4200
         self.health = 4200
         self.is_walking = False
-        self.speed = 1200
+        self.speed = 4800
         self.cd = int(0)
         self.cd_max = int(40)  # 2/3 s
         self.get_damage_len = int(0)  # draw get damage effect
@@ -637,12 +639,12 @@ class BossRed(arcade.Sprite):
 
         # Init collider and physics engine
         super().__init__(
-            "graphics/character/CharacterCollider.png",
+            "graphics/character/BossCollider.png",
             center_x=self.pos.x + self.collider_pos.x,
             center_y=self.pos.y + self.collider_pos.y,
-            image_width=20,
-            image_height=30,
-            scale=2,
+            image_width=40,
+            image_height=60,
+            scale=1,
         )
         self.register_physics_engine(physics_engine)
 
@@ -656,27 +658,29 @@ class BossRed(arcade.Sprite):
 
         # Visuals
         # Body sprite
-        self.body = arcade.Sprite()
+        self.body = arcade.Sprite(filename="graphics/character/BossRedBody.png",
+                                  image_width=40,
+                                  image_height=52)
         # Feet sprite
         self.foot_l = arcade.Sprite(
-            filename="graphics/character/Foot.png",
+            filename="graphics/character/BossFoot.png",
             center_x=self.foot_l_pos.x + self.pos.x,
             center_y=self.foot_l_pos.y + self.pos.x,
-            image_width=4,
-            image_height=4,
+            image_width=10,
+            image_height=10,
             scale=1,
         )
         self.foot_r = arcade.Sprite(
-            filename="graphics/character/Foot.png",
+            filename="graphics/character/BossFoot.png",
             center_x=self.foot_r_pos.x + self.pos.x,
             center_y=self.foot_r_pos.y + self.pos.x,
-            image_width=4,
-            image_height=4,
+            image_width=10,
+            image_height=10,
             scale=1,
         )
 
         # Get damage sprite
-        self.damage_sprite = arcade.SpriteSolidColor(20, 24,
+        self.damage_sprite = arcade.SpriteSolidColor(40, 52,
                                                      utils.Color.WHITE_TRANSPARENT)
         self.damage_sprite.alpha = 0
 
@@ -686,6 +690,13 @@ class BossRed(arcade.Sprite):
         self.parts.append(self.foot_l)
         self.parts.append(self.foot_r)
         self.parts.append(self.damage_sprite)
+
+        # Set up
+        self.last_force = Vec2(0, 0)
+        self.hit_damage = int(250)
+        self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
+        self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
+        self.player = player
 
     def move(self) -> None:
         """Move all the body parts"""
@@ -703,23 +714,59 @@ class BossRed(arcade.Sprite):
         self.damage_sprite.center_x = self.center_x
         self.damage_sprite.center_y = self.center_y
 
-    def update(self) -> None:
-        self.move()
-
         # Body animation
         if self.body_move_frames == 0:  # reset frames
             self.body_move_frames = self.body_move_frames_max
             self.body_move_up = not self.body_move_up
 
         self.body_move_frames -= 1
-        self.body.center_y += BODY_ANIM[self.body_move_frames]
+        self.body.center_y += BODY_ANIM[self.body_move_frames] * 2
 
         self.get_damage_len -= 1
+
+        # Feet animation
+        if self.walking_frames == 0:  # reset frames
+            self.walking_frames = self.walking_frames_max
+
+        self.walking_frames -= 1
+
+        if self.is_walking:
+            self.foot_l.center_x += L_WALK_X[self.walking_frames] * 2
+            self.foot_l.center_y += L_WALK_Y[self.walking_frames] * 2
+            self.foot_r.center_x += R_WALK_X[self.walking_frames] * 2
+            self.foot_r.center_y += R_WALK_Y[self.walking_frames] * 2
+        else:
+            # reset the walking animation
+            self.foot_l.center_x = self.foot_l_pos.x + self.pos.x
+            self.foot_l.center_y = self.foot_l_pos.y + self.pos.y
+            self.foot_r.center_x = self.foot_r_pos.x + self.pos.x
+            self.foot_r.center_y = self.foot_r_pos.y + self.pos.y
+            self.walking_frames = self.walking_frames_max
 
         if self.get_damage_len > 0:
             self.damage_sprite.alpha = 150
         else:
             self.damage_sprite.alpha = 0
+
+    def update(self) -> None:
+        self.move()
+
+        current_pos = Vec2(self.center_x, self.center_y)
+        player_pos = Vec2(self.player.center_x, self.player.center_y)
+        force = player_pos - current_pos
+        tmp = Vec2(0, 0)
+
+        if self.last_force.distance(force) < 0.1:
+            if abs(self.last_force.x - force.x) < 0.1:
+                tmp.x = self.l_or_r
+            if abs(self.last_force.y - force.y) < 0.1:
+                tmp.y = self.u_or_d
+            force = tmp.scale(2 * self.speed)  # get rid of the barrier
+        else:
+            self.last_force = force
+            force = force.normalize().scale(self.speed)
+
+        self.physics_engines[0].apply_force(self, (force.x, force.y))
 
     def charge_attack(self) -> None:
         pass
