@@ -315,7 +315,7 @@ class PlacedWall(Weapon):
             arcade.load_texture("graphics/weapon/PlacedWall0.png"),
         ]
         self.sound = arcade.Sound("audio/wall_placed.wav")
-        self.health_max = 200
+        self.health_max = 300
 
     def update(self) -> None:
         self.center_x = self.pos.x

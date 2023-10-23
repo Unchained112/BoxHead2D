@@ -1563,6 +1563,7 @@ class GameView(FadingView):
         for enemy in self.enemy_white_list:
             self.check_hit_player(enemy)
             self.check_trigger_mine(enemy)
+            self.check_hit_wall(enemy)
 
         # Enemy Red
         for enemy in self.enemy_red_list:
@@ -1755,7 +1756,7 @@ class GameView(FadingView):
                            mine.grid_idx[1]] = 0
 
     def check_hit_wall(self, enemy: character.Character) -> None:
-        if self.counter % 10 != 0:  # check every 1/6 s
+        if self.counter % 20 != 0:  # check every 1/6 s
             return
         hit_list = arcade.check_for_collision_with_list(
             enemy, self.player_object_list)
@@ -1859,7 +1860,7 @@ class GameView(FadingView):
         """Spawn enemy with different rounds."""
 
         # Limit the number of enemies for performance issue
-        # if len(self.enemy_sprite_list) >= 800:
+        # if len(self.enemy_sprite_list) >= 1200:
         #     return
 
         if self.round <= 2:
@@ -1929,7 +1930,7 @@ class GameView(FadingView):
                     self.set_mini_boss(character.EnemyTank,
                                        self.enemy_tank_list)
 
-        if self.round > 10 and self.round <= 12:
+        if self.round > 10 and self.round <= 14:
             if self.counter % 30 == 0:
                 if self.counter < 1800 and self.spawn_cnt > 39:
                     self.generate_enemy(1, character.EnemyCrack,
@@ -1941,12 +1942,17 @@ class GameView(FadingView):
                 self.generate_enemy(1, character.EnemyBigMouth,
                                     self.enemy_big_mouth_list)
 
-        if self.round > 12 and self.round <= 15:
+        if self.round > 14 and self.round <= 19:
+            if self.counter == 300:
+                self.generate_enemy(3, character.EnemyWhite, self.enemy_white_list)
+            if self.counter == 500:
+                self.generate_enemy(3, character.EnemyRed, self.enemy_red_list)
+
             if self.counter % 30 == 0 and self.counter < 3600:
                 if self.spawn_cnt > 60:
                     self.generate_enemy(
                         1, character.EnemyCrash, self.enemy_crash_list)
-                elif self.spawn_cnt <= 60 and self.spawn_cnt > 40:
+                elif self.spawn_cnt <= 100 and self.spawn_cnt > 70:
                     self.generate_enemy(2, character.EnemyCrack,
                                         self.enemy_crack_list)
             if self.counter % 100 == 0:

@@ -611,3 +611,121 @@ class EnemyTank(Character):
     def dash(self) -> None:
         force = self.dash_force.scale(5)
         self.physics_engines[0].apply_force(self, (force.x, force.y))
+
+
+class BossRed(arcade.Sprite):
+    """Simple Red Boss."""
+
+    def __init__(self, x: float = 0, y: float = 0,
+                 physics_engine: arcade.PymunkPhysicsEngine = None) -> None:
+        # Properties
+        self.health = 4200
+        self.is_walking = False
+        self.speed = 1200
+        self.cd = int(0)
+        self.cd_max = int(40)  # 2/3 s
+        self.get_damage_len = int(0)  # draw get damage effect
+
+        # Init position
+        self.pos = Vec2(x, y)
+
+        # Relative positions for visuals
+        self.body_pos = Vec2(0, 0)  # controls the actual movement
+        self.foot_l_pos = Vec2(-16, -32)
+        self.foot_r_pos = Vec2(16, -32)
+        self.collider_pos = Vec2(0, -6)
+
+        # Init collider and physics engine
+        super().__init__(
+            "graphics/character/CharacterCollider.png",
+            center_x=self.pos.x + self.collider_pos.x,
+            center_y=self.pos.y + self.collider_pos.y,
+            image_width=20,
+            image_height=30,
+            scale=2,
+        )
+        self.register_physics_engine(physics_engine)
+
+        # Animation init
+        self.body_move_up = False
+        self.body_move_frames_max = len(BODY_ANIM)
+        self.body_move_frames = self.body_move_frames_max
+        self.walking_frames_max = len(L_WALK_X)
+        self.walking_frames = self.walking_frames_max
+        self.velocity = Vec2(0, 0)
+
+        # Visuals
+        # Body sprite
+        self.body = arcade.Sprite()
+        # Feet sprite
+        self.foot_l = arcade.Sprite(
+            filename="graphics/character/Foot.png",
+            center_x=self.foot_l_pos.x + self.pos.x,
+            center_y=self.foot_l_pos.y + self.pos.x,
+            image_width=4,
+            image_height=4,
+            scale=1,
+        )
+        self.foot_r = arcade.Sprite(
+            filename="graphics/character/Foot.png",
+            center_x=self.foot_r_pos.x + self.pos.x,
+            center_y=self.foot_r_pos.y + self.pos.x,
+            image_width=4,
+            image_height=4,
+            scale=1,
+        )
+
+        # Get damage sprite
+        self.damage_sprite = arcade.SpriteSolidColor(20, 24,
+                                                     utils.Color.WHITE_TRANSPARENT)
+        self.damage_sprite.alpha = 0
+
+        # Body parts list for rendering
+        self.parts = arcade.SpriteList()
+        self.parts.append(self.body)
+        self.parts.append(self.foot_l)
+        self.parts.append(self.foot_r)
+        self.parts.append(self.damage_sprite)
+
+    def move(self) -> None:
+        """Move all the body parts"""
+        self.pos.x = self.center_x - self.collider_pos.x
+        self.pos.y = self.center_y - self.collider_pos.y
+
+        self.body.center_x = self.pos.x + self.body_pos.x
+        self.body.center_y = self.pos.y + self.body_pos.y
+
+        self.foot_l.center_x = self.pos.x + self.foot_l_pos.x
+        self.foot_l.center_y = self.pos.y + self.foot_l_pos.y
+        self.foot_r.center_x = self.pos.x + self.foot_r_pos.x
+        self.foot_r.center_y = self.pos.y + self.foot_r_pos.y
+
+        self.damage_sprite.center_x = self.center_x
+        self.damage_sprite.center_y = self.center_y
+
+    def update(self) -> None:
+        self.move()
+
+        # Body animation
+        if self.body_move_frames == 0:  # reset frames
+            self.body_move_frames = self.body_move_frames_max
+            self.body_move_up = not self.body_move_up
+
+        self.body_move_frames -= 1
+        self.body.center_y += BODY_ANIM[self.body_move_frames]
+
+        self.get_damage_len -= 1
+
+        if self.get_damage_len > 0:
+            self.damage_sprite.alpha = 150
+        else:
+            self.damage_sprite.alpha = 0
+
+    def charge_attack(self) -> None:
+        pass
+
+    def shoot_around(self) -> None:
+        pass
+
+    def attack(self) -> None:
+        pass

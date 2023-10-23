@@ -31,7 +31,7 @@ python3 app.py # Linux or Mac
 | Uzi        |               30 |           3 | 20 |                              25 |           30 | \             | \      |
 | Shotgun    | 40*3             |          12 | 50 |                              10 |           25 |             3 | \      |
 | Rocket     | explosion damage |          20 | 40 |                              15 |           32 |             1 | \      |
-| PlacedWall | \                |           5 |  4 |                                 | \            | \             |    200 |
+| PlacedWall | \                |           5 |  4 |                                 | \            | \             |    300 |
 | Barrel     | explosion damage |          20 |  4 |                                 | \            | \             |      0 |
 | Mine       | explosion damage |          20 |  4 |                                 | \            | \             |      0 |
 
