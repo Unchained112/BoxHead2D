@@ -621,9 +621,10 @@ class BossRed(arcade.Sprite):
                  player: Player = None) -> None:
         # Properties
         self.health_max = 4200
-        self.health = 4200
+        # self.health = 4200
+        self.health = 200
         self.is_walking = False
-        self.speed = 4800
+        self.speed = 5200
         self.cd = int(0)
         self.cd_max = int(40)  # 2/3 s
         self.get_damage_len = int(0)  # draw get damage effect
@@ -697,6 +698,11 @@ class BossRed(arcade.Sprite):
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
         self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
+        self.direction = Vec2(0, 0)
+        self.is_set_dir = False
+        self.shoot_range = 600
+        self.dash_force = Vec2(0, 0)
+        self.cnt = 0
 
     def move(self) -> None:
         """Move all the body parts"""
@@ -751,28 +757,72 @@ class BossRed(arcade.Sprite):
     def update(self) -> None:
         self.move()
 
+        self.cnt += 1
         current_pos = Vec2(self.center_x, self.center_y)
         player_pos = Vec2(self.player.center_x, self.player.center_y)
         force = player_pos - current_pos
         tmp = Vec2(0, 0)
 
-        if self.last_force.distance(force) < 0.1:
-            if abs(self.last_force.x - force.x) < 0.1:
-                tmp.x = self.l_or_r
-            if abs(self.last_force.y - force.y) < 0.1:
-                tmp.y = self.u_or_d
-            force = tmp.scale(2 * self.speed)  # get rid of the barrier
-        else:
-            self.last_force = force
-            force = force.normalize().scale(self.speed)
+        if self.health > 2100: # phase 1
+            if current_pos.distance(player_pos) < self.shoot_range:
+                self.is_walking = False
+                return
+            else:
+                self.is_walking = True
+
+            if self.last_force.distance(force) < 0.1:
+                if abs(self.last_force.x - force.x) < 0.1:
+                    tmp.x = self.l_or_r
+                if abs(self.last_force.y - force.y) < 0.1:
+                    tmp.y = self.u_or_d
+                force = tmp.scale(2 * self.speed)  # get rid of the barrier
+            else:
+                self.last_force = force
+                force = force.normalize().scale(self.speed)
+                self.dash_force = force
+        else: # phase 2
+            self.is_walking = True
+            if self.cnt % 250 == 0:
+                self.is_set_dir = False
+
+            dis = current_pos.distance(player_pos)
+
+            if self.is_set_dir == False:
+                if dis <= self.shoot_range / 2.0:
+                    self.direction = -force.rotate(float(random.randrange(0, 45)))
+                    self.direction = self.direction.normalize()
+                    self.is_set_dir = True
+
+            if dis > self.shoot_range:
+                self.direction = force.normalize()
+
+            force = self.direction.scale(self.speed)
 
         self.physics_engines[0].apply_force(self, (force.x, force.y))
 
-    def charge_attack(self) -> None:
+    def dash(self) -> None:
+        # Dash
+        force = self.dash_force.scale(6)
+        self.physics_engines[0].apply_force(self, (force.x, force.y))
+
+    def shoot_ring(self) -> arcade.SpriteList():
+        # Shoot
+        bullets = arcade.SpriteList()
+        bullet_speed = 7
+        damage = 50
+        aim = Vec2(1, 0)
+        for i in range(0, 36):
+            bullet = self.bullet()
+            bullet.center_x = self.center_x
+            bullet.center_y = self.center_y
+            bullet.aim = aim.rotate(i * 10).scale(bullet_speed)    
+            bullet.speed = bullet_speed
+            bullet.damage = damage
+            bullet.change_x = bullet.aim.x
+            bullet.change_y = bullet.aim.y
+            bullets.append(bullet)
+        return bullets
+
+    def shoot_around(self) -> arcade.SpriteList():
         pass
 
-    def shoot_around(self) -> None:
-        pass
-
-    def attack(self) -> None:
-        pass
