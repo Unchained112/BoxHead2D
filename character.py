@@ -763,7 +763,7 @@ class BossRed(arcade.Sprite):
         force = player_pos - current_pos
         tmp = Vec2(0, 0)
 
-        if self.health > 2100: # phase 1
+        if self.health > 2100:  # phase 1
             if current_pos.distance(player_pos) < self.shoot_range:
                 self.is_walking = False
                 return
@@ -780,7 +780,8 @@ class BossRed(arcade.Sprite):
                 self.last_force = force
                 force = force.normalize().scale(self.speed)
                 self.dash_force = force
-        else: # phase 2
+        else:  # phase 2
+            self.cd_max = 90
             self.is_walking = True
             if self.cnt % 250 == 0:
                 self.is_set_dir = False
@@ -788,14 +789,22 @@ class BossRed(arcade.Sprite):
             dis = current_pos.distance(player_pos)
 
             if self.is_set_dir == False:
-                if dis <= self.shoot_range / 2.0:
-                    self.direction = -force.rotate(float(random.randrange(0, 45)))
+                if dis <= self.shoot_range / 4.0:
+                    self.direction = - \
+                        force.rotate(float(random.randrange(0, 45)))
                     self.direction = self.direction.normalize()
                     self.is_set_dir = True
 
             if dis > self.shoot_range:
                 self.direction = force.normalize()
 
+            if self.last_force.distance(force) < 0.1:
+                # Rest direction if stuck somewhere
+                four_dir = [Vec2(1, 0), Vec2(-1, 0), Vec2(0, 1), Vec2(0, -1)]
+                self.direction = four_dir[self.cd % 4]
+                self.is_set_dir = True
+
+            self.last_force = force
             force = self.direction.scale(self.speed)
 
         self.physics_engines[0].apply_force(self, (force.x, force.y))
@@ -810,9 +819,11 @@ class BossRed(arcade.Sprite):
         bullets = arcade.SpriteList()
         bullet_speed = 5
         damage = 50
+        life_span = 90
         aim = Vec2(1, 0)
         for i in range(0, 10):
             bullet = self.bullet()
+            bullet.life_span = life_span
             bullet.center_x = self.center_x
             bullet.center_y = self.center_y
             bullet.aim = aim.rotate(i * 0.628).scale(bullet_speed)
@@ -830,12 +841,12 @@ class BossRed(arcade.Sprite):
                 pos_x = self.player.pos.x
                 pos_y = self.player.pos.y
             else:
-                pos_x = random.randrange(max(self.player.center_x - self.shoot_range, 0),
-                                         min(self.player.center_x + self.shoot_range, width))
-                pos_y = random.randrange(max(self.player.center_y - self.shoot_range, 0),
-                                         min(self.player.center_y + self.shoot_range, height))
+                pos_x = random.randrange(max(int(self.player.center_x - 300), 30),
+                                         min(int(self.player.center_x + 300), width - 30))
+                pos_y = random.randrange(max(int(self.player.center_y - 300), 30),
+                                         min(int(self.player.center_y + 300), height - 30))
             bullet = weapon.BossFireBall(pos_x, pos_y)
-
+            bullet.damage = 200
+            bullet.life_span = 90
             bullets.append(bullet)
         return bullets
-

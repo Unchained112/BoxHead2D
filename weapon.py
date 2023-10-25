@@ -76,29 +76,13 @@ class ExplosionSeed(Bullet):
     """Multi-explosion seed. """
 
 
-class BossFireBall(arcade.Sprite):
+class BossFireBall(FireBall):
     """FireBall class for enemy red."""
 
     def __init__(self, x: int, y: int) -> None:
-        super().__init__(filename="graphics/weapon/FireBall.png",
-                         center_x=x,
-                         center_y=y,
-                         image_width=20,
-                         image_height=20)
-        self.life_span = int(60)
-
-        # Set up hit warning box
-        point_list = []
-        for point in self.hit_box:
-            point_list.append([point[0], point[1]])
-        self.shape = arcade.create_line_loop(point_list,
-                                             utils.Color.HEALTH_RED,
-                                             2)
-
-    def update(self):
-        if self.life_span <= 0:
-            self.remove_from_sprite_lists()
-        self.life_span -= 1
+        super().__init__()
+        self.center_x = x
+        self.center_y = y
 
 
 """

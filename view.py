@@ -1053,7 +1053,6 @@ class GameView(FadingView):
         self.explosion_visual_list = arcade.SpriteList()
         self.boss_list = arcade.SpriteList()
         self.boss_bullet_list = arcade.SpriteList()
-        self.boss_bullet_shape_list = arcade.ShapeElementList()
 
         # Create the physics engine
         damping = 0.01
@@ -1101,6 +1100,7 @@ class GameView(FadingView):
         self.enemy_bullet_list.draw()
         self.explosions_list.draw()
         self.explosion_visual_list.draw()
+        self.boss_bullet_list.draw()
 
         if utils.Utils.IS_TESTING:
             for boss in self.boss_list:
@@ -1396,7 +1396,7 @@ class GameView(FadingView):
                         object.center_y = grid_y * 30 + \
                             float(utils.Utils.HALF_WALL_SIZE)
                         object.grid_idx = (grid_x, grid_y)
-                        if object.object_type != 2: # not a mine
+                        if object.object_type != 2:  # not a mine
                             self.player_object_list.append(object)
                             self.physics_engine.add_sprite(object,
                                                            friction=0,
@@ -1691,7 +1691,7 @@ class GameView(FadingView):
                 self.check_hit_player(boss)
                 self.check_trigger_mine(boss)
                 self.check_hit_wall(boss)
-                if boss.is_walking == False: # only appear in phase 1
+                if boss.is_walking == False:  # only appear in phase 1
                     if boss.cd == boss.cd_max:
                         boss.cd = 0
                     if boss.cd < 40:
@@ -1699,16 +1699,61 @@ class GameView(FadingView):
                         if boss.cd % 15 == 0:
                             bullets = boss.shoot_ring()
                             self.enemy_bullet_list.extend(bullets)
-                if boss.health <= 2100: # phase 2
+                if boss.health <= 2100:  # phase 2
                     if boss.cd == boss.cd_max:
                         boss.cd = 0
+                    if boss.cd == 0:
                         bullets = boss.shoot_around(self.room.width,
                                                     self.room.height)
+                        self.boss_bullet_list.extend(bullets)
 
                 boss.cd = min(boss.cd + 1, boss.cd_max)
 
         # Process boss bullets
+        for bullet in self.boss_bullet_list:
+            if bullet.life_span == 5:
+                bullet.alpha = 255
+                # Check hit with player
+                chance = random.randrange(0, 100)
+                if chance >= self.player.luck and arcade.check_for_collision(bullet, self.player):
+                    self.player.health = max(
+                        self.player.health - bullet.damage, 0)
+                    bullet.remove_from_sprite_lists()
+                    self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
+                    self.set_blood(self.player.position)
+                    bullet.remove_from_sprite_lists()
+                    continue
 
+                # Check hit with player objects
+                hit_list = arcade.check_for_collision_with_list(
+                    bullet, self.player_object_list)
+
+                for object in hit_list:
+                    if object.object_type == 0:  # Wall object
+                        object.health -= bullet.damage
+                        if object.health <= 0:
+                            self.room.grid[object.grid_idx[0],
+                                           object.grid_idx[1]] = 0
+                            object.remove_from_sprite_lists()
+                    if object.object_type == 1:  # Barrel object
+                        object.health -= bullet.damage
+                        if object.health <= 0:
+                            if self.player.is_barrel_multi:
+                                self.set_multi_explosion(object.position)
+                            else:
+                                self.set_explosion(object.position)
+                            self.room.grid[object.grid_idx[0],
+                                           object.grid_idx[1]] = 0
+                            object.remove_from_sprite_lists()
+
+                if len(hit_list) > 0:
+                    bullet.remove_from_sprite_lists()
+                    continue
+            else:
+                bullet.alpha = 150
+            if bullet.life_span <= 1:
+                bullet.remove_from_sprite_lists()
+            bullet.life_span -= 1
 
     def remove_enemy(self, enemy: character.Character) -> None:
         enemy.physics_engines.clear()  # to avoid key error
@@ -1987,7 +2032,8 @@ class GameView(FadingView):
 
         if self.round > 14 and self.round <= 19:
             if self.counter == 300:
-                self.generate_enemy(3, character.EnemyWhite, self.enemy_white_list)
+                self.generate_enemy(3, character.EnemyWhite,
+                                    self.enemy_white_list)
             if self.counter == 500:
                 self.generate_enemy(3, character.EnemyRed, self.enemy_red_list)
 
@@ -2005,7 +2051,28 @@ class GameView(FadingView):
                 self.generate_enemy(3, character.EnemyTank,
                                     self.enemy_tank_list)
 
-        # TODO: Design a boss and add a boss fight
+        if self.round == 20:
+            if self.spawn_cnt == 5:
+                self.set_boss(character.BossRed)
+            if self.counter == 300:
+                self.generate_enemy(3, character.EnemyWhite,
+                                    self.enemy_white_list)
+            if self.counter == 500:
+                self.generate_enemy(3, character.EnemyRed, self.enemy_red_list)
+
+            if self.counter % 30 == 0 and self.counter < 3600:
+                if self.spawn_cnt > 60:
+                    self.generate_enemy(
+                        1, character.EnemyCrash, self.enemy_crash_list)
+                elif self.spawn_cnt <= 100 and self.spawn_cnt > 70:
+                    self.generate_enemy(2, character.EnemyCrack,
+                                        self.enemy_crack_list)
+            if self.counter % 100 == 0:
+                self.generate_enemy(1, character.EnemyBigMouth,
+                                    self.enemy_big_mouth_list)
+            if self.counter % 200 == 0 and self.counter >= 3600:
+                self.generate_enemy(3, character.EnemyTank,
+                                    self.enemy_tank_list)
 
     def set_one_enemy(self, pos, enemy_type, enemy_list) -> None:
         """Set up a single enemy."""
