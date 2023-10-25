@@ -621,12 +621,11 @@ class BossRed(arcade.Sprite):
                  player: Player = None) -> None:
         # Properties
         self.health_max = 4200
-        # self.health = 4200
-        self.health = 200
+        self.health = 4200
         self.is_walking = False
-        self.speed = 5200
+        self.speed = 5000
         self.cd = int(0)
-        self.cd_max = int(40)  # 2/3 s
+        self.cd_max = int(120)
         self.get_damage_len = int(0)  # draw get damage effect
 
         # Init position
@@ -682,7 +681,7 @@ class BossRed(arcade.Sprite):
 
         # Get damage sprite
         self.damage_sprite = arcade.SpriteSolidColor(40, 52,
-                                                     utils.Color.WHITE_TRANSPARENT)
+                                                     utils.Color.WHITE)
         self.damage_sprite.alpha = 0
 
         # Body parts list for rendering
@@ -693,6 +692,7 @@ class BossRed(arcade.Sprite):
         self.parts.append(self.damage_sprite)
 
         # Set up
+        self.bullet = weapon.FireBall
         self.last_force = Vec2(0, 0)
         self.hit_damage = int(250)
         self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
@@ -700,7 +700,7 @@ class BossRed(arcade.Sprite):
         self.player = player
         self.direction = Vec2(0, 0)
         self.is_set_dir = False
-        self.shoot_range = 600
+        self.shoot_range = 400
         self.dash_force = Vec2(0, 0)
         self.cnt = 0
 
@@ -717,8 +717,8 @@ class BossRed(arcade.Sprite):
         self.foot_r.center_x = self.pos.x + self.foot_r_pos.x
         self.foot_r.center_y = self.pos.y + self.foot_r_pos.y
 
-        self.damage_sprite.center_x = self.center_x
-        self.damage_sprite.center_y = self.center_y
+        self.damage_sprite.center_x = self.body.center_x
+        self.damage_sprite.center_y = self.body.center_y
 
         # Body animation
         if self.body_move_frames == 0:  # reset frames
@@ -802,20 +802,20 @@ class BossRed(arcade.Sprite):
 
     def dash(self) -> None:
         # Dash
-        force = self.dash_force.scale(6)
+        force = self.dash_force.scale(5)
         self.physics_engines[0].apply_force(self, (force.x, force.y))
 
     def shoot_ring(self) -> arcade.SpriteList():
         # Shoot
         bullets = arcade.SpriteList()
-        bullet_speed = 7
+        bullet_speed = 5
         damage = 50
         aim = Vec2(1, 0)
-        for i in range(0, 36):
+        for i in range(0, 10):
             bullet = self.bullet()
             bullet.center_x = self.center_x
             bullet.center_y = self.center_y
-            bullet.aim = aim.rotate(i * 10).scale(bullet_speed)    
+            bullet.aim = aim.rotate(i * 0.628).scale(bullet_speed)
             bullet.speed = bullet_speed
             bullet.damage = damage
             bullet.change_x = bullet.aim.x
@@ -823,6 +823,19 @@ class BossRed(arcade.Sprite):
             bullets.append(bullet)
         return bullets
 
-    def shoot_around(self) -> arcade.SpriteList():
-        pass
+    def shoot_around(self, width: int, height: int) -> arcade.SpriteList():
+        bullets = arcade.SpriteList()
+        for i in range(0, 100):
+            if i == 0:
+                pos_x = self.player.pos.x
+                pos_y = self.player.pos.y
+            else:
+                pos_x = random.randrange(max(self.player.center_x - self.shoot_range, 0),
+                                         min(self.player.center_x + self.shoot_range, width))
+                pos_y = random.randrange(max(self.player.center_y - self.shoot_range, 0),
+                                         min(self.player.center_y + self.shoot_range, height))
+            bullet = weapon.BossFireBall(pos_x, pos_y)
+
+            bullets.append(bullet)
+        return bullets
 

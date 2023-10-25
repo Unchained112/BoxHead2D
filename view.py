@@ -1052,6 +1052,8 @@ class GameView(FadingView):
         self.enemy_sprite_list = arcade.SpriteList()
         self.explosion_visual_list = arcade.SpriteList()
         self.boss_list = arcade.SpriteList()
+        self.boss_bullet_list = arcade.SpriteList()
+        self.boss_bullet_shape_list = arcade.ShapeElementList()
 
         # Create the physics engine
         damping = 0.01
@@ -1099,7 +1101,7 @@ class GameView(FadingView):
         self.enemy_bullet_list.draw()
         self.explosions_list.draw()
         self.explosion_visual_list.draw()
-        
+
         if utils.Utils.IS_TESTING:
             for boss in self.boss_list:
                 boss.draw_hit_box()
@@ -1130,6 +1132,7 @@ class GameView(FadingView):
         self.enemy_sprite_list.update()
         self.update_enemy_attack()
         self.process_enemy_bullet()
+        self.update_boss()
 
         self.explosions_list.update()
         self.blood_list.update()
@@ -1434,6 +1437,7 @@ class GameView(FadingView):
                     self.enemy_big_mouth_list,
                     self.enemy_crash_list,
                     self.enemy_tank_list,
+                    self.boss_list,
                 ],
             )
 
@@ -1679,6 +1683,32 @@ class GameView(FadingView):
 
             if bullet.life_span <= 0:
                 bullet.remove_from_sprite_lists()
+
+    def update_boss(self) -> None:
+        # Update boss actions
+        for boss in self.boss_list:
+            if type(boss) == character.BossRed:
+                self.check_hit_player(boss)
+                self.check_trigger_mine(boss)
+                self.check_hit_wall(boss)
+                if boss.is_walking == False: # only appear in phase 1
+                    if boss.cd == boss.cd_max:
+                        boss.cd = 0
+                    if boss.cd < 40:
+                        boss.dash()
+                        if boss.cd % 15 == 0:
+                            bullets = boss.shoot_ring()
+                            self.enemy_bullet_list.extend(bullets)
+                if boss.health <= 2100: # phase 2
+                    if boss.cd == boss.cd_max:
+                        boss.cd = 0
+                        bullets = boss.shoot_around(self.room.width,
+                                                    self.room.height)
+
+                boss.cd = min(boss.cd + 1, boss.cd_max)
+
+        # Process boss bullets
+
 
     def remove_enemy(self, enemy: character.Character) -> None:
         enemy.physics_engines.clear()  # to avoid key error
