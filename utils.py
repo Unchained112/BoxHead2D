@@ -5,6 +5,7 @@ import pickle
 import math
 import collections
 
+
 class Color:
     """Color palette."""
 
@@ -34,7 +35,8 @@ class Color:
 class Utils:
     """Utility functions."""
 
-    IS_TESTING = True
+    IS_TESTING = False  # normal test flag
+    IS_TESTING_PF = False  # path finding test flag
 
     BULLET_FORCE = 1000
     ENEMY_FORCE = 4000
@@ -77,7 +79,7 @@ class Utils:
                            grid: dict,
                            grid_w: int,
                            grid_h: int,
-                           dir_field: dict) -> None:
+                           dir_field: dict) -> dict:
         min_dist = -(grid_w * grid_h) - 10
         # Destination position
         dst_x = math.floor(p_x / Utils.WALL_SIZE)
@@ -89,6 +91,7 @@ class Utils:
         frontier.append(dst)
         dist_grid = dict()
         dist_grid[dst] = 0
+
         while len(frontier) > 0:
             cur = frontier.popleft()
             for next in [(cur[0] - 1, cur[1]),
@@ -98,23 +101,33 @@ class Utils:
                 if next not in dist_grid:
                     if next[0] < 0 or next[0] >= grid_w:
                         dist_grid[next] = min_dist
-                    if next[1] < 0 or next[1] >= grid_h:
+                    elif next[1] < 0 or next[1] >= grid_h:
                         dist_grid[next] = min_dist
-                    if grid[next] == 1:
+                    elif grid[next] == 1:
                         dist_grid[next] = min_dist
-                        frontier.append(next)
                     else:
                         frontier.append(next)
                         dist_grid[next] = dist_grid[cur] - 1
 
         # Calculate gradient for vector field
         for k in grid:
-            dx = dist_grid[(k[0] + 1, k[1])] - dist_grid[(k[0] - 1, k[1])]
-            dy = dist_grid[(k[0], k[1] + 1)] - dist_grid[(k[0], k[1] - 1)]
-            dir_x = float(dx) / 2.0
-            dir_y = float(dy) / 2.0
-            dir = Vec2(dir_x, dir_y)
+            max_dis = min_dist
+            dir = Vec2(1.0, 0)
+            for pos in [(k[0] - 1, k[1]), (k[0] + 1, k[1]),
+                        (k[0], k[1] - 1), (k[0], k[1] + 1),
+                        (k[0] + 1, k[1] + 1), (k[0] + 1, k[1] - 1),
+                        (k[0] - 1, k[1] + 1), (k[0] - 1, k[1] - 1)]:
+                try:
+                    dist_grid[pos]
+                except KeyError:
+                    dist_grid[pos] = min_dist
+                if dist_grid[pos] > max_dis:
+                    max_dis = dist_grid[pos]
+                    dir = Vec2(pos[0] - k[0], pos[1] - k[1])
+
             dir_field[k] = dir.normalize()
+
+        return dist_grid
 
 
 class Style:

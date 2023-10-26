@@ -1063,6 +1063,18 @@ class GameView(FadingView):
         self.room = map()
         self.wall_list = self.room.walls
 
+        if utils.Utils.IS_TESTING_PF:
+            self.dir_field = dict()
+            self.dist_grid = None
+            self.dir_field_visual = arcade.SpriteList()
+            self.dir_visual_dict = dict()
+            for pos in self.room.grid:
+                self.dir_visual_dict[pos] = arcade.SpriteSolidColor(
+                    30, 30, (0, 255, 0, 150))
+                self.dir_visual_dict[pos].center_x = pos[0] * 30 + 15
+                self.dir_visual_dict[pos].center_y = pos[1] * 30 + 15
+                self.dir_field_visual.append(self.dir_visual_dict[pos])
+
         # Set up the player
         self.player = player(
             float(self.w / 2), float(self.h / 2), self.physics_engine)
@@ -1102,9 +1114,8 @@ class GameView(FadingView):
         self.explosion_visual_list.draw()
         self.boss_bullet_list.draw()
 
-        if utils.Utils.IS_TESTING:
-            for boss in self.boss_list:
-                boss.draw_hit_box()
+        if utils.Utils.IS_TESTING_PF:
+            self.dir_field_visual.draw()
 
         # Select the (un-scrolled) camera for our GUI
         self.camera_gui.use()
@@ -1156,6 +1167,19 @@ class GameView(FadingView):
             self.on_explosion_filter.visible = True
         else:
             self.on_explosion_filter.visible = False
+
+        if utils.Utils.IS_TESTING_PF:
+            # Update path finding field (function still in testing)
+            if self.counter % 30 == 0:
+                self.dist_grid = utils.Utils.field_path_finding(self.player.center_x,
+                                                                self.player.center_y,
+                                                                self.room.grid,
+                                                                self.room.grid_w,
+                                                                self.room.grid_h,
+                                                                self.dir_field)
+                for pos in self.dir_visual_dict:
+                    alpha = min(255, -self.dist_grid[pos] * 3)
+                    self.dir_visual_dict[pos].alpha = alpha
 
     def on_show_view(self) -> None:
         self.window.set_mouse_visible(False)
@@ -1937,13 +1961,21 @@ class GameView(FadingView):
         self.enemy_tank_list.update()
         self.boss_list.update()
 
+        if utils.Utils.IS_TESTING_PF:
+            for enemy_white in self.enemy_white_list:
+                enemy_white.get_dir(self.dir_field)
+
     def spawn_enemy(self) -> None:
         """Spawn enemy with different rounds."""
 
         # Testing
         if utils.Utils.IS_TESTING:
             if self.spawn_cnt > 0:
-                self.set_boss(character.BossRed)
+                # self.set_boss(character.BossRed)
+                self.generate_enemy(1, character.EnemyWhite,
+                                    self.enemy_white_list)
+                self.generate_enemy(1, character.EnemyWhite,
+                                    self.enemy_white_list)
                 self.spawn_cnt = 0
             return
 
@@ -2052,14 +2084,13 @@ class GameView(FadingView):
                                     self.enemy_tank_list)
 
         if self.round == 20:
-            if self.spawn_cnt == 5:
+            if self.counter == 3000:
                 self.set_boss(character.BossRed)
             if self.counter == 300:
                 self.generate_enemy(3, character.EnemyWhite,
                                     self.enemy_white_list)
             if self.counter == 500:
                 self.generate_enemy(3, character.EnemyRed, self.enemy_red_list)
-
             if self.counter % 30 == 0 and self.counter < 3600:
                 if self.spawn_cnt > 60:
                     self.generate_enemy(

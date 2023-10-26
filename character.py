@@ -310,8 +310,22 @@ class EnemyWhite(Character):
         self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
 
+        self.force = Vec2(0, 0)
+
+    def get_dir(self, dir_field: dict) -> None:
+        grid_x = int(self.center_x / utils.Utils.WALL_SIZE)
+        grid_y = int(self.center_y / utils.Utils.WALL_SIZE)
+        self.force = dir_field[(grid_x, grid_y)]
+
     def update(self) -> None:
         super().update()
+
+        if utils.Utils.IS_TESTING_PF:
+            self.force = self.force.scale(self.speed)
+            self.physics_engines[0].apply_force(
+                self, (self.force.x, self.force.y))
+            return
+
         current_pos = Vec2(self.center_x, self.center_y)
         player_pos = Vec2(self.player.center_x, self.player.center_y)
         force = player_pos - current_pos
