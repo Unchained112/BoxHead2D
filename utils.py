@@ -2,7 +2,8 @@
 from pyglet.math import Vec2
 import arcade.gui
 import pickle
-
+import math
+import collections
 
 class Color:
     """Color palette."""
@@ -69,6 +70,51 @@ class Utils:
                                window.fullscreen,
                                window.lang_idx)
             pickle.dump(settings, setting_file)
+
+    @staticmethod
+    def field_path_finding(p_x: float,
+                           p_y: float,
+                           grid: dict,
+                           grid_w: int,
+                           grid_h: int,
+                           dir_field: dict) -> None:
+        min_dist = -(grid_w * grid_h) - 10
+        # Destination position
+        dst_x = math.floor(p_x / Utils.WALL_SIZE)
+        dst_y = math.floor(p_y / Utils.WALL_SIZE)
+        dst = (dst_x, dst_y)
+
+        # BFS
+        frontier = collections.deque()
+        frontier.append(dst)
+        dist_grid = dict()
+        dist_grid[dst] = 0
+        while len(frontier) > 0:
+            cur = frontier.popleft()
+            for next in [(cur[0] - 1, cur[1]),
+                         (cur[0] + 1, cur[1]),
+                         (cur[0], cur[1] - 1),
+                         (cur[0], cur[1] + 1)]:
+                if next not in dist_grid:
+                    if next[0] < 0 or next[0] >= grid_w:
+                        dist_grid[next] = min_dist
+                    if next[1] < 0 or next[1] >= grid_h:
+                        dist_grid[next] = min_dist
+                    if grid[next] == 1:
+                        dist_grid[next] = min_dist
+                        frontier.append(next)
+                    else:
+                        frontier.append(next)
+                        dist_grid[next] = dist_grid[cur] - 1
+
+        # Calculate gradient for vector field
+        for k in grid:
+            dx = dist_grid[(k[0] + 1, k[1])] - dist_grid[(k[0] - 1, k[1])]
+            dy = dist_grid[(k[0], k[1] + 1)] - dist_grid[(k[0], k[1] - 1)]
+            dir_x = float(dx) / 2.0
+            dir_y = float(dy) / 2.0
+            dir = Vec2(dir_x, dir_y)
+            dir_field[k] = dir.normalize()
 
 
 class Style:
