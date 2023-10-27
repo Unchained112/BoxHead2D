@@ -223,7 +223,7 @@ class Shop:
         if Utils.IS_TESTING:
             self.cur_item_list.append(self.add_rocket_item)
             self.cur_item_list.append(self.add_barrel_item)
-            # self.cur_item_list.append(self.add_mine_item)
+            self.cur_item_list.append(self.add_mine_item)
             # self.cur_item_list.append(self.add_shotgun_item)
 
     def generate_item(self, item: Item, wave: int, player: Player, lang) -> Item:
@@ -369,7 +369,8 @@ class Shop:
         return True
 
     def increase_shotgun_bullets(self, item: Item, player: Player) -> bool:
-        self.shotgun.bullet_num += item.value
+        self.shotgun.bullet_num = min(item.value + self.shotgun.bullet_num,
+                                      self.shotgun.max_bullets)
         return True
 
     # Rocket items

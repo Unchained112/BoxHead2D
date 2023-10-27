@@ -2501,6 +2501,8 @@ class ShopView(arcade.View):
                 str(self.shop.shotgun.cost) + "\n"
             text += self.window.cur_lang.BULLET_NUMBER + \
                 str(self.shop.shotgun.bullet_num) + "\n"
+            text += self.window.cur_lang.MAX_BULLETS + \
+                str(self.shop.shotgun.max_bullets) + "\n"
             text += "\n"
 
         if self.player.weapons.count(self.shop.rocket) > 0:
@@ -2515,7 +2517,7 @@ class ShopView(arcade.View):
                 str(self.shop.rocket.life_span) + "\n"
             text += self.window.cur_lang.ENERGY_COST + \
                 str(self.shop.rocket.cost) + "\n"
-            text += "- Bullet numbers: " + \
+            text += self.window.cur_lang.BULLET_NUMBER + \
                 str(self.shop.rocket.bullet_num) + "\n"
             text += "\n"
 

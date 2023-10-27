@@ -116,12 +116,8 @@ class Utils:
             for pos in [(k[0] - 1, k[1]), (k[0] + 1, k[1]),
                         (k[0], k[1] - 1), (k[0], k[1] + 1),
                         (k[0] + 1, k[1] + 1), (k[0] + 1, k[1] - 1),
-                        (k[0] - 1, k[1] + 1), (k[0] - 1, k[1] - 1)]:
-                try:
-                    dist_grid[pos]
-                except KeyError:
-                    dist_grid[pos] = min_dist
-                if dist_grid[pos] > max_dis:
+                        (k[0] - 1, k[1] + 1), (k[0] - 1, k[1] - 1)]:                
+                if dist_grid.get(pos, min_dist) > max_dis:
                     max_dis = dist_grid[pos]
                     dir = Vec2(pos[0] - k[0], pos[1] - k[1])
 
@@ -215,6 +211,7 @@ class Language:
         ENERGY_COST = "- Energy cost: "
         BULLET_NUMBER = "- Bullet numbers: "
         CD_MIN = "- CD Minimum: "
+        MAX_BULLETS = "- Max bullet numbers: "
 
         # Item
         ItemText = {
@@ -311,6 +308,7 @@ class Language:
         ENERGY_COST = "- 能量消耗: "
         BULLET_NUMBER = "- 子弹数: "
         CD_MIN = "- 最小冷却: "
+        MAX_BULLETS = "- 最大子弹数: "
 
         # Item
         ItemText = {

@@ -232,6 +232,7 @@ class Shotgun(Weapon):
         self.damage = 40
         self.life_span = 10
         self.bullet_num = 3
+        self.max_bullets = 12
         self.bullet = EnergyBullet
         self.sound = arcade.Sound("audio/wpn_fire_m1014.wav")
 
