@@ -116,7 +116,7 @@ class Utils:
             for pos in [(k[0] - 1, k[1]), (k[0] + 1, k[1]),
                         (k[0], k[1] - 1), (k[0], k[1] + 1),
                         (k[0] + 1, k[1] + 1), (k[0] + 1, k[1] - 1),
-                        (k[0] - 1, k[1] + 1), (k[0] - 1, k[1] - 1)]:                
+                        (k[0] - 1, k[1] + 1), (k[0] - 1, k[1] - 1)]:
                 if dist_grid.get(pos, min_dist) > max_dis:
                     max_dis = dist_grid[pos]
                     dir = Vec2(pos[0] - k[0], pos[1] - k[1])
@@ -212,6 +212,20 @@ class Language:
         BULLET_NUMBER = "- Bullet numbers: "
         CD_MIN = "- CD Minimum: "
         MAX_BULLETS = "- Max bullet numbers: "
+
+        # Description
+        DescribeText = {
+            # Character
+            "Nameless": "Nameless",
+            "Nameless Description": "Call me Sonny if you want.\n \
+                                     Default role without characteristics",
+            "Rambo": "Rambo",
+            "Rambo Description": "They drew first blood, not me.\n \
+                                  Lost health is converted to the energy.",
+            # Map
+            "Blank room": "Blank room",
+            "Blank room with a block": "Blank room with a block",
+        }
 
         # Item
         ItemText = {
@@ -309,6 +323,20 @@ class Language:
         BULLET_NUMBER = "- 子弹数: "
         CD_MIN = "- 最小冷却: "
         MAX_BULLETS = "- 最大子弹数: "
+
+        # Description
+        DescribeText = {
+            # Character
+            "Nameless": "无名",
+            "Nameless Description": "阳光开朗大男孩。 \
+                                     没有特点的默认角色。",
+            "Rambo": "兰博",
+            "Rambo Description": "不会红温的那个。 \n \
+                                  失去的血量会转换成能量。",
+            # Map
+            "Blank room": "空房间",
+            "Blank room with a block": "有个障碍物的空房间",
+        }
 
         # Item
         ItemText = {

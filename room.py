@@ -148,6 +148,7 @@ class GameRoom0(Room):
     """Game room No. 0"""
 
     layout_sprite = arcade.Sprite("graphics/room/GameRoom0.png")
+    name = "Blank room"
 
     def __init__(self, width: float = 2100, height: float = 1200) -> None:
         super().__init__(width, height)
@@ -221,6 +222,7 @@ class GameRoom1(Room):
     """Game room No. 1"""
 
     layout_sprite = arcade.Sprite("graphics/room/GameRoom1.png")
+    name = "Blank room with a block"
 
     def __init__(self, width: float = 2100, height: float = 1200) -> None:
         super().__init__(width, height)

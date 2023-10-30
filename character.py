@@ -151,6 +151,8 @@ class Player(Character):
     """Player game object."""
 
     body_texture = arcade.load_texture("graphics/character/Player.png")
+    name = "Nameless"
+    description = "Nameless Description"
 
     def __init__(self, x: float = 0, y: float = 0,
                  physics_engine: arcade.PymunkPhysicsEngine = None) -> None:
@@ -288,6 +290,8 @@ class Rambo(Player):
     "Rambo character."
 
     body_texture = arcade.load_texture("graphics/character/Rambo.png")
+    name = "Rambo"
+    description = "Rambo Description"
 
 
 """Enemy characters"""
