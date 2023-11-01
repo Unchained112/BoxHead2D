@@ -217,10 +217,10 @@ class Language:
         DescribeText = {
             # Character
             "Nameless": "Nameless",
-            "Nameless Description": "Call me Sonny if you want.\n \
+            "Nameless Description": "Call me Sonny if you want. \
                                      Default role without characteristics",
             "Rambo": "Rambo",
-            "Rambo Description": "They drew first blood, not me.\n \
+            "Rambo Description": "They drew first blood, not me. \
                                   Lost health is converted to the energy.",
             # Map
             "Blank room": "Blank room",
@@ -331,7 +331,7 @@ class Language:
             "Nameless Description": "阳光开朗大男孩。 \
                                      没有特点的默认角色。",
             "Rambo": "兰博",
-            "Rambo Description": "不会红温的那个。 \n \
+            "Rambo Description": "不会红温的那个。 \
                                   失去的血量会转换成能量。",
             # Map
             "Blank room": "空房间",

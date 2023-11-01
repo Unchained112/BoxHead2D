@@ -422,6 +422,8 @@ class SelectionView(FadingView):
         self.w = self.window.width
         self.h = self.window.height
 
+        self.name_list = []
+        self.describe_list = []
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
         self.selection_box = arcade.gui.UIBoxLayout(vertical=False)
@@ -435,7 +437,34 @@ class SelectionView(FadingView):
         ]
         self.cur_char_idx = 0
         self.cur_char = character.Character(
-            float(self.w/2 - 240), float(self.h/2))
+            float(self.w/2 - 240), float(self.h/2 + 100))
+        self.name_list.append(
+            arcade.Text(
+                text="",
+                start_x=float(self.w/2 - 240),
+                start_y=float(self.h/2 + 20),
+                font_size=12,
+                font_name="Cubic 11",
+                anchor_x="center",
+                align="center",
+                width=120,
+                color=utils.Color.BLACK,
+            )
+        )
+        self.describe_list.append(
+            arcade.Text(
+                text="",
+                start_x=float(self.w/2 - 240),
+                start_y=float(self.h/2 - 10),
+                font_size=12,
+                font_name="Cubic 11",
+                anchor_x="center",
+                align="center",
+                multiline=False,
+                width=240,
+                color=utils.Color.BLACK,
+            )
+        )
         self.set_character()
 
         # Maps
@@ -446,6 +475,19 @@ class SelectionView(FadingView):
         self.cur_map_idx = 0
         self.cur_map = self.map_list[self.cur_map_idx]
         self.cur_map_sprite = arcade.Sprite()
+        self.name_list.append(
+            arcade.Text(
+                text="",
+                start_x=float(self.w/2 + 220),
+                start_y=float(self.h/2 - 20),
+                font_size=12,
+                font_name="Cubic 11",
+                anchor_x="center",
+                align="center",
+                width=120,
+                color=utils.Color.BLACK,
+            )
+        )
         self.set_maps()
 
         # Selection buttons
@@ -498,6 +540,10 @@ class SelectionView(FadingView):
         self.char_sprites.clear()
         self.cur_char.body.texture = self.char_list[self.cur_char_idx].body_texture
         self.char_sprites.extend(self.cur_char.parts)
+        self.name_list[0].text = self.window.cur_lang.DescribeText[
+            self.char_list[self.cur_char_idx].name]
+        self.describe_list[0].text = self.window.cur_lang.DescribeText[
+            self.char_list[self.cur_char_idx].description]
 
     def set_maps(self, idx: int = 0) -> None:
         self.cur_map_idx += idx
@@ -505,13 +551,19 @@ class SelectionView(FadingView):
         self.cur_map = self.map_list[self.cur_map_idx]
         self.cur_map_sprite = self.cur_map.layout_sprite
         self.cur_map_sprite.center_x = float(self.w/2 + 220)
-        self.cur_map_sprite.center_y = float(self.h/2 + 20)
+        self.cur_map_sprite.center_y = float(self.h/2 + 70)
+        self.name_list[1].text = self.window.cur_lang.DescribeText[
+            self.map_list[self.cur_map_idx].name]
 
     def on_draw(self):
         self.clear()
         self.manager.draw()
         self.char_sprites.draw()
         self.cur_map_sprite.draw()
+        for name in self.name_list:
+            name.draw()
+        for des in self.describe_list:
+            des.draw()
 
     def on_update(self, delta_time: float):
         self.cur_char.update()
