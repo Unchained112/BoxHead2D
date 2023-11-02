@@ -285,6 +285,15 @@ class Player(Character):
     def place(self) -> arcade.Sprite:
         return self.current_weapon.get_object()
 
+    def get_damage(self, damage: int) -> None:
+        self.health = max(self.health - damage, 0)
+
+    def health_recover(self) -> None:
+        self.health += self.kill_recover
+
+    def get_energy(self, energy: int) -> None:
+        self.energy += energy
+
 
 class Rambo(Player):
     "Rambo character."
@@ -292,6 +301,10 @@ class Rambo(Player):
     body_texture = arcade.load_texture("graphics/character/Rambo.png")
     name = "Rambo"
     description = "Rambo Description"
+
+    def get_damage(self, damage: int) -> None:
+        super().get_damage(damage)
+        self.get_energy(damage)
 
 
 """Enemy characters"""

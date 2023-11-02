@@ -1525,7 +1525,7 @@ class GameView(FadingView):
                     enemy, (bullet.aim.x * utils.Utils.BULLET_FORCE, bullet.aim.y * utils.Utils.BULLET_FORCE))
                 enemy.get_damage_len = utils.Utils.GET_DAMAGE_LEN
                 if enemy.health <= 0:
-                    self.player.health += self.player.kill_recover
+                    self.player.health_recover()
                     self.remove_enemy(enemy)
 
             if len(hit_list) > 0:
@@ -1619,7 +1619,7 @@ class GameView(FadingView):
                     self.physics_engine.apply_force(enemy, (aim_x, aim_y))
                     enemy.get_damage_len = utils.Utils.GET_DAMAGE_LEN
                     if enemy.health <= 0:
-                        self.player.health += self.player.kill_recover
+                        self.player.health_recover()
                         self.remove_enemy(enemy)
 
                 hit_list = arcade.check_for_collision_with_list(
@@ -1713,7 +1713,7 @@ class GameView(FadingView):
             # Check hit with player
             chance = random.randrange(0, 100)
             if chance >= self.player.luck and arcade.check_for_collision(bullet, self.player):
-                self.player.health = max(self.player.health - bullet.damage, 0)
+                self.player.get_damage(bullet.damage)
                 bullet.remove_from_sprite_lists()
                 self.physics_engine.apply_force(
                     self.player, (bullet.aim.x * utils.Utils.BULLET_FORCE,
@@ -1792,8 +1792,7 @@ class GameView(FadingView):
                 # Check hit with player
                 chance = random.randrange(0, 100)
                 if chance >= self.player.luck and arcade.check_for_collision(bullet, self.player):
-                    self.player.health = max(
-                        self.player.health - bullet.damage, 0)
+                    self.player.get_damage(bullet.damage)
                     bullet.remove_from_sprite_lists()
                     self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
                     self.set_blood(self.player.position)
@@ -1892,8 +1891,7 @@ class GameView(FadingView):
 
         # Check collision
         if arcade.check_for_collision(enemy, self.player):
-            self.player.health = max(
-                self.player.health - enemy.hit_damage, 0)
+            self.player.get_damage(enemy.hit_damage)
             push = enemy.last_force.normalize().scale(utils.Utils.ENEMY_FORCE)
             self.physics_engine.apply_force(self.player, (push.x, push.y))
             self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
