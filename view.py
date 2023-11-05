@@ -1183,6 +1183,10 @@ class GameView(FadingView):
         self.physics_engine.step()
         self.total_time += delta_time
         self.counter += 1
+        self.window.explosion_sound_cnt = max(
+            self.window.explosion_sound_cnt - 1,
+            0
+        )
 
         # Update player
         self.player.update()
@@ -1839,12 +1843,11 @@ class GameView(FadingView):
         enemy.remove_from_sprite_lists()
 
         # Update score
-        score_change = enemy.health_max * self.multiplier
-        self.score += score_change
+        self.score += enemy.health_max * self.multiplier
         self.score_text.text = "Score: " + str(self.score)
 
         # Update money pool
-        self.money_pool += int(score_change / 10)
+        self.money_pool += int(enemy.health_max/10 + self.multiplier) 
         self.money_pool_len = 594.0 * \
             float(self.money_pool) / float(self.pool_size)
         self.money_pool_len = min(594.0, self.money_pool_len)
@@ -1997,7 +2000,7 @@ class GameView(FadingView):
             self.counter = 0  # reset the counter
             self.spawn_cnt = self.round * 8  # num of enemies: round * 8
             self.window.play_round_start_sound()
-            if self.round == 16:  # Game win
+            if self.round == 21:  # Game win
                 self.window.game_win_view.setup(self.all_item_list, self.score)
                 self.window.show_view(self.window.game_win_view)
                 self.window.play_game_win_sound()

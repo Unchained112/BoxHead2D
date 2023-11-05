@@ -154,3 +154,6 @@ cython_debug/
 tmp.py
 
 data/settings.bin
+app.build/
+app.cmd
+app.exe

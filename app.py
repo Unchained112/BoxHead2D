@@ -46,6 +46,7 @@ class BoxHead2d(arcade.Window):
         # Load sound and music
         self.button_sound = arcade.Sound("audio/ui_click.wav")
         self.explosion_sound = arcade.Sound("audio/explosion_2.wav")
+        self.explosion_sound_cnt: int = 0
         self.refresh_sound = arcade.Sound("audio/ui_refresh.wav")
         self.purchase_sound = arcade.Sound("audio/ui_purchase.wav")
         self.purchase_fail_sound = arcade.Sound("audio/ui_purchase_fail.wav")
@@ -75,7 +76,10 @@ class BoxHead2d(arcade.Window):
         self.button_sound.play(volume=self.effect_volume/20)
 
     def play_explosion_sound(self) -> None:
-        self.explosion_sound.play(volume=self.effect_volume/20)
+        if self.explosion_sound_cnt == 0:
+            # Avoid too many explosion noisy
+            self.explosion_sound.play(volume=self.effect_volume/20)
+            self.explosion_sound_cnt = 25
 
     def play_refresh_sound(self) -> None:
         self.refresh_sound.play(volume=self.effect_volume/20)
