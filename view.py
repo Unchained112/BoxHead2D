@@ -1377,6 +1377,10 @@ class GameView(FadingView):
         self.on_damage_filter.height = self.h + 10
         self.on_explosion_filter.width = self.w + 10
         self.on_explosion_filter.height = self.h + 10
+        self.on_damage_filter.center_x = self.w / 2
+        self.on_damage_filter.center_y = self.h / 2
+        self.on_explosion_filter.center_x = self.w / 2
+        self.on_explosion_filter.center_y = self.h / 2
 
     def draw_ui(self) -> None:
         # Health
@@ -1999,7 +2003,8 @@ class GameView(FadingView):
             self.round_text.text = "Round: " + str(self.round)
             self.counter = 0  # reset the counter
             self.spawn_cnt = self.round * 8  # num of enemies: round * 8
-            self.window.play_round_start_sound()
+            if self.round < 21:
+                self.window.play_round_start_sound()
             if self.round == 21:  # Game win
                 self.window.game_win_view.setup(self.all_item_list, self.score)
                 self.window.show_view(self.window.game_win_view)
@@ -2328,8 +2333,7 @@ class ShopView(arcade.View):
         self.shop = last_view.shop
         self.cnt = 0
         self.refresh_cost = last_view.round * last_view.round
-        self.last_view.pool_size = 54*last_view.round * \
-            last_view.round - 40*last_view.round + 66
+        self.last_view.pool_size = 110 * last_view.round + 2 * last_view.round * last_view.round
         self.player.money += self.last_view.money_pool
 
         # Reset money pool of the game view

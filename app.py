@@ -79,7 +79,7 @@ class BoxHead2d(arcade.Window):
         if self.explosion_sound_cnt == 0:
             # Avoid too many explosion noisy
             self.explosion_sound.play(volume=self.effect_volume/20)
-            self.explosion_sound_cnt = 25
+            self.explosion_sound_cnt = 18
 
     def play_refresh_sound(self) -> None:
         self.refresh_sound.play(volume=self.effect_volume/20)

@@ -228,7 +228,7 @@ class Shop:
 
     def generate_item(self, item: Item, wave: int, player: Player, lang) -> Item:
         # Calculate the actual cost
-        actual_cost = item.cost * wave * 2
+        actual_cost = item.cost * wave + wave * wave
         description = lang.ItemText[item.description]
 
         # Deal with no-quality items
