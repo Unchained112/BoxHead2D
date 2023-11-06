@@ -135,9 +135,9 @@ class Shop:
         self.is_explosion_added = False
         self.explosion_item_list = [
             Item("graphics/item/Explosion.png", "Add explosion damage: ",
-                 5, 30, 1, increase_explosion_damage),
+                 50, 30, 1, increase_explosion_damage),
             Item("graphics/item/Explosion.png", "Add explosion damage: ",
-                 5, 30, 1, increase_explosion_damage),
+                 50, 30, 1, increase_explosion_damage),
         ]
         self.rocket_multi_item = Item("graphics/item/RocketExplosion.png",
                                       "Enable Rocket Multi-explosion",

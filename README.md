@@ -21,7 +21,7 @@ python3 app.py # Linux or Mac
 
 | Characters | Health | Energy | Money | Speed | Kill recover | Explosion Damage | Luck |
 |------------|--------|--------|-------|-------|--------------|------------------|------|
-| Player     |    100 |      0 |     0 |  1600 |            5 |               80 |    6 |
+| Player     |    100 |      0 |     0 |  1600 |            5 |              100 |    6 |
 
 #### Weapons
 
@@ -44,7 +44,7 @@ python3 app.py # Linux or Mac
 | Crack     |    200 |         40 | \             |  1000 | \   | \            | \            |
 | Big Mouth |    150 |         20 | 50*2          |   800 |  70 |          300 |            7 |
 | Crash     |    100 |         80 | \             |  1000 | \   |          200 | \            |
-| Tank      |    400 |        120 | \             |   600 | \   |          200 | \            |
+| Tank      |    400 |        120 | \             |   800 | \   |          200 | \            |
 
 #### Items
 
@@ -63,7 +63,7 @@ Quality:
 | Increase luck                |            1 |          2 |        18 |
 | Sell luck                    |            1 |          2 |       -18 |
 | Add kill recover             |            1 |          5 |        12 |
-| Increase explosion damage    |            1 |          5 |        30 |
+| Increase explosion damage    |            1 |         50 |        30 |
 | Increase pistol damage       |            1 |         10 |         9 |
 | Reduce pistol CD             |            1 |          2 |        14 |
 | Increase pistol attack range |            1 |          5 |        16 |

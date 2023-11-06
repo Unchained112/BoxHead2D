@@ -2127,7 +2127,7 @@ class GameView(FadingView):
             if self.counter == 500:
                 self.generate_enemy(3, character.EnemyRed, self.enemy_red_list)
 
-            if self.counter % 30 == 0 and self.counter < 3600:
+            if self.counter % 30 == 0 and self.counter < 2000:
                 if self.spawn_cnt > 60:
                     self.generate_enemy(
                         1, character.EnemyCrash, self.enemy_crash_list)
@@ -2137,7 +2137,7 @@ class GameView(FadingView):
             if self.counter % 100 == 0:
                 self.generate_enemy(1, character.EnemyBigMouth,
                                     self.enemy_big_mouth_list)
-            if self.counter % 200 == 0 and self.counter >= 3600:
+            if self.counter % 100 == 0 and self.counter >= 2000:
                 self.generate_enemy(3, character.EnemyTank,
                                     self.enemy_tank_list)
 
@@ -2149,7 +2149,7 @@ class GameView(FadingView):
                                     self.enemy_white_list)
             if self.counter == 500:
                 self.generate_enemy(3, character.EnemyRed, self.enemy_red_list)
-            if self.counter % 30 == 0 and self.counter < 3600:
+            if self.counter % 30 == 0 and self.counter < 2000:
                 if self.spawn_cnt > 60:
                     self.generate_enemy(
                         1, character.EnemyCrash, self.enemy_crash_list)
@@ -2159,7 +2159,7 @@ class GameView(FadingView):
             if self.counter % 100 == 0:
                 self.generate_enemy(1, character.EnemyBigMouth,
                                     self.enemy_big_mouth_list)
-            if self.counter % 200 == 0 and self.counter >= 3600:
+            if self.counter % 100 == 0 and self.counter >= 2000:
                 self.generate_enemy(3, character.EnemyTank,
                                     self.enemy_tank_list)
 
@@ -2333,7 +2333,7 @@ class ShopView(arcade.View):
         self.shop = last_view.shop
         self.cnt = 0
         self.refresh_cost = last_view.round * last_view.round
-        self.last_view.pool_size = 110 * last_view.round + 2 * last_view.round * last_view.round
+        self.last_view.pool_size = 110 * last_view.round + 5 * last_view.round * last_view.round
         self.player.money += self.last_view.money_pool
 
         # Reset money pool of the game view

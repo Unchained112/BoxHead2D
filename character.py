@@ -162,7 +162,7 @@ class Player(Character):
         self.energy = int(0)
         self.health = int(500)
         self.kill_recover = int(5)
-        self.explosion_damage = 80
+        self.explosion_damage = 100
         self.money = 150
         self.luck = 6
 
@@ -599,7 +599,7 @@ class EnemyTank(Character):
                  physics_engine: arcade.PymunkPhysicsEngine = None,
                  player: Player = None) -> None:
         super().__init__(x, y, physics_engine)
-        self.speed = 600
+        self.speed = 800
         self.health = int(400)
         self.health_max = int(400)
         self.is_walking = True
