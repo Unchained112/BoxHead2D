@@ -57,7 +57,7 @@ class BoxHead2d(arcade.Window):
         self.start_music = arcade.Sound(
             "audio/the-best-jazz-club-in-new-orleans-164472.wav")
         self.game_music = arcade.Sound(
-            "audio/electronic-rock-king-around-here-15045.wav")
+            "audio/zapsplat_game_music_medium_action_electronic_techno.wav")
 
         # Set game views
         self.option_view = view.OptionView()
