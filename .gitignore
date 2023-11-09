@@ -155,5 +155,7 @@ tmp.py
 
 data/settings.bin
 app.build/
+app.dist/
+app.onefile-build/
 app.cmd
 app.exe

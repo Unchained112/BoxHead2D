@@ -118,8 +118,11 @@ Item actual price = Round * Base Pirce *2
 
 Total number of enemy = Round * 8
 
-### Notes:
+### Credits
 
-When running on mac os, please disable popup showing accented characters when holding a key.
-Run the command `defaults write -g ApplePressAndHoldEnabled -bool false`.
-Link to the [reference](https://apple.stackexchange.com/questions/332769/macos-disable-popup-showing-accented-characters-when-holding-down-a-key)
+This project uses the following free resources:
+
+- [Electronic Rock (King Around Here) | Royalty-free Music - Pixabay](https://pixabay.com/music/beats-electronic-rock-king-around-here-15045/)
+- [Free Music | Download Royalty Free Music | Zapsplat](https://www.zapsplat.com/sound-effect-category/royalty-free-music/)
+- [ACh-K/Cubic-11: 免費開源的 11×11 中文點陣體 (github.com)](https://github.com/ACh-K/Cubic-11)
+- [Snake's Authentic Gun Sounds by SnakeF8 (itch.io)](https://f8studios.itch.io/snakes-authentic-gun-sounds)
