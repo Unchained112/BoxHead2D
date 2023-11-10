@@ -1,5 +1,7 @@
 # BoxHead2D
 
+[![Video](https://img.youtube.com/vi/Y7BeCjsXLb8/maxresdefault.jpg)](https://www.youtube.com/embed/Y7BeCjsXLb8)
+
 A simple BoxHead Survivor game in 2D with [Python Arcade](https://api.arcade.academy/en/latest/index.html). 
 
 This is a "rogue-lite", "top-down shooter" game. The core gameplay is a combination of an old 3D BoxHead zombie game and a recent popular survivor-style game.
