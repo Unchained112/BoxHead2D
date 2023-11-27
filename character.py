@@ -143,6 +143,13 @@ class Character(arcade.Sprite):
     def draw(self, *, filter=None, pixelated=None, blend_function=None) -> None:
         self.parts.draw()
 
+    def register_dir_field(self, dir_field: dict) -> None:
+        self.dir_field = dir_field
+
+    def get_dir(self) -> None:
+        grid_x = int(self.center_x / utils.Utils.WALL_SIZE)
+        grid_y = int(self.center_y / utils.Utils.WALL_SIZE)
+        self.force = self.dir_field[(grid_x, grid_y)]
 
 """Play characters"""
 
@@ -319,29 +326,22 @@ class EnemyWhite(Character):
         super().__init__(x, y, physics_engine)
         self.health_max = int(100)
         self.is_walking = True
-        self.last_force = Vec2(0, 0)
         self.hit_damage = int(20)
         self.body.texture = arcade.load_texture(
             "graphics/character/EnemyWhite.png")
-        self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
-        self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
-
         self.force = Vec2(0, 0)
-
-    def get_dir(self, dir_field: dict) -> None:
-        grid_x = int(self.center_x / utils.Utils.WALL_SIZE)
-        grid_y = int(self.center_y / utils.Utils.WALL_SIZE)
-        self.force = dir_field[(grid_x, grid_y)]
 
     def update(self) -> None:
         super().update()
 
-        if utils.Utils.IS_TESTING_PF:
-            self.force = self.force.scale(self.speed)
-            self.physics_engines[0].apply_force(
-                self, (self.force.x, self.force.y))
-            return
+        # if utils.Utils.IS_TESTING_PF:
+
+        self.get_dir()
+        self.force = self.force.scale(self.speed)
+        self.physics_engines[0].apply_force(
+            self, (self.force.x, self.force.y))
+        return
 
         current_pos = Vec2(self.center_x, self.center_y)
         player_pos = Vec2(self.player.center_x, self.player.center_y)
@@ -372,28 +372,35 @@ class EnemyRed(Character):
         self.health_max = int(300)
         self.is_walking = True
         self.hit_damage = int(20)
-        self.last_force = Vec2(0, 0)
+        # self.last_force = Vec2(0, 0)
         self.shoot_range = 200
         self.cd_max = int(90)
         self.bullet = weapon.FireBall
         self.body.texture = arcade.load_texture(
             "graphics/character/EnemyRed.png")
-        self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
-        self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
+        # self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
+        # self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
+        self.force = Vec2(0, 0)
 
     def update(self) -> None:
         super().update()
         current_pos = Vec2(self.center_x, self.center_y)
         player_pos = Vec2(self.player.center_x, self.player.center_y)
-        force = player_pos - current_pos
-        tmp = Vec2(0, 0)
+        # force = player_pos - current_pos
+        # tmp = Vec2(0, 0)
+        self.get_dir()
 
         if current_pos.distance(player_pos) < self.shoot_range:
             self.is_walking = False
             return
         else:
             self.is_walking = True
+
+        self.force = self.force.scale(self.speed)
+        self.physics_engines[0].apply_force(
+            self, (self.force.x, self.force.y))
+        return
 
         if self.last_force.distance(force) < 0.1:
             if abs(self.last_force.x - force.x) < 0.1:

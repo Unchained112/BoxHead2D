@@ -35,8 +35,8 @@ class Color:
 class Utils:
     """Utility functions."""
 
-    IS_TESTING = False  # normal test flag
-    IS_TESTING_PF = False  # path finding test flag
+    IS_TESTING = True  # normal test flag
+    IS_TESTING_PF = True  # path finding test flag
 
     BULLET_FORCE = 1000
     ENEMY_FORCE = 4000
@@ -103,7 +103,7 @@ class Utils:
                         dist_grid[next] = min_dist
                     elif next[1] < 0 or next[1] >= grid_h:
                         dist_grid[next] = min_dist
-                    elif grid[next] == 1:
+                    elif grid[next] == 1: # a real wall in the map
                         dist_grid[next] = min_dist
                     else:
                         frontier.append(next)

@@ -1115,9 +1115,10 @@ class GameView(FadingView):
         self.room = map()
         self.wall_list = self.room.walls
 
-        if utils.Utils.IS_TESTING_PF:
-            self.dir_field = dict()
-            self.dist_grid = None
+        # Path-finding
+        self.dir_field = dict()
+        self.dist_grid = None
+        if utils.Utils.IS_TESTING_PF:    
             self.dir_field_visual = arcade.SpriteList()
             self.dir_visual_dict = dict()
             for pos in self.room.grid:
@@ -1234,7 +1235,7 @@ class GameView(FadingView):
                                                                 self.room.grid_h,
                                                                 self.dir_field)
                 for pos in self.dir_visual_dict:
-                    alpha = min(255, -self.dist_grid[pos] * 3)
+                    alpha = min(255, -self.dist_grid.get(pos, -255) * 3)
                     self.dir_visual_dict[pos].alpha = alpha
 
     def on_show_view(self) -> None:
@@ -1474,7 +1475,7 @@ class GameView(FadingView):
                     except KeyError:
                         return
 
-                    if self.room.grid[grid_x, grid_y] != 1:
+                    if self.room.grid[grid_x, grid_y] > 0:
                         object.center_x = grid_x * 30 + \
                             float(utils.Utils.HALF_WALL_SIZE)
                         object.center_y = grid_y * 30 + \
@@ -1488,7 +1489,9 @@ class GameView(FadingView):
                                                            body_type=PymunkPhysicsEngine.STATIC)
                         else:
                             self.player_mine_list.append(object)
-                        self.room.grid[grid_x, grid_y] = 1
+
+                        # Differentiate the number from the real wall
+                        self.room.grid[grid_x, grid_y] = 2 + object.object_type
                         self.player.current_weapon.play_sound(
                             self.window.effect_volume)
                         # Consume energy only when object is placed
@@ -1851,7 +1854,7 @@ class GameView(FadingView):
         self.score_text.text = "Score: " + str(self.score)
 
         # Update money pool
-        self.money_pool += int(enemy.health_max/10 + self.multiplier) 
+        self.money_pool += int(enemy.health_max/10 + self.multiplier)
         self.money_pool_len = 594.0 * \
             float(self.money_pool) / float(self.pool_size)
         self.money_pool_len = min(594.0, self.money_pool_len)
@@ -1899,7 +1902,7 @@ class GameView(FadingView):
         # Check collision
         if arcade.check_for_collision(enemy, self.player):
             self.player.get_damage(enemy.hit_damage)
-            push = enemy.last_force.normalize().scale(utils.Utils.ENEMY_FORCE)
+            push = enemy.force.normalize().scale(utils.Utils.ENEMY_FORCE)
             self.physics_engine.apply_force(self.player, (push.x, push.y))
             self.player.get_damage_len = utils.Utils.GET_DAMAGE_LEN
             self.set_blood(self.player.position)
@@ -2019,9 +2022,11 @@ class GameView(FadingView):
         self.enemy_tank_list.update()
         self.boss_list.update()
 
-        if utils.Utils.IS_TESTING_PF:
-            for enemy_white in self.enemy_white_list:
-                enemy_white.get_dir(self.dir_field)
+        # if utils.Utils.IS_TESTING_PF:
+        #     for enemy_white in self.enemy_white_list:
+        #         enemy_white.get_dir(self.dir_field)
+        #     for enemy_red in self.enemy_red_list:
+        #         enemy_red.get_dir(self.dir_field)
 
     def spawn_enemy(self) -> None:
         """Spawn enemy with different rounds."""
@@ -2034,12 +2039,12 @@ class GameView(FadingView):
                                     self.enemy_white_list)
                 self.generate_enemy(1, character.EnemyWhite,
                                     self.enemy_white_list)
+                self.generate_enemy(1, character.EnemyRed,
+                                    self.enemy_red_list)
+                self.generate_enemy(1, character.EnemyRed,
+                                    self.enemy_red_list)
                 self.spawn_cnt = 0
             return
-
-        # Limit the number of enemies for performance issue
-        # if len(self.enemy_sprite_list) >= 1200:
-        #     return
 
         if self.round <= 2:
             if self.counter % 30 == 0:
@@ -2169,6 +2174,7 @@ class GameView(FadingView):
             return
         enemy = enemy_type(
             pos.x, pos.y, self.physics_engine, self.player)
+        enemy.register_dir_field(self.dir_field)
         enemy_list.append(enemy)
         self.enemy_sprite_list.extend(enemy.parts)
         self.physics_engine.add_sprite(enemy,
@@ -2198,6 +2204,7 @@ class GameView(FadingView):
         pos = random.choice(self.room.spawn_pos)
         enemy = enemy_type(
             pos.x, pos.y, self.physics_engine, self.player)
+        enemy.register_dir_field(self.dir_field)
         enemy.health *= 5
         enemy.speed += 200
         enemy.cd_max -= 20
