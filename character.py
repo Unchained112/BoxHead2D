@@ -35,6 +35,7 @@ class Character(arcade.Sprite):
 
         # Init position
         self.pos = Vec2(x, y)
+        self.last_pos = Vec2(0, 0)
 
         # Relative positions for visuals
         self.body_pos = Vec2(0, 0)  # controls the actual movement
@@ -142,6 +143,31 @@ class Character(arcade.Sprite):
 
     def draw(self, *, filter=None, pixelated=None, blend_function=None) -> None:
         self.parts.draw()
+
+    def register_dir_field(self, dir_field: dict) -> None:
+        self.dir_field = dir_field
+
+    # def get_dir(self) -> None:
+    #     grid_x = int(self.center_x / utils.Utils.WALL_SIZE)
+    #     grid_y = int(self.center_y / utils.Utils.WALL_SIZE)
+    #     self.force = self.dir_field[(grid_x, grid_y)]
+
+    def follow_dir(self) -> None:
+        grid_x = int(self.center_x / utils.Utils.WALL_SIZE)
+        grid_y = int(self.center_y / utils.Utils.WALL_SIZE)
+        self.force = self.dir_field[(grid_x, grid_y)]
+        self.force = self.force.scale(self.speed)
+
+        # Since the character collider are square,
+        # it is still possible to be stuck with a wall.
+        cur_pos = Vec2(self.center_x, self.center_y)
+        if cur_pos.distance(self.last_pos) < 0.00001 and self.is_walking:
+            # Apply opposite force to avoid
+            self.force = Vec2(-self.force.x, -self.force.y)
+
+        self.physics_engines[0].apply_force(
+            self, (self.force.x, self.force.y))
+        self.last_pos = cur_pos
 
 
 """Play characters"""
@@ -319,46 +345,15 @@ class EnemyWhite(Character):
         super().__init__(x, y, physics_engine)
         self.health_max = int(100)
         self.is_walking = True
-        self.last_force = Vec2(0, 0)
         self.hit_damage = int(20)
         self.body.texture = arcade.load_texture(
             "graphics/character/EnemyWhite.png")
-        self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
-        self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
-
         self.force = Vec2(0, 0)
-
-    def get_dir(self, dir_field: dict) -> None:
-        grid_x = int(self.center_x / utils.Utils.WALL_SIZE)
-        grid_y = int(self.center_y / utils.Utils.WALL_SIZE)
-        self.force = dir_field[(grid_x, grid_y)]
 
     def update(self) -> None:
         super().update()
-
-        if utils.Utils.IS_TESTING_PF:
-            self.force = self.force.scale(self.speed)
-            self.physics_engines[0].apply_force(
-                self, (self.force.x, self.force.y))
-            return
-
-        current_pos = Vec2(self.center_x, self.center_y)
-        player_pos = Vec2(self.player.center_x, self.player.center_y)
-        force = player_pos - current_pos
-        tmp = Vec2(0, 0)
-
-        if self.last_force.distance(force) < 0.1:
-            if abs(self.last_force.x - force.x) < 0.1:
-                tmp.x = self.l_or_r
-            if abs(self.last_force.y - force.y) < 0.1:
-                tmp.y = self.u_or_d
-            force = tmp.scale(2 * self.speed)  # get rid of the barrier
-        else:
-            self.last_force = force
-            force = force.normalize().scale(self.speed)
-
-        self.physics_engines[0].apply_force(self, (force.x, force.y))
+        self.follow_dir()
 
 
 class EnemyRed(Character):
@@ -372,22 +367,18 @@ class EnemyRed(Character):
         self.health_max = int(300)
         self.is_walking = True
         self.hit_damage = int(20)
-        self.last_force = Vec2(0, 0)
         self.shoot_range = 200
         self.cd_max = int(90)
         self.bullet = weapon.FireBall
         self.body.texture = arcade.load_texture(
             "graphics/character/EnemyRed.png")
-        self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
-        self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
+        self.force = Vec2(0, 0)
 
     def update(self) -> None:
         super().update()
         current_pos = Vec2(self.center_x, self.center_y)
         player_pos = Vec2(self.player.center_x, self.player.center_y)
-        force = player_pos - current_pos
-        tmp = Vec2(0, 0)
 
         if current_pos.distance(player_pos) < self.shoot_range:
             self.is_walking = False
@@ -395,17 +386,7 @@ class EnemyRed(Character):
         else:
             self.is_walking = True
 
-        if self.last_force.distance(force) < 0.1:
-            if abs(self.last_force.x - force.x) < 0.1:
-                tmp.x = self.l_or_r
-            if abs(self.last_force.y - force.y) < 0.1:
-                tmp.y = self.u_or_d
-            force = tmp.scale(2 * self.speed)  # get rid of the barrier
-        else:
-            self.last_force = force
-            force = force.normalize().scale(self.speed)
-
-        self.physics_engines[0].apply_force(self, (force.x, force.y))
+        self.follow_dir()
 
     def attack(self) -> weapon.FireBall:
         # Enemy red attack property
@@ -435,31 +416,17 @@ class EnemyCrack(Character):
         self.health = int(200)
         self.health_max = int(200)
         self.is_walking = True
-        self.last_force = Vec2(0, 0)
+        # self.last_force = Vec2(0, 0)
         self.hit_damage = int(40)
         self.body.texture = arcade.load_texture("graphics/character/Crack.png")
-        self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
-        self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
+        # self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
+        # self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
+        self.force = Vec2(0, 0)
 
     def update(self) -> None:
         super().update()
-        current_pos = Vec2(self.center_x, self.center_y)
-        player_pos = Vec2(self.player.center_x, self.player.center_y)
-        force = player_pos - current_pos
-        tmp = Vec2(0, 0)
-
-        if self.last_force.distance(force) < 0.1:
-            if abs(self.last_force.x - force.x) < 0.1:
-                tmp.x = self.l_or_r
-            if abs(self.last_force.y - force.y) < 0.1:
-                tmp.y = self.u_or_d
-            force = tmp.scale(2 * self.speed)  # get rid of the barrier
-        else:
-            self.last_force = force
-            force = force.normalize().scale(self.speed)
-
-        self.physics_engines[0].apply_force(self, (force.x, force.y))
+        self.follow_dir()
 
 
 class EnemyBigMouth(Character):
@@ -473,22 +440,21 @@ class EnemyBigMouth(Character):
         self.health_max = int(250)
         self.is_walking = True
         self.hit_damage = int(20)
-        self.last_force = Vec2(0, 0)
+        # self.last_force = Vec2(0, 0)
         self.shoot_range = 300
         self.cd_max = int(70)
         self.bullet = weapon.FireBall
         self.body.texture = arcade.load_texture(
             "graphics/character/BigMouth.png")
-        self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
-        self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
+        # self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
+        # self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
+        self.force = Vec2(0, 0)
 
     def update(self) -> None:
         super().update()
         current_pos = Vec2(self.center_x, self.center_y)
         player_pos = Vec2(self.player.center_x, self.player.center_y)
-        force = player_pos - current_pos
-        tmp = Vec2(0, 0)
 
         if current_pos.distance(player_pos) < self.shoot_range:
             self.is_walking = False
@@ -496,17 +462,7 @@ class EnemyBigMouth(Character):
         else:
             self.is_walking = True
 
-        if self.last_force.distance(force) < 0.1:
-            if abs(self.last_force.x - force.x) < 0.1:
-                tmp.x = self.l_or_r
-            if abs(self.last_force.y - force.y) < 0.1:
-                tmp.y = self.u_or_d
-            force = tmp.scale(2 * self.speed)  # get rid of the barrier
-        else:
-            self.last_force = force
-            force = force.normalize().scale(self.speed)
-
-        self.physics_engines[0].apply_force(self, (force.x, force.y))
+        self.follow_dir()
 
     def attack(self) -> arcade.SpriteList():
         bullets = arcade.SpriteList()
@@ -551,12 +507,13 @@ class EnemyCrash(Character):
         self.health = int(100)
         self.health_max = int(100)
         self.is_walking = True
-        self.last_force = Vec2(0, 0)
+        # self.last_force = Vec2(0, 0)
         self.hit_damage = int(80)
         self.body.texture = arcade.load_texture("graphics/character/Crash.png")
-        self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
-        self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
+        # self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
+        # self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
+        self.force = Vec2(0, 0)
         self.cd_max = int(120)
         self.shoot_range = 200
         self.dash_force = Vec2(0, 0)
@@ -565,30 +522,35 @@ class EnemyCrash(Character):
         super().update()
         current_pos = Vec2(self.center_x, self.center_y)
         player_pos = Vec2(self.player.center_x, self.player.center_y)
-        force = player_pos - current_pos
-        tmp = Vec2(0, 0)
+        # force = player_pos - current_pos
+        # tmp = Vec2(0, 0)
 
         if current_pos.distance(player_pos) < self.shoot_range:
+            if self.dash_force.mag < 0.000001:
+                self.dash_force = player_pos - current_pos
+                self.dash_force = self.dash_force.normalize()
             self.is_walking = False
             return
         else:
             self.is_walking = True
+            self.dash_force = Vec2(0, 0)
 
-        if self.last_force.distance(force) < 0.1:
-            if abs(self.last_force.x - force.x) < 0.1:
-                tmp.x = self.l_or_r
-            if abs(self.last_force.y - force.y) < 0.1:
-                tmp.y = self.u_or_d
-            force = tmp.scale(2 * self.speed)  # get rid of the barrier
-        else:
-            self.last_force = force
-            force = force.normalize().scale(self.speed)
-            self.dash_force = force
+        self.follow_dir()
+        # if self.last_force.distance(force) < 0.1:
+        #     if abs(self.last_force.x - force.x) < 0.1:
+        #         tmp.x = self.l_or_r
+        #     if abs(self.last_force.y - force.y) < 0.1:
+        #         tmp.y = self.u_or_d
+        #     force = tmp.scale(2 * self.speed)  # get rid of the barrier
+        # else:
+        #     self.last_force = force
+        #     force = force.normalize().scale(self.speed)
+        #     self.dash_force = force
 
-        self.physics_engines[0].apply_force(self, (force.x, force.y))
+        # self.physics_engines[0].apply_force(self, (force.x, force.y))
 
     def dash(self) -> None:
-        force = self.dash_force.scale(2)
+        force = self.dash_force.scale(3)
         self.physics_engines[0].apply_force(self, (force.x, force.y))
 
 
