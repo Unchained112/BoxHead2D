@@ -105,6 +105,8 @@ class Utils:
                         dist_grid[next] = min_dist
                     elif grid[next] == 1: # a real wall in the map
                         dist_grid[next] = min_dist
+                    elif grid[next] == 3: # barrel
+                        dist_grid[next] = min_dist / 2
                     else:
                         frontier.append(next)
                         dist_grid[next] = dist_grid[cur] - 1

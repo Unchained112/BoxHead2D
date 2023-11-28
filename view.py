@@ -2028,7 +2028,7 @@ class GameView(FadingView):
         # Testing
         if utils.Utils.IS_TESTING:
             if self.spawn_cnt > 0:
-                # self.set_boss(character.BossRed)
+                self.set_boss(character.BossRed)
                 # self.generate_enemy(1, character.EnemyWhite,
                 #                     self.enemy_white_list)
                 # self.generate_enemy(1, character.EnemyWhite,
@@ -2045,10 +2045,14 @@ class GameView(FadingView):
                 #                     self.enemy_big_mouth_list)
                 # self.generate_enemy(1, character.EnemyBigMouth,
                 #                     self.enemy_big_mouth_list)
-                self.generate_enemy(1, character.EnemyCrash,
-                                    self.enemy_crash_list)
-                self.generate_enemy(1, character.EnemyCrash,
-                                    self.enemy_crash_list)
+                # self.generate_enemy(1, character.EnemyCrash,
+                #                     self.enemy_crash_list)
+                # self.generate_enemy(1, character.EnemyCrash,
+                #                     self.enemy_crash_list)
+                # self.generate_enemy(1, character.EnemyTank,
+                #                     self.enemy_tank_list)
+                # self.generate_enemy(1, character.EnemyTank,
+                #                     self.enemy_tank_list)
                 self.spawn_cnt = 0
             return
 
@@ -2228,6 +2232,7 @@ class GameView(FadingView):
         pos = random.choice(self.room.spawn_pos)
         boss = enemy_type(
             pos.x, pos.y, self.physics_engine, self.player)
+        boss.register_dir_field(self.dir_field)
         self.enemy_sprite_list.extend(boss.parts)
         self.boss_list.append(boss)
         self.physics_engine.add_sprite(boss,

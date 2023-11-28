@@ -147,11 +147,6 @@ class Character(arcade.Sprite):
     def register_dir_field(self, dir_field: dict) -> None:
         self.dir_field = dir_field
 
-    # def get_dir(self) -> None:
-    #     grid_x = int(self.center_x / utils.Utils.WALL_SIZE)
-    #     grid_y = int(self.center_y / utils.Utils.WALL_SIZE)
-    #     self.force = self.dir_field[(grid_x, grid_y)]
-
     def follow_dir(self) -> None:
         grid_x = int(self.center_x / utils.Utils.WALL_SIZE)
         grid_y = int(self.center_y / utils.Utils.WALL_SIZE)
@@ -161,9 +156,9 @@ class Character(arcade.Sprite):
         # Since the character collider are square,
         # it is still possible to be stuck with a wall.
         cur_pos = Vec2(self.center_x, self.center_y)
-        if cur_pos.distance(self.last_pos) < 0.00001 and self.is_walking:
+        if cur_pos.distance(self.last_pos) < 0.0001 and self.is_walking:
             # Apply opposite force to avoid
-            self.force = Vec2(-self.force.x, -self.force.y)
+            self.force = Vec2(-self.force.x * 10, -self.force.y * 10)
 
         self.physics_engines[0].apply_force(
             self, (self.force.x, self.force.y))
@@ -501,11 +496,8 @@ class EnemyCrash(Character):
         self.health = int(100)
         self.health_max = int(100)
         self.is_walking = True
-        # self.last_force = Vec2(0, 0)
         self.hit_damage = int(80)
         self.body.texture = arcade.load_texture("graphics/character/Crash.png")
-        # self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
-        # self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
         self.force = Vec2(0, 0)
         self.cd_max = int(120)
@@ -516,8 +508,6 @@ class EnemyCrash(Character):
         super().update()
         current_pos = Vec2(self.center_x, self.center_y)
         player_pos = Vec2(self.player.center_x, self.player.center_y)
-        # force = player_pos - current_pos
-        # tmp = Vec2(0, 0)
 
         if current_pos.distance(player_pos) < self.shoot_range:
             if self.dash_force.mag < 0.000001:
@@ -530,21 +520,9 @@ class EnemyCrash(Character):
             self.dash_force = Vec2(0, 0)
 
         self.follow_dir()
-        # if self.last_force.distance(force) < 0.1:
-        #     if abs(self.last_force.x - force.x) < 0.1:
-        #         tmp.x = self.l_or_r
-        #     if abs(self.last_force.y - force.y) < 0.1:
-        #         tmp.y = self.u_or_d
-        #     force = tmp.scale(2 * self.speed)  # get rid of the barrier
-        # else:
-        #     self.last_force = force
-        #     force = force.normalize().scale(self.speed)
-        #     self.dash_force = force
-
-        # self.physics_engines[0].apply_force(self, (force.x, force.y))
 
     def dash(self) -> None:
-        force = self.dash_force.scale(3)
+        force = self.dash_force.scale(3 * self.speed)
         self.physics_engines[0].apply_force(self, (force.x, force.y))
 
 
@@ -573,30 +551,21 @@ class EnemyTank(Character):
         super().update()
         current_pos = Vec2(self.center_x, self.center_y)
         player_pos = Vec2(self.player.center_x, self.player.center_y)
-        force = player_pos - current_pos
-        tmp = Vec2(0, 0)
 
         if current_pos.distance(player_pos) < self.shoot_range:
+            if self.dash_force.mag < 0.000001:
+                self.dash_force = player_pos - current_pos
+                self.dash_force = self.dash_force.normalize()
             self.is_walking = False
             return
         else:
             self.is_walking = True
+            self.dash_force = Vec2(0, 0)
 
-        if self.last_force.distance(force) < 0.1:
-            if abs(self.last_force.x - force.x) < 0.1:
-                tmp.x = self.l_or_r
-            if abs(self.last_force.y - force.y) < 0.1:
-                tmp.y = self.u_or_d
-            force = tmp.scale(2 * self.speed)  # get rid of the barrier
-        else:
-            self.last_force = force
-            force = force.normalize().scale(self.speed)
-            self.dash_force = force
-
-        self.physics_engines[0].apply_force(self, (force.x, force.y))
+        self.follow_dir()
 
     def dash(self) -> None:
-        force = self.dash_force.scale(5)
+        force = self.dash_force.scale(5 * self.speed)
         self.physics_engines[0].apply_force(self, (force.x, force.y))
 
 
@@ -608,9 +577,10 @@ class BossRed(arcade.Sprite):
                  player: Player = None) -> None:
         # Properties
         self.health_max = 4200
-        self.health = 4200
+        # self.health = 4200
+        self.health = 2000
         self.is_walking = False
-        self.speed = 5000
+        self.speed = 5600
         self.cd = int(0)
         self.cd_max = int(120)
         self.get_damage_len = int(0)  # draw get damage effect
@@ -623,6 +593,7 @@ class BossRed(arcade.Sprite):
         self.foot_l_pos = Vec2(-16, -32)
         self.foot_r_pos = Vec2(16, -32)
         self.collider_pos = Vec2(0, -6)
+        self.last_pos = Vec2(0, 0)
 
         # Init collider and physics engine
         super().__init__(
@@ -687,7 +658,8 @@ class BossRed(arcade.Sprite):
         self.player = player
         self.direction = Vec2(0, 0)
         self.is_set_dir = False
-        self.shoot_range = 400
+        self.shoot_range = 300
+        self.force = Vec2(0, 0)
         self.dash_force = Vec2(0, 0)
         self.cnt = 0
 
@@ -747,58 +719,29 @@ class BossRed(arcade.Sprite):
         self.cnt += 1
         current_pos = Vec2(self.center_x, self.center_y)
         player_pos = Vec2(self.player.center_x, self.player.center_y)
-        force = player_pos - current_pos
-        tmp = Vec2(0, 0)
 
         if self.health > 2100:  # phase 1
             if current_pos.distance(player_pos) < self.shoot_range:
+                if self.dash_force.mag < 0.000001:
+                    self.dash_force = player_pos - current_pos
+                    self.dash_force = self.dash_force.normalize()
                 self.is_walking = False
                 return
             else:
                 self.is_walking = True
+                self.dash_force = Vec2(0, 0)
 
-            if self.last_force.distance(force) < 0.1:
-                if abs(self.last_force.x - force.x) < 0.1:
-                    tmp.x = self.l_or_r
-                if abs(self.last_force.y - force.y) < 0.1:
-                    tmp.y = self.u_or_d
-                force = tmp.scale(2 * self.speed)  # get rid of the barrier
-            else:
-                self.last_force = force
-                force = force.normalize().scale(self.speed)
-                self.dash_force = force
+            self.follow_dir()
         else:  # phase 2
+            if current_pos.distance(player_pos) < 1.5 * self.shoot_range:
+                self.get_away_dir()
+            else:
+                self.follow_dir()
             self.cd_max = 90
             self.is_walking = True
-            if self.cnt % 250 == 0:
-                self.is_set_dir = False
-
-            dis = current_pos.distance(player_pos)
-
-            if self.is_set_dir == False:
-                if dis <= self.shoot_range / 4.0:
-                    self.direction = - \
-                        force.rotate(float(random.randrange(0, 45)))
-                    self.direction = self.direction.normalize()
-                    self.is_set_dir = True
-
-            if dis > self.shoot_range:
-                self.direction = force.normalize()
-
-            if self.last_force.distance(force) < 0.1:
-                # Rest direction if stuck somewhere
-                four_dir = [Vec2(1, 0), Vec2(-1, 0), Vec2(0, 1), Vec2(0, -1)]
-                self.direction = four_dir[self.cd % 4]
-                self.is_set_dir = True
-
-            self.last_force = force
-            force = self.direction.scale(self.speed)
-
-        self.physics_engines[0].apply_force(self, (force.x, force.y))
 
     def dash(self) -> None:
-        # Dash
-        force = self.dash_force.scale(5)
+        force = self.dash_force.scale(5 * self.speed)
         self.physics_engines[0].apply_force(self, (force.x, force.y))
 
     def shoot_ring(self) -> arcade.SpriteList():
@@ -828,12 +771,58 @@ class BossRed(arcade.Sprite):
                 pos_x = self.player.pos.x
                 pos_y = self.player.pos.y
             else:
-                pos_x = random.randrange(max(int(self.player.center_x - 300), 30),
-                                         min(int(self.player.center_x + 300), width - 30))
-                pos_y = random.randrange(max(int(self.player.center_y - 300), 30),
-                                         min(int(self.player.center_y + 300), height - 30))
+                percent = max(0.3, float(self.health) / 2100.0)
+                scale = 300 * percent
+                pos_x = random.randrange(max(int(self.player.center_x - scale), 30),
+                                         min(int(self.player.center_x + scale), width - 30))
+                pos_y = random.randrange(max(int(self.player.center_y - scale), 30),
+                                         min(int(self.player.center_y + scale), height - 30))
             bullet = weapon.BossFireBall(pos_x, pos_y)
             bullet.damage = 200
             bullet.life_span = 90
             bullets.append(bullet)
         return bullets
+
+    def register_dir_field(self, dir_field: dict) -> None:
+        self.dir_field = dir_field
+        self.move_cnt = 0
+
+    def follow_dir(self) -> None:
+        grid_x = int(self.center_x / utils.Utils.WALL_SIZE)
+        grid_y = int(self.center_y / utils.Utils.WALL_SIZE)
+        self.force = self.dir_field[(grid_x, grid_y)]
+        self.force = self.force.scale(self.speed)
+
+        # Since the character collider are square,
+        # it is still possible to be stuck with a wall.
+        cur_pos = Vec2(self.center_x, self.center_y)
+        if cur_pos.distance(self.last_pos) < 0.0001 and self.is_walking:
+            # Apply opposite force to avoid
+            self.force = Vec2(-self.force.x * 10, -self.force.y * 10)
+
+        self.physics_engines[0].apply_force(
+            self, (self.force.x, self.force.y))
+        self.last_pos = cur_pos
+
+    def get_away_dir(self) -> None:
+        grid_x = int(self.center_x / utils.Utils.WALL_SIZE)
+        grid_y = int(self.center_y / utils.Utils.WALL_SIZE)
+        self.force = self.dir_field[(grid_x, grid_y)]
+        if self.move_cnt > 0:
+            self.force = self.dir_field[(grid_x, grid_y)]
+            self.move_cnt -= 1
+        else:
+            self.force = Vec2(-self.force.x, -self.force.y)
+        self.force = self.force.scale(self.speed)
+
+        cur_pos = Vec2(self.center_x, self.center_y)
+        # In case get stuck somewhere
+        if cur_pos.distance(self.last_pos) < 0.0001 and self.is_walking:
+            # Start to move towards the player for a while
+            # PS: don't push anyone too hard, rabbit will bite people
+            # in the worst case.
+            self.move_cnt = 240
+
+        self.physics_engines[0].apply_force(
+            self, (self.force.x, self.force.y))
+        self.last_pos = cur_pos
