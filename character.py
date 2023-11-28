@@ -416,11 +416,8 @@ class EnemyCrack(Character):
         self.health = int(200)
         self.health_max = int(200)
         self.is_walking = True
-        # self.last_force = Vec2(0, 0)
         self.hit_damage = int(40)
         self.body.texture = arcade.load_texture("graphics/character/Crack.png")
-        # self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
-        # self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
         self.force = Vec2(0, 0)
 
@@ -440,14 +437,11 @@ class EnemyBigMouth(Character):
         self.health_max = int(250)
         self.is_walking = True
         self.hit_damage = int(20)
-        # self.last_force = Vec2(0, 0)
         self.shoot_range = 300
         self.cd_max = int(70)
         self.bullet = weapon.FireBall
         self.body.texture = arcade.load_texture(
             "graphics/character/BigMouth.png")
-        # self.l_or_r = 1 if bool(random.getrandbits(1)) else -1
-        # self.u_or_d = 1 if bool(random.getrandbits(1)) else -1
         self.player = player
         self.force = Vec2(0, 0)
 
