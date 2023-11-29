@@ -471,7 +471,8 @@ class SelectionView(FadingView):
         # Maps
         self.map_list = [
             room.GameRoom0,
-            room.GameRoom1
+            room.GameRoom1,
+            room.GameRoom2,
         ]
         self.cur_map_idx = 0
         self.cur_map = self.map_list[self.cur_map_idx]
@@ -1131,7 +1132,7 @@ class GameView(FadingView):
 
         # Set up the player
         self.player = player(
-            float(self.w / 2), float(self.h / 2), self.physics_engine)
+            float(self.room.width / 2), float(self.room.height / 2), self.physics_engine)
         self.player.register_mouse_pos(self.mouse_pos)
 
         # Set up the shop
@@ -1227,18 +1228,18 @@ class GameView(FadingView):
         else:
             self.on_explosion_filter.visible = False
 
-        if utils.Utils.IS_TESTING_PF:
             # Update path finding field (function still in testing)
-            if self.counter % 30 == 0:
-                self.dist_grid = utils.Utils.field_path_finding(self.player.center_x,
-                                                                self.player.center_y,
-                                                                self.room.grid,
-                                                                self.room.grid_w,
-                                                                self.room.grid_h,
-                                                                self.dir_field)
-                for pos in self.dir_visual_dict:
-                    alpha = min(255, -self.dist_grid.get(pos, -255) * 3)
-                    self.dir_visual_dict[pos].alpha = alpha
+        if self.counter % 30 == 0:
+            self.dist_grid = utils.Utils.field_path_finding(self.player.center_x,
+                                                            self.player.center_y,
+                                                            self.room.grid,
+                                                            self.room.grid_w,
+                                                            self.room.grid_h,
+                                                            self.dir_field)
+        if utils.Utils.IS_TESTING_PF:
+            for pos in self.dir_visual_dict:
+                alpha = min(255, -self.dist_grid.get(pos, -255) * 3)
+                self.dir_visual_dict[pos].alpha = alpha
 
     def on_show_view(self) -> None:
         self.window.set_mouse_visible(False)
@@ -1668,6 +1669,7 @@ class GameView(FadingView):
         for enemy in self.enemy_red_list:
             self.check_hit_player(enemy)
             self.check_trigger_mine(enemy)
+            self.check_hit_wall(enemy)
             if enemy.is_walking == False:
                 if enemy.cd == enemy.cd_max:
                     enemy.cd = 0
@@ -1686,6 +1688,7 @@ class GameView(FadingView):
         for enemy in self.enemy_big_mouth_list:
             self.check_hit_player(enemy)
             self.check_trigger_mine(enemy)
+            self.check_hit_wall(enemy)
             if enemy.is_walking == False:
                 if enemy.cd == enemy.cd_max:
                     enemy.cd = 0

@@ -35,8 +35,8 @@ class Color:
 class Utils:
     """Utility functions."""
 
-    IS_TESTING = True  # normal test flag
-    IS_TESTING_PF = True  # path finding test flag
+    IS_TESTING = False  # normal test flag
+    IS_TESTING_PF = False  # path finding test flag
 
     BULLET_FORCE = 1000
     ENEMY_FORCE = 4000
@@ -230,6 +230,7 @@ class Language:
             # Map
             "Blank room": "Blank room",
             "Blank room with a block": "Blank room with a block",
+            "Room sliced horizontally": "Room sliced horizontally",
         }
 
         # Item
@@ -344,6 +345,7 @@ class Language:
             # Map
             "Blank room": "空房间",
             "Blank room with a block": "有个障碍物的空房间",
+            "Room sliced horizontally": "横向分割的房间",
         }
 
         # Item

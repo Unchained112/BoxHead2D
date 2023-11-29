@@ -158,7 +158,9 @@ class Character(arcade.Sprite):
         cur_pos = Vec2(self.center_x, self.center_y)
         if cur_pos.distance(self.last_pos) < 0.0001 and self.is_walking:
             # Apply opposite force to avoid
-            self.force = Vec2(-self.force.x * 10, -self.force.y * 10)
+            self.force.x = random.choice([-1.0, 1.0])
+            self.force.y = random.choice([-1.0, 1.0])
+            self.force = self.force.scale(10 * self.speed)
 
         self.physics_engines[0].apply_force(
             self, (self.force.x, self.force.y))

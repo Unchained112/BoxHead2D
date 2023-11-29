@@ -296,3 +296,71 @@ class GameRoom1(Room):
                 self.width + HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
 
         self.set_up_shadow()
+
+
+class GameRoom2(Room):
+    """Game room No. 2"""
+
+    layout_sprite = arcade.Sprite("graphics/room/GameRoom2.png")
+    name = "Room sliced horizontally"
+
+    def __init__(self, width: float = 2100, height: float = 1200) -> None:
+        super().__init__(width, height)
+
+        # Set boundary corner walls
+        self.walls = arcade.SpriteList()
+        self.walls.append(WallCorner(HALF_WALL_SIZE, HALF_WALL_SIZE))
+        self.walls.append(WallCorner(
+            HALF_WALL_SIZE, self.height - HALF_WALL_SIZE))
+        self.walls.append(WallCorner(
+            self.width - HALF_WALL_SIZE, HALF_WALL_SIZE))
+        self.walls.append(WallCorner(
+            self.width - HALF_WALL_SIZE, self.height - HALF_WALL_SIZE))
+
+        # Set bottom and top walls
+        for i in range(1, self.grid_w - 1):
+            self.walls.append(WallSideHorizontal(
+                HALF_WALL_SIZE + i * WALL_SIZE, HALF_WALL_SIZE))
+            self.walls.append(WallSideHorizontal(
+                HALF_WALL_SIZE + i * WALL_SIZE, self.height - HALF_WALL_SIZE))
+
+        # Set left and right walls
+        for i in range(1, self.grid_h - 1):
+            if i == 7:
+                self.walls.append(WallCorner(
+                    HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+                self.walls.append(WallCorner(
+                    self.width - HALF_WALL_SIZE, HALF_WALL_SIZE + (self.grid_h-i-1) * WALL_SIZE))
+                continue
+            if i >= 1 and i <= 6:
+                self.spawn_pos.append(
+                    Vec2(HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+                self.spawn_pos.append(
+                    Vec2(self.width - HALF_WALL_SIZE, HALF_WALL_SIZE + (self.grid_h-i-1) * WALL_SIZE))
+                continue
+            self.walls.append(WallSideVertical(
+                HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+            self.walls.append(WallSideVertical(
+                self.width - HALF_WALL_SIZE, HALF_WALL_SIZE + (self.grid_h-i-1) * WALL_SIZE))
+
+        # Horizontal walls
+        self.walls.append(WallCorner(
+            HALF_WALL_SIZE + 47 * WALL_SIZE, HALF_WALL_SIZE + 12 * WALL_SIZE))
+        self.walls.append(WallCorner(
+            HALF_WALL_SIZE + (self.grid_w-48) * WALL_SIZE, HALF_WALL_SIZE + 28 * WALL_SIZE))
+        for i in range(1, 47):
+            self.walls.append(WallSideHorizontal(
+                HALF_WALL_SIZE + i * WALL_SIZE, HALF_WALL_SIZE + 12 * WALL_SIZE))
+            self.walls.append(WallSideHorizontal(
+                HALF_WALL_SIZE + (self.grid_w-i-1) * WALL_SIZE, HALF_WALL_SIZE + 28 * WALL_SIZE))
+
+        self.setup_grid()
+
+        # Set boundary walls
+        for i in range(1, 7):
+            self.walls.append(WallCorner(
+                -HALF_WALL_SIZE, HALF_WALL_SIZE + i * WALL_SIZE))
+            self.walls.append(WallCorner(
+                self.width + HALF_WALL_SIZE, HALF_WALL_SIZE + (self.grid_h-i-1) * WALL_SIZE))
+
+        self.set_up_shadow()
