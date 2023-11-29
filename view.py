@@ -161,6 +161,7 @@ class StartView(FadingView):
         self.player = character.Player(
             float(self.w / 2), float(self.h / 2) + 20, self.physics_engine
         )
+        self.player.register_mouse_pos(self.mouse_pos)
 
         # Set the most basic background color
         arcade.set_background_color(utils.Color.BLACK)
@@ -359,7 +360,6 @@ class StartView(FadingView):
         self.mouse_y = y
         self.mouse_pos.x = self.mouse_x + self.camera_sprites.position.x
         self.mouse_pos.y = self.mouse_y + self.camera_sprites.position.y
-        self.player.aim(self.mouse_pos)
 
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int) -> None:
         if button == arcade.MOUSE_BUTTON_LEFT:
@@ -1131,6 +1131,7 @@ class GameView(FadingView):
         # Set up the player
         self.player = player(
             float(self.w / 2), float(self.h / 2), self.physics_engine)
+        self.player.register_mouse_pos(self.mouse_pos)
 
         # Set up the shop
         self.shop = item.Shop(self.player)
@@ -1305,7 +1306,6 @@ class GameView(FadingView):
         self.mouse_pos.y = self.mouse_y + self.camera_sprites.position.y
         self.mouse_sprite.center_x = self.mouse_x
         self.mouse_sprite.center_y = self.mouse_y
-        self.player.aim(self.mouse_pos)
 
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int) -> None:
         if button == arcade.MOUSE_BUTTON_LEFT:

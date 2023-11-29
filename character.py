@@ -258,6 +258,7 @@ class Player(Character):
             self.change_weapon(1)
 
         super().update()
+        self.aim()
 
         # Feet animation
         if self.walking_frames == 0:  # reset frames
@@ -296,8 +297,11 @@ class Player(Character):
         self.change_weapon_left = False
         self.change_weapon_right = False
 
-    def aim(self, mouse_pos: Vec2) -> None:
-        aim_pos = mouse_pos - self.pos
+    def register_mouse_pos(self, mouse_pos: Vec2) -> None:
+        self.mouse_pos = mouse_pos
+
+    def aim(self) -> None:
+        aim_pos = self.mouse_pos - self.pos
         self.current_weapon.aim(aim_pos)
 
     def attack(self) -> arcade.SpriteList:
@@ -315,6 +319,10 @@ class Player(Character):
     def get_energy(self, energy: int) -> None:
         self.energy += energy
 
+    def use_skill(self) -> None:
+        # To be implemented for characters with active skill
+        pass
+
 
 class Rambo(Player):
     "Rambo character."
@@ -326,6 +334,26 @@ class Rambo(Player):
     def get_damage(self, damage: int) -> None:
         super().get_damage(damage)
         self.get_energy(damage)
+
+
+class Redbit(Player):
+    "Redbit character."
+
+    body_texture = arcade.load_texture("graphics/character/Redbit.png")
+    name = "Redbit"
+    description = "Redbit Description"
+
+    def use_skill(self) -> None:
+        # Dashing
+        dash_dir = self.mouse_pos - self.pos
+        dash_dir = dash_dir.normalize().scale(self.speed * 10)
+        if self.energy < 30:
+            return
+        elif self.energy >= 30 and self.energy < 500:
+            self.energy -= 30
+        else:
+            self.energy -= self.energy / 10
+        self.physics_engines[0].apply_force(self, (dash_dir.x, dash_dir.y))
 
 
 """Enemy characters"""
