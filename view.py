@@ -433,7 +433,8 @@ class SelectionView(FadingView):
         self.char_sprites = arcade.SpriteList()
         self.char_list = [
             character.Player,
-            character.Rambo
+            character.Rambo,
+            character.Redbit,
         ]
         self.cur_char_idx = 0
         self.cur_char = character.Character(
@@ -1118,7 +1119,7 @@ class GameView(FadingView):
         # Path-finding
         self.dir_field = dict()
         self.dist_grid = None
-        if utils.Utils.IS_TESTING_PF:    
+        if utils.Utils.IS_TESTING_PF:
             self.dir_field_visual = arcade.SpriteList()
             self.dir_visual_dict = dict()
             for pos in self.room.grid:
@@ -1310,6 +1311,8 @@ class GameView(FadingView):
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int) -> None:
         if button == arcade.MOUSE_BUTTON_LEFT:
             self.player.is_attack = True
+        if button == arcade.MOUSE_BUTTON_RIGHT:
+            self.player.use_skill()
 
     def on_mouse_release(self, x: int, y: int, button: int, modifiers: int) -> None:
         if button == arcade.MOUSE_BUTTON_LEFT:
@@ -1475,7 +1478,7 @@ class GameView(FadingView):
                     except KeyError:
                         return
 
-                    if self.room.grid[grid_x, grid_y] > 0:
+                    if self.room.grid[grid_x, grid_y] == 0:
                         object.center_x = grid_x * 30 + \
                             float(utils.Utils.HALF_WALL_SIZE)
                         object.center_y = grid_y * 30 + \
@@ -2028,31 +2031,31 @@ class GameView(FadingView):
         # Testing
         if utils.Utils.IS_TESTING:
             if self.spawn_cnt > 0:
-                self.set_boss(character.BossRed)
-                # self.generate_enemy(1, character.EnemyWhite,
-                #                     self.enemy_white_list)
-                # self.generate_enemy(1, character.EnemyWhite,
-                #                     self.enemy_white_list)
-                # self.generate_enemy(1, character.EnemyRed,
-                #                     self.enemy_red_list)
-                # self.generate_enemy(1, character.EnemyRed,
-                #                     self.enemy_red_list)
-                # self.generate_enemy(1, character.EnemyCrack,
-                #                     self.enemy_crack_list)
-                # self.generate_enemy(1, character.EnemyCrack,
-                #                     self.enemy_crack_list)
-                # self.generate_enemy(1, character.EnemyBigMouth,
-                #                     self.enemy_big_mouth_list)
-                # self.generate_enemy(1, character.EnemyBigMouth,
-                #                     self.enemy_big_mouth_list)
-                # self.generate_enemy(1, character.EnemyCrash,
-                #                     self.enemy_crash_list)
-                # self.generate_enemy(1, character.EnemyCrash,
-                #                     self.enemy_crash_list)
-                # self.generate_enemy(1, character.EnemyTank,
-                #                     self.enemy_tank_list)
-                # self.generate_enemy(1, character.EnemyTank,
-                #                     self.enemy_tank_list)
+                # self.set_boss(character.BossRed)
+                self.generate_enemy(1, character.EnemyWhite,
+                                    self.enemy_white_list)
+                self.generate_enemy(1, character.EnemyWhite,
+                                    self.enemy_white_list)
+                self.generate_enemy(1, character.EnemyRed,
+                                    self.enemy_red_list)
+                self.generate_enemy(1, character.EnemyRed,
+                                    self.enemy_red_list)
+                self.generate_enemy(1, character.EnemyCrack,
+                                    self.enemy_crack_list)
+                self.generate_enemy(1, character.EnemyCrack,
+                                    self.enemy_crack_list)
+                self.generate_enemy(1, character.EnemyBigMouth,
+                                    self.enemy_big_mouth_list)
+                self.generate_enemy(1, character.EnemyBigMouth,
+                                    self.enemy_big_mouth_list)
+                self.generate_enemy(1, character.EnemyCrash,
+                                    self.enemy_crash_list)
+                self.generate_enemy(1, character.EnemyCrash,
+                                    self.enemy_crash_list)
+                self.generate_enemy(1, character.EnemyTank,
+                                    self.enemy_tank_list)
+                self.generate_enemy(1, character.EnemyTank,
+                                    self.enemy_tank_list)
                 self.spawn_cnt = 0
             return
 
@@ -2351,7 +2354,8 @@ class ShopView(arcade.View):
         self.shop = last_view.shop
         self.cnt = 0
         self.refresh_cost = last_view.round * last_view.round
-        self.last_view.pool_size = 110 * last_view.round + 5 * last_view.round * last_view.round
+        self.last_view.pool_size = 110 * last_view.round + \
+            5 * last_view.round * last_view.round
         self.player.money += self.last_view.money_pool
 
         # Reset money pool of the game view

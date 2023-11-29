@@ -346,7 +346,7 @@ class Redbit(Player):
     def use_skill(self) -> None:
         # Dashing
         dash_dir = self.mouse_pos - self.pos
-        dash_dir = dash_dir.normalize().scale(self.speed * 10)
+        dash_dir = dash_dir.normalize().scale(self.speed * 50)
         if self.energy < 30:
             return
         elif self.energy >= 30 and self.energy < 500:

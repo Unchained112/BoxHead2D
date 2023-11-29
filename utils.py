@@ -103,9 +103,9 @@ class Utils:
                         dist_grid[next] = min_dist
                     elif next[1] < 0 or next[1] >= grid_h:
                         dist_grid[next] = min_dist
-                    elif grid[next] == 1: # a real wall in the map
+                    elif grid[next] == 1:  # a real wall in the map
                         dist_grid[next] = min_dist
-                    elif grid[next] == 3: # barrel
+                    elif grid[next] == 3:  # barrel
                         dist_grid[next] = min_dist / 2
                     else:
                         frontier.append(next)
@@ -224,6 +224,9 @@ class Language:
             "Rambo": "Rambo",
             "Rambo Description": "They drew first blood, not me. \
                                   Lost health is converted to the energy.",
+            "Redbit": "Redbit",
+            "Redbit Description": "A red rabbit from an abolished plan. \
+                                   Right click to dash towards the aim position.",
             # Map
             "Blank room": "Blank room",
             "Blank room with a block": "Blank room with a block",
@@ -335,6 +338,9 @@ class Language:
             "Rambo": "兰博",
             "Rambo Description": "不会红温的那个。 \
                                   失去的血量会转换成能量。",
+            "Redbit": "红比特",
+            "Redbit Description": "来自一份废弃计划的红色兔子。 \
+                                   鼠标右键单击向瞄准方向闪避。",
             # Map
             "Blank room": "空房间",
             "Blank room with a block": "有个障碍物的空房间",
